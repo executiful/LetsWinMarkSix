@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="style1">
+        <item name="android:layout_gravity">center</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintBottom_toTopOf">@id/id_ballselect</item>
+        <item name="layout_constraintTop_toTopOf">parent</item>
+    </style>
+    <style name="style2">
+        <item name="layout_constraintBottom_toTopOf">@id/ad_view_container</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintTop_toBottomOf">@+id/ticketlayout</item>
+    </style>
+    <style name="statprogress" parent="android:Widget.ProgressBar.Horizontal">
+<!--        <item name="android:progressBarHeight">5dp</item>-->
+<!--        <item name="android:interminateOnly">false</item>-->
+    </style>
+    <style name="Ticket">
+        <item name="android:orientation">vertical</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    <style name="entry_description">
+        <item name="android:textSize">@dimen/ticket_textsize</item>
+        <item name="android:padding">2dp</item>
+        <item name="android:textColor">@color/color_ticket</item>
+        <!--        <item name="android:layout_weight">1</item>-->
+        <item name="android:textAlignment">center</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+    <style name="entry_button" parent="entry_description">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <!--        <item name="android:drawableStart">@drawable/ticket_number</item>-->
+        <!--        <item name="android:lines">2</item>-->
+        <!--        <item name="android:layout_weight">1</item>-->
+        <item name="android:textAlignment">textStart</item>
+        <item name="android:paddingStart">2dp</item>
+        <item name="android:paddingEnd">2dp</item>
+    </style>
+    <style name="ballstyle">
+        <item name="android:layout_columnWeight">1</item>
+        <item name="android:layout_rowWeight">1</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+    </style>
+
+    <style name="MaterialAlertDialog.App.Title.Text" parent="MaterialAlertDialog.MaterialComponents.Title.Text">
+        <item name="android:textColor">@color/shrine_pink_900</item>
+    </style>
+    <style name="Theme_Ball_Dialog" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="materialAlertDialogTitleTextStyle">@style/MaterialAlertDialog.App.Title.Text</item>
+    </style>
+    <style name="bankorleg" parent="android:Widget.Material.Button.Toggle">
+
+    </style>
+
+    <color name="shrine_pink_900">#FFEB3B</color>
+</resources>

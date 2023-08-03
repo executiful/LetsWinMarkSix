@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:minWidth="128dip"
+    app:cardCornerRadius="@dimen/ball_radius"
+    app:cardElevation="1dp"
+    app:cardMaxElevation="1dp"
+    app:cardPreventCornerOverlap="true"
+    app:cardUseCompatPadding="true"
+    app:layout_anchorGravity="center">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageSwitcher
+            android:id="@+id/id_switch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/id_progress"
+            android:inAnimation="@android:anim/slide_in_left"
+            android:outAnimation="@android:anim/slide_out_right">
+        </ImageSwitcher>
+        <TextView
+            android:id="@+id/id_ballnumber"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/ball_txt_size"
+            app:layout_constraintBottom_toTopOf="@id/id_progress"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="16" />
+
+        <TextView
+            android:id="@+id/id_stat1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="XX"
+            android:textAlignment="viewEnd"
+            android:textSize="@dimen/stat_txt_size"
+            app:layout_constraintTop_toTopOf="@id/id_ballnumber"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <ProgressBar
+            android:indeterminateOnly="false"
+            android:id="@+id/id_progress"
+            style="@android:style/Widget.Material.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:progressDrawable="@drawable/custom_progressthinkness"
+            android:progress="22"
+            app:layout_constraintHeight_percent=".2"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/id_ballnumber" />
+
+        <TextView
+            android:id="@+id/id_stat2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="viewEnd"
+            android:text="999"
+            android:gravity="end|bottom"
+            android:textSize="@dimen/stat_txt_size"
+            app:layout_constraintBottom_toTopOf="@id/id_progress"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

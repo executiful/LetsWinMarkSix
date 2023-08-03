@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <item
+        android:id="@+id/action_generate"
+        android:title="@string/action_generate"
+        app:showAsAction="always|withText" />
+    <item
+        android:id="@+id/action_coming"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Coming" />
+    <item
+        android:id="@+id/action_past"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="Past Draw" />
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
+</menu>

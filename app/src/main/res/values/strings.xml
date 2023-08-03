@@ -1,3 +1,23 @@
 <resources>
-    <string name="app_name">LetsWinMarkSix</string>
+    <string name="app_name" translatable="false">LetsWinMarkSix</string>
+    <string name="action_settings" translatable="false">Settings</string>
+    <string name="todo" translatable="false">notTODO</string>
+    <string name="lang">en</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="admob_app_id_sample" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
+
+        <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+
+    <string name="text_single" translatable="false">單式</string>
+    <string name="text_multiple" translatable="false">複式</string>
+    <string name="text_banker" translatable="false">胆拖</string>
+    <string name="banker_text" translatable="false">胆拖選擇號碼</string>
+    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼</string>
+    <string name="action_generate">Generate</string>
+    <string name="field_sincedrawn">Number of lotteries since number last drawn.</string>
+    <string name="field_timesdrawn">Number of times drawn.</string>
+    <string name="field_number">Number</string>
+    <string name="format_ball">No.%1$s</string>
+    <string name="str_leg">Leg</string>
+    <string name="str_banker">Banker</string>
 </resources>

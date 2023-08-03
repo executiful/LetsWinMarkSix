@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".MainActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fitsSystemWindows="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:menu="@menu/menu_main" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+<!--    <include layout="@layout/content_main" />-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <include
+            android:id="@+id/ticketlayout"
+            layout="@layout/fragment_ticket_m61"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/style1"/>
+
+        <GridLayout
+            android:id="@+id/id_ballselect"
+            android:layout_margin="4dp"
+            android:layout_width="0dp"
+            android:background="@color/cardview_dark_background"
+            android:layout_height="0dp"
+            android:columnCount="7"
+            android:rowCount="7"
+            style="@style/style2"
+            tools:ignore="MissingConstraints">
+<!--
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+            <include layout="@layout/ballview" style="@style/ballstyle"/>
+-->
+        </GridLayout>
+        <FrameLayout
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/id_ballselect"
+            android:id="@+id/ad_view_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"
+        android:layout_marginTop="@android:dimen/app_icon_size"
+        app:srcCompat="@android:drawable/ic_dialog_email"
+        android:contentDescription="@string/todo" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
