@@ -20,4 +20,5 @@
     <string name="format_ball">No.%1$s</string>
     <string name="str_leg">Leg</string>
     <string name="str_banker">Banker</string>
+    <string name="beside" translatable="false">&lt; $1$s &gt;</string>
 </resources>

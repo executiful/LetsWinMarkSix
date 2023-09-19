@@ -17,7 +17,7 @@ data class NumStat(val num: Int, val idx: Int, var times: Int = 0, var since: In
         UNSEL
     }
 
-    val numString get() = if (status == NUMSTATUS.UNSEL) if (num % 2 == 0) "雙" else "單" else "$num"
+    val numString get() = if (status == NUMSTATUS.UNSEL) if (num % 2 == 0) "雙$num" else "單$num" else "$num"
     override fun toString(): String {
         return "︿@{System.lineSeparator()}${num}${System.lineSeparator()}﹀"
 //        return "︿${System.lineSeparator()}${num}${System.lineSeparator()}﹀"

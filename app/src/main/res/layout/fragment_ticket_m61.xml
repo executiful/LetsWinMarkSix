@@ -16,6 +16,7 @@
             android:padding="2dp">
 
             <androidx.constraintlayout.utils.widget.ImageFilterView
+                android:id="@+id/id_single"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:src="@drawable/ticket_s" />
@@ -37,6 +38,7 @@
                 android:text="@string/text_multiple" />
 
             <androidx.constraintlayout.utils.widget.ImageFilterView
+                android:id="@+id/id_banker"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:src="@drawable/ticket_b" />

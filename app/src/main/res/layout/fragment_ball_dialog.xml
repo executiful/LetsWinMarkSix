@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,126 +9,269 @@
     <!-- TODO: Update blank fragment layout -->
 
 
-    <LinearLayout
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
-        <androidx.cardview.widget.CardView
+<!--
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" >
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/gridLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="2">
+
+                <TextView
+                    android:id="@+id/ballnumber"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="55"
+                    android:textAlignment="center"
+                    android:textAppearance="@android:style/TextAppearance.Material.DialogWindowTitle"
+                    app:layout_constraintBottom_toTopOf="@+id/switch1"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_chainStyle="packed" />
+
+                <Switch
+                    android:id="@+id/switch1"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="1dp"
+                    android:showText="true"
+                    android:text="加入"
+                    android:textAppearance="@android:style/TextAppearance.Material.Widget.Button.Colored"
+                    android:textOff="未加入"
+                    android:textOn="已加入"
+                    app:layout_constraintBottom_toTopOf="@+id/toggleButton"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/ballnumber"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+                <TextView
+                    android:id="@+id/texttoggle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="胆/腳"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/toggleButton"
+                    app:layout_constraintEnd_toStartOf="@+id/toggleButton"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <CheckedTextView
+                    android:id="@+id/toggleButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="1dp"
+                    android:text="@string/str_banker"
+                    android:textOff="@string/str_leg"
+                    android:textOn="@string/str_banker"
+                    app:layout_constraintBottom_toTopOf="@+id/statsince"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/texttoggle"
+                    app:layout_constraintTop_toBottomOf="@+id/switch1" />
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/field_sincedrawn"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/statsince"
+                    app:layout_constraintEnd_toStartOf="@+id/statsince"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <TextView
+                    android:id="@+id/statsince"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="888"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                    app:layout_constraintBottom_toTopOf="@+id/stattimes"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/textView"
+                    app:layout_constraintTop_toBottomOf="@+id/toggleButton" />
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/field_timesdrawn"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/stattimes"
+                    app:layout_constraintEnd_toStartOf="@+id/stattimes"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <TextView
+                    android:id="@+id/stattimes"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:padding="2dp"
+                    android:text="555"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                    app:layout_constraintBottom_toTopOf="@+id/nextcount"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/textView2"
+                    app:layout_constraintTop_toBottomOf="@+id/statsince" />
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Count Slibing"
+                    app:layout_constraintBaseline_toBaselineOf="@+id/nextcount"
+                    app:layout_constraintEnd_toStartOf="@+id/nextcount"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <TextView
+                    android:id="@+id/nextcount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+                    app:layout_constraintBottom_toTopOf="@+id/progressBar"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/textView3"
+                    app:layout_constraintTop_toBottomOf="@+id/stattimes" />
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/nextcount" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:divider="@color/design_default_color_primary"
+                android:dividerPadding="1dp"
+                android:orientation="horizontal"
+                android:showDividers="middle">
 
-                <GridLayout
+                <Button
+                    android:id="@+id/button"
+                    style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:columnCount="2">
+                    android:layout_weight="1"
+                    android:text="Button" />
 
-                    <TextView
-                        android:id="@+id/ballnumber"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_columnSpan="2"
-                        android:layout_columnWeight="1"
-                        android:text="55"
-                        android:textAlignment="center"
-                        android:textAppearance="@android:style/TextAppearance.Material.DialogWindowTitle" />
-
-                    <Switch
-                        android:id="@+id/switch1"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_columnSpan="2"
-                        android:layout_columnWeight="1"
-                        android:showText="true"
-                        android:text="加入"
-                        android:textAppearance="@android:style/TextAppearance.Material.Widget.Button.Colored"
-                        android:textOff="未加入"
-                        android:textOn="已加入"
-                        tools:ignore="UseSwitchCompatOrMaterialXml" />
-
-                    <TextView
-                        android:id="@+id/texttoggle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="胆/腳" />
-
-                    <CheckedTextView
-                        android:id="@+id/toggleButton"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end"
-                        android:text="@string/str_banker"
-                        android:textOff="@string/str_leg"
-                        android:textOn="@string/str_banker" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/field_sincedrawn" />
-
-                    <TextView
-                        android:id="@+id/statsince"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:padding="2dp"
-                        android:text="888"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="@string/field_timesdrawn" />
-
-                    <TextView
-                        android:id="@+id/stattimes"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="555"
-                        android:padding="2dp"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1" />
-
-                    <ProgressBar
-                        android:id="@+id/progressBar"
-                        style="@android:style/Widget.Material.ProgressBar.Horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_columnSpan="2"
-                        android:layout_columnWeight="1" />
-                </GridLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:divider="@color/design_default_color_primary"
-                    android:dividerPadding="1dp"
-                    android:orientation="horizontal"
-                    android:showDividers="middle">
-
-                    <Button
-                        android:id="@+id/button"
-                        style="?android:attr/buttonBarButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Button" />
-
-                    <Button
-                        android:id="@+id/button2"
-                        style="?android:attr/buttonBarButtonStyle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Button" />
-                </LinearLayout>
-
+                <Button
+                    android:id="@+id/button2"
+                    style="?android:attr/buttonBarButtonStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Button" />
             </LinearLayout>
 
-        </androidx.cardview.widget.CardView>
-    </LinearLayout>
+        </LinearLayout>
+-->
+
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:shrinkColumns="1">
+
+            <TableRow android:layout_margin="2dp">
+
+                <TextView
+                    android:id="@+id/ballnumber"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="55"
+                    android:textAppearance="@android:style/TextAppearance.Material.DialogWindowTitle" />
+            </TableRow>
+
+            <TableRow android:layout_margin="2dp">
+
+                <Switch
+                    android:id="@+id/switch1"
+                    android:layout_weight="1"
+                    android:showText="true"
+                    android:text="加入"
+                    android:textAppearance="@android:style/TextAppearance.Material.Widget.Button.Colored"
+                    android:textOff="未加入"
+                    android:textOn="已加入"
+                    tools:ignore="UseSwitchCompatOrMaterialXml" />
+            </TableRow>
+
+            <TableRow android:layout_margin="2dp">
+
+                <TextView
+                    android:id="@+id/texttoggle"
+                    android:layout_weight="1"
+                    android:text="胆/腳" />
+
+                <CheckedTextView
+                    android:id="@+id/toggleButton"
+                    android:layout_weight="1"
+                    android:text="@string/str_banker"
+                    android:textOff="@string/str_leg"
+                    android:textOn="@string/str_banker" />
+            </TableRow>
+
+            <TableRow android:layout_margin="2dp">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_weight="1"
+                    android:text="@string/field_sincedrawn" />
+
+                <TextView
+                    android:id="@+id/statsince"
+                    android:layout_weight="1"
+                    android:padding="2dp"
+                    android:text="888"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1" />
+            </TableRow>
+
+            <TableRow android:layout_margin="2dp">
+
+                <TextView
+                    android:id="@+id/textView2"
+                    android:layout_weight="1"
+                    android:text="@string/field_timesdrawn" />
+
+                <TextView
+                    android:id="@+id/stattimes"
+                    android:layout_weight="1"
+                    android:padding="2dp"
+                    android:text="555"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1" />
+            </TableRow>
+
+            <TableRow android:layout_margin="2dp">
+
+                <TextView
+                    android:id="@+id/textView3"
+                    android:layout_weight="1"
+                    android:text="Count Slibing" />
+
+                <TextView
+                    android:id="@+id/nextcount"
+                    android:layout_weight="1"
+                    android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1" />
+
+            </TableRow>
+
+            <TableRow android:layout_margin="2dp">
+
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    style="@android:style/Widget.Material.ProgressBar.Horizontal"
+                    android:layout_weight="1" />
+            </TableRow>
+        </TableLayout>
+
+    </androidx.cardview.widget.CardView>
 
 </FrameLayout>

@@ -20,13 +20,13 @@
             android:id="@+id/id_switch"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/id_progress"
             android:inAnimation="@android:anim/slide_in_left"
-            android:outAnimation="@android:anim/slide_out_right">
-        </ImageSwitcher>
+            android:outAnimation="@android:anim/slide_out_right"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toTopOf="@id/id_progress"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"></ImageSwitcher>
         <TextView
             android:id="@+id/id_ballnumber"
             android:layout_width="wrap_content"

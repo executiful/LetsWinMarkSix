@@ -24,10 +24,4 @@
       android:fillColor="@color/color_ticket"
       android:strokeColor="#00000000"
       android:strokeLineCap="butt"/>
-  <path android:name="drawmark"
-      android:pathData="M10.579,3.367 L8.463,24.264 15.537,6.968 12.816,32.633"
-      android:strokeLineJoin="round"
-      android:strokeWidth="2"
-      android:strokeColor="@color/pen_color"
-      android:strokeLineCap="round"/>
 </vector>

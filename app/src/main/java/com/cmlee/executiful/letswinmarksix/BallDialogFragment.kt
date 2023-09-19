@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.nextCount
 import com.cmlee.executiful.letswinmarksix.databinding.FragmentBallDialogBinding
 import com.cmlee.executiful.letswinmarksix.model.NumStat
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
@@ -51,7 +52,7 @@ class BallDialogFragment : AppCompatDialogFragment() {
         setStyle(STYLE_NO_FRAME, R.style.Theme_Ball_Dialog)
     }
 
-    @SuppressLint("SetTextI18n")
+//    @SuppressLint("SetTextI18n")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -63,9 +64,10 @@ class BallDialogFragment : AppCompatDialogFragment() {
 
         mUpdateSelectionListener.getItem(itemIndex).also {
             updatedialog(it)
-            binding.stattimes.text = "${it.times}(${MainActivity.maxTimes})"
-            binding.statsince.text = "${it.since}(${MainActivity.maxSince})"
+            "${it.times}(${MainActivity.maxTimes})".also { binding.stattimes.text = it }
+            "${it.since}(${MainActivity.maxSince})".also { binding.statsince.text = it }
             binding.ballnumber.setBackgroundColor(it.num.BallColor())
+            binding.nextcount.text = if(nextCount(it.num))"yes" else "no"
             with(binding.progressBar) {
                 max = MainActivity.maxTimes - MainActivity.minTimes
                 progress = it.times - MainActivity.minTimes
