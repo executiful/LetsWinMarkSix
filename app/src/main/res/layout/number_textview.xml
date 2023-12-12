@@ -12,25 +12,25 @@
         <!--        android:scaleType="fitCenter"-->
 
         <!--        android:src="@drawable/number_background" />-->
-    <TextView
+<!--    <TextView
         android:id="@+id/id_dummy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:lines="2"
-        android:text="1111"
+        android:text="111"
         android:textSize="@dimen/ticket_numsize"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />-->
 
     <ImageView
         android:id="@+id/id_background"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="2dp"
+        android:layout_width="0mm"
+        android:layout_height="0mm"
+        android:layout_marginTop=".5mm"
+        android:layout_marginBottom=".5mm"
         android:contentDescription="TODO"
         android:enabled="false"
         android:scaleType="fitCenter"

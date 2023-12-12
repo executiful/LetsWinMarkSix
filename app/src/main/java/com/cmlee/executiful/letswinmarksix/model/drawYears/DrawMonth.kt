@@ -11,5 +11,5 @@ data class DrawMonth(
     @SerializedName("jackpotTxt")
     val jackpotTxt: JackpotTxt,
     @SerializedName("@month")
-    val month: String
+    val month: Int
 )

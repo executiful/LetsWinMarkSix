@@ -3,11 +3,12 @@ package com.cmlee.executiful.letswinmarksix.helper
 import android.annotation.SuppressLint
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
-import com.cmlee.executiful.letswinmarksix.model.DY
 import com.cmlee.executiful.letswinmarksix.model.NoArray
 import com.cmlee.executiful.letswinmarksix.model.UnitPrice
 import com.cmlee.executiful.letswinmarksix.model.WinningUnit
+import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawMonth
 import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawYear
+import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawYearItem
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultArray
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
@@ -21,6 +22,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Calendar
 import java.util.Date
+import java.util.concurrent.TimeoutException
 
 class ConnectURLThread(database: M6Db, val cacheDir: File, val lang: String) : Thread() {
     @SuppressLint("SimpleDateFormat")
@@ -29,7 +31,7 @@ class ConnectURLThread(database: M6Db, val cacheDir: File, val lang: String) : T
     private val arrResult = mutableListOf<DrawResult>()
     private val drawResultDao = database.DrawResultDao()
     private val gson = GsonBuilder().setPrettyPrinting()//.registerTypeAdapter(LocalDate::class.java, LocalDateConverter())
-        .registerTypeAdapter(Date::class.java, DayYearConvert())
+        .registerTypeAdapter(Date::class.java, DayYearConverter())
         .registerTypeAdapter(UnitPrice::class.java, UnitPriceConverter())
         .registerTypeAdapter(WinningUnit::class.java, WinningUnitConverter())
         .registerTypeAdapter(NoArray::class.java, NoArrayConverter())
@@ -44,9 +46,9 @@ class ConnectURLThread(database: M6Db, val cacheDir: File, val lang: String) : T
             drawResultDao.insertOrIgnoreAll(*temp.distinct().toTypedArray())
             it.delete()
         }
-        drawResultDao.getLatest()?.let { sd = DayYearConvert.getJson.format(it.date) }
+        drawResultDao.getLatest().let { sd = DayYearConverter.getJson.format(it.date) }
 
-        sd = "20230701"//drawResultDao.getLatest().date.toYD.replace("/", "")
+//        sd = "20230701"//drawResultDao.getLatest().date.toYD.replace("/", "")
         cal.time = sdf.parse(sd)
         while(android.icu.util.Calendar.getInstance().time> cal.time) {
             cal.add(Calendar.MONTH, 3)
@@ -68,7 +70,7 @@ class ConnectURLThread(database: M6Db, val cacheDir: File, val lang: String) : T
             sd = ed
         }
         arrResult.sortBy { it.date }
-        File.createTempFile("getAll", ".json", cacheDir).writeText(gson.toJson(arrResult))
+//        File.createTempFile("getAll", ".json", cacheDir).writeText(gson.toJson(arrResult))
         drawResultDao.insertOrIgnoreAll(*arrResult.distinct().toTypedArray())
 
         val failstr = TAG_ALL.filter {
@@ -84,7 +86,7 @@ class ConnectURLThread(database: M6Db, val cacheDir: File, val lang: String) : T
                         runFixt(doc)
                             .also { same ->
                                 File.createTempFile(TAG_FIXTURES, ".txt", cacheDir).writeText(same)
-                                val drawyears = Gson().fromJson(same, DrawYear::class.java)
+                                val drawyears = GsonBuilder().registerTypeAdapter(DrawYearItem::class.java, DrawMonthConverter()).create().fromJson(same, DrawYear::class.java)
                                 drawyears.forEach { item ->
                                     item.drawMonth.forEach { month ->
                                         month.drawDate.forEach { d ->
@@ -145,8 +147,10 @@ class ConnectURLThread(database: M6Db, val cacheDir: File, val lang: String) : T
                 }
             } catch (e: Exception) {
                 resp.message = e.message!!
-                println("connection exception>>>><<< $e.message")
                 break
+            } catch (eto: TimeoutException) {
+                println("connection exception>>>><<< $eto.message")
+                continue
             }
         }
         return resp to Jsoup.parse(getstr)

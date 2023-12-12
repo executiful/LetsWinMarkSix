@@ -1,3 +1,11 @@
 package com.cmlee.executiful.letswinmarksix.model
 
-data class UnitPrice(val lvalue:Long)
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.dollar
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.emdash
+import com.cmlee.executiful.letswinmarksix.helper.UnitPriceConverter.Companion.nbf
+
+data class UnitPrice(val lvalue:Long){
+    override fun toString(): String {
+        return if(lvalue==0L) "$emdash" else "$dollar${nbf.format(lvalue)}"
+    }
+}

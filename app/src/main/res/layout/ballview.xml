@@ -2,12 +2,13 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/id_ballinfo"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:minWidth="128dip"
     app:cardCornerRadius="@dimen/ball_radius"
     app:cardElevation="1dp"
     app:cardMaxElevation="1dp"
+    app:strokeWidth="0dp"
     app:cardPreventCornerOverlap="true"
     app:cardUseCompatPadding="true"
     app:layout_anchorGravity="center">
@@ -16,7 +17,27 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ImageSwitcher
+        <ImageView
+            android:id="@+id/imageBeside"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:scaleType="fitXY"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="@id/id_since"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_baseline_star_24"
+            app:layout_constraintDimensionRatio="1:1"
+            tools:ignore="ContentDescription" />
+<!--        <com.cmlee.executiful.letswinmarksix.DrawTimesCharts-->
+<!--            app:exampleString="none"-->
+<!--            android:layout_width="0dp"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintTop_toTopOf="parent"-->
+<!--            app:layout_constraintBottom_toBottomOf="parent"-->
+<!--            android:layout_height="0dp"/>-->
+<!--        <ImageSwitcher
             android:id="@+id/id_switch"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -26,52 +47,67 @@
             app:layout_constraintBottom_toTopOf="@id/id_progress"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"></ImageSwitcher>
-        <TextView
-            android:id="@+id/id_ballnumber"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:textSize="@dimen/ball_txt_size"
-            app:layout_constraintBottom_toTopOf="@id/id_progress"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="16" />
+            app:layout_constraintTop_toTopOf="parent">
+
+        </ImageSwitcher>-->
 
         <TextView
-            android:id="@+id/id_stat1"
+            android:id="@+id/id_since"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="XX"
+            android:layout_marginEnd="@dimen/ball_radius"
+            android:text="00"
             android:textAlignment="viewEnd"
             android:textSize="@dimen/stat_txt_size"
-            app:layout_constraintTop_toTopOf="@id/id_ballnumber"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <ProgressBar
-            android:indeterminateOnly="false"
             android:id="@+id/id_progress"
-            style="@android:style/Widget.Material.ProgressBar.Horizontal"
+            style="@style/statprogress"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:progressDrawable="@drawable/custom_progressthinkness"
-            android:progress="22"
-            app:layout_constraintHeight_percent=".2"
+            android:indeterminateOnly="false"
+            android:progress="72"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/id_ballnumber" />
+            app:layout_constraintTop_toTopOf="@id/id_times" />
 
         <TextView
-            android:id="@+id/id_stat2"
-            android:layout_width="match_parent"
+            android:id="@+id/id_times"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAlignment="viewEnd"
-            android:text="999"
-            android:gravity="end|bottom"
+            android:layout_marginStart="@dimen/ball_radius"
+            android:gravity="start|bottom"
+            android:textColor="@color/black"
+            android:text="888"
             android:textSize="@dimen/stat_txt_size"
-            app:layout_constraintBottom_toTopOf="@id/id_progress"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/id_background"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/ball_radius"
+            android:scaleType="fitCenter"
+            app:layout_constraintHeight_percent=".8"
+            app:layout_constraintDimensionRatio="1:1"
+            app:srcCompat="@drawable/ballcircle1" />
+        <TextView
+            android:id="@+id/id_ballnumber"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="@dimen/ball_radius"
+            android:layout_marginEnd="@dimen/ball_radius"
+            android:gravity="center"
+            android:layout_margin="@dimen/ball_radius"
+            android:textAlignment="gravity"
+            android:text="68"
+            android:alpha=".8"
+            android:textAppearance="@android:style/TextAppearance.Material.Widget.IconMenu.Item"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/id_background"
+            app:layout_constraintStart_toStartOf="@id/id_background"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

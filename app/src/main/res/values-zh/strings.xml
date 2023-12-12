@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="lang">ch</string>
-    <string name="action_generate">Generate</string>
-    <string name="field_sincedrawn">號碼攪出相隔期數</string>
-    <string name="field_timesdrawn">號碼攪出次數</string>
-    <string name="field_number">號碼</string>
     <string name="format_ball">%1$s號</string>
-    <string name="str_leg">腳</string>
-    <string name="str_banker">膽</string>
 </resources>

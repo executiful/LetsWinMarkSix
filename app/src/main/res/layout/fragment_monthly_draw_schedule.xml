@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MonthlyDrawScheduleFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+
+
+    <GridLayout
+        android:layout_margin="@dimen/activity_vertical_margin"
+        android:id="@+id/id_dates"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:columnCount="7" >
+
+<!--        <TextView
+            android:id="@+id/editTextText"
+            style="@style/date_box"
+            android:text="@string/sunday" />
+
+        <TextView
+            android:id="@+id/editTextText2"
+            style="@style/date_box"
+            android:text="@string/monday" />
+
+        <TextView
+            android:id="@+id/editTextText3"
+            style="@style/date_box"
+            android:text="@string/tuesday" />
+
+        <TextView
+            android:id="@+id/editTextText4"
+            style="@style/date_box"
+            android:text="@string/wednesday" />
+
+        <TextView
+            android:id="@+id/editTextText5"
+            style="@style/date_box"
+            android:text="@string/thursday" />
+
+        <TextView
+            android:id="@+id/editTextText6"
+            style="@style/date_box"
+            android:text="@string/friday" />
+
+        <TextView
+            android:id="@+id/editTextText7"
+            style="@style/date_box"
+            android:text="@string/saturday" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_columnSpan="7"
+            android:background="?android:attr/listDivider" />-->
+<!--        <TextView-->
+<!--            android:layout_columnSpan="7"-->
+<!--            android:layout_rowSpan="1"-->
+
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+
+<!--            android:text="11月"/>-->
+
+        <!--        <TextView-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:text="233" />-->
+    </GridLayout>
+
+    <TextView
+        android:layout_margin="@dimen/activity_vertical_margin"
+        android:id="@+id/idjackpotstxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

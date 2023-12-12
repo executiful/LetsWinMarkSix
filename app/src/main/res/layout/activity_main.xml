@@ -14,6 +14,7 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
+            app:title="@string/app_name"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:menu="@menu/menu_main" />
@@ -28,16 +29,16 @@
 
         <include
             android:id="@+id/ticketlayout"
-            layout="@layout/fragment_ticket_m61"
+            layout="@layout/fragment_marksix_ticket"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/style1"/>
 
         <GridLayout
             android:id="@+id/id_ballselect"
-            android:layout_margin="4dp"
+            android:layout_marginStart="2dp"
+            android:layout_marginEnd="2dp"
             android:layout_width="0dp"
-            android:background="@color/cardview_dark_background"
             android:layout_height="0dp"
             android:columnCount="7"
             android:rowCount="7"
@@ -109,6 +110,7 @@
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|start"

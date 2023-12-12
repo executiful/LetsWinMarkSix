@@ -22,7 +22,7 @@ class Converters {
 }
 */
 @ProvidedTypeConverter
-class DayYearConvert : JsonSerializer<Date>, JsonDeserializer<Date> {
+class DayYearConverter : JsonSerializer<Date>, JsonDeserializer<Date> {
 //    class DY (val yd:String){ // "2020/01/02"
 //        val toDY = yd.split('/').reversed().joinToString("/")
 //    }
@@ -40,7 +40,6 @@ class DayYearConvert : JsonSerializer<Date>, JsonDeserializer<Date> {
         typeOfSrc: Type?,
         context: JsonSerializationContext?,
     ): JsonElement {
-//        TODO("Not yet implemented")
         return JsonPrimitive(jsonDate.format(src))
     }
 
@@ -49,7 +48,6 @@ class DayYearConvert : JsonSerializer<Date>, JsonDeserializer<Date> {
         typeOfT: Type?,
         context: JsonDeserializationContext?,
     ): Date {
-//        TODO("Not yet implemented")
         return jsonDate.parse(json.asString)//DY(json.asString)
     }
     companion object{

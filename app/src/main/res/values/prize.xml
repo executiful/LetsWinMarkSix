@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="prize">
+        <item>@string/chprize_1st</item>
+        <item>@string/chprize_2nd</item>
+        <item>@string/chprize_3rd</item>
+        <item>@string/chprize_4th</item>
+        <item>@string/chprize_5th</item>
+        <item>@string/chprize_6th</item>
+        <item>@string/chprize_7th</item>
+    </string-array>
+</resources>

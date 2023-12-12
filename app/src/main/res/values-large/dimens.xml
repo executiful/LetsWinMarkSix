@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="ticket_numsize">14sp</dimen>
-    <dimen name="ticket_textsize">10sp</dimen>
     <dimen name="ball_numsize">30sp</dimen>
-    <dimen name="ticket_num_margin">12dp</dimen>
 
-    <dimen name="ball_txt_size">18sp</dimen>
-    <dimen name="stat_txt_size">8sp</dimen>
+    <dimen name="ticket_numsize">3.8mm</dimen>
+    <dimen name="ticket_textsize">2.1mm</dimen>
+    <dimen name="ticket_num_margin">2.1mm</dimen>
+    <dimen name="ticket_header_margin">1.1mm</dimen>
+    <dimen name="ball_txt_size">20sp</dimen>
+    <dimen name="stat_txt_size">10sp</dimen>
     <dimen name="ball_radius">8sp</dimen>
 </resources>

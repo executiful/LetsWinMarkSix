@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class DrawDate(
     @SerializedName("@date")
-    val date: String,
+    val date: Int,
     @SerializedName("@draw")
     val draw: String,
     @SerializedName("@jackpot")

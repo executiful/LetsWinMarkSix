@@ -1,24 +1,81 @@
 <resources>
-    <string name="app_name" translatable="false">LetsWinMarkSix</string>
+    <string name="app_name" translatable="false">六合彩好手氣</string>
     <string name="action_settings" translatable="false">Settings</string>
     <string name="todo" translatable="false">notTODO</string>
     <string name="lang">en</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="admob_app_id_sample" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
 
-        <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
+    <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
 
-    <string name="text_single" translatable="false">單式</string>
-    <string name="text_multiple" translatable="false">複式</string>
-    <string name="text_banker" translatable="false">胆拖</string>
-    <string name="banker_text" translatable="false">胆拖選擇號碼</string>
-    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼</string>
-    <string name="action_generate">Generate</string>
-    <string name="field_sincedrawn">Number of lotteries since number last drawn.</string>
-    <string name="field_timesdrawn">Number of times drawn.</string>
-    <string name="field_number">Number</string>
+    <string name="text_single" translatable="false">單式\nSingle</string>
+    <string name="text_multiple" translatable="false">複\nMultiple</string>
+    <string name="text_banker" translatable="false">胆拖\nBanker</string>
+    <string name="banker_text" translatable="false">胆拖選擇號碼\nbanker number(s)</string>
+    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼\nsingle, multiple or \nother banker selections</string>
+    <string name="action_redraw">重新</string>
+    <string name="field_sincedrawn">號碼攪出相隔期數</string>
+    <string name="field_timesdrawn">號碼攪出次數</string>
+    <string name="field_number">號碼</string>
     <string name="format_ball">No.%1$s</string>
-    <string name="str_leg">Leg</string>
-    <string name="str_banker">Banker</string>
-    <string name="beside" translatable="false">&lt; $1$s &gt;</string>
+    <string name="str_leg">腳</string>
+    <string name="str_banker">膽</string>
+    <string name="beside" translatable="false">&lt; %1$s &gt;</string>
+    <string name="ask_select">選下方其中一個單或雙</string>
+    <string name="bankerexceeded">膽的數目多於5</string>
+    <string name="singledraw">單式</string>
+    <string name="unclassifydraw">注數：&#8212; (%1$d膽，%2$d腳)</string>
+    <string name="multipledraw">複式，%1$d注 (%2$d)</string>
+    <string name="bankerdraw">膽拖，%1$d注 (%2$d膽，%3$d腳)</string>
+    <string name="title_activity_drawn_number_checking">DrawnNumberChecking</string>
+
+
+    <string name="interstitial_ad_sample">Interstitial Ad Sample</string>
+    <string name="start_level">Level 1</string>
+    <string name="next_level">Next Level</string>
+    <!-- -
+        This is an ad unit ID for an interstitial test ad. Replace with your own interstitial ad unit id.
+        For more information, see https://support.google.com/admob/answer/3052638
+    <!- -->
+    <string name="interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="drawn_number_checking">核對過往攪珠</string>
+    <string name="action_save">保存</string>
+    <string name="action_list_saved">列出保存</string>
+    <string name="message_save">已儲存</string>
+    <string name="action_previous_next_draw">上期/下期 攪珠</string>
+    <string name="sunday">日\u2003</string>
+    <string name="monday">一\u2003</string>
+    <string name="tuesday">二\u2003</string>
+    <string name="wednesday">三\u2003</string>
+    <string name="thursday">四\u2003</string>
+    <string name="friday">五\u2003</string>
+    <string name="saturday">六\u2003</string>
+    <string name="draw_schedule_title">攪珠日期表</string>
+    <string name="action_draw_schedule">攪珠日期表</string>
+    <string name="message_replace">取代</string>
+    <string name="action_info">使用說明</string>
+    <string name="info_redraw">重新攪珠:49號碼(7行7列)随機排序，並隱藏號碼。</string>
+    <string name="action_save_n_redraw">先保存，後重新</string>
+    <string name="how_to_start">如何使用此程式</string>
+    <string name="draw_number">攪珠期數%1$s</string>
+    <string name="draw_date">攪珠日期%1$s</string>
+    <string name="title_activity_splash_screen">SplashScreen</string>
+    <string name="nothing_to_show">無法下載相關資料！</string>
+    <string name="prizeof">%1$s奬項</string>
+    <string name="action_entry">注項</string>
+    <string name="title_details">奬項資格</string>
+    <string name="prize_1st">1st</string>
+    <string name="prize_2nd">2nd</string>
+    <string name="prize_3rd">3rd</string>
+    <string name="prize_4th">4th</string>
+    <string name="prize_5th">5th</string>
+    <string name="prize_6th">6th</string>
+    <string name="prize_7th">7th</string>
+    <string name="chprize_1st">頭奬</string>
+    <string name="chprize_2nd">二奬</string>
+    <string name="chprize_3rd">三奬</string>
+    <string name="chprize_4th">四奬</string>
+    <string name="chprize_5th">五奬</string>
+    <string name="chprize_6th">六奬</string>
+    <string name="chprize_7th">七奬</string>
 </resources>

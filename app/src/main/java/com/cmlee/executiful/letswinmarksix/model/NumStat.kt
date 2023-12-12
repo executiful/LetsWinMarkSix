@@ -11,13 +11,13 @@ data class NumStat(val num: Int, val idx: Int, var times: Int = 0, var since: In
 
     var status = NUMSTATUS.UNSEL
 
-    enum class NUMSTATUS {
-        LEG,
-        BANKER,
-        UNSEL
+    enum class NUMSTATUS(val i:Int) {
+        LEG(111),
+        BANKER(222),
+        UNSEL(0)
     }
 
-    val numString get() = if (status == NUMSTATUS.UNSEL) if (num % 2 == 0) "雙$num" else "單$num" else "$num"
+    val numString get() = if (status == NUMSTATUS.UNSEL) if (num % 2 == 0) "雙" else "單" else "$num"
     override fun toString(): String {
         return "︿@{System.lineSeparator()}${num}${System.lineSeparator()}﹀"
 //        return "︿${System.lineSeparator()}${num}${System.lineSeparator()}﹀"

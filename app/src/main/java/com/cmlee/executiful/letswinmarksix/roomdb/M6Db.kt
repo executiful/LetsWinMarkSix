@@ -5,7 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.cmlee.executiful.letswinmarksix.helper.DayYearConvert
+import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter
 import com.cmlee.executiful.letswinmarksix.helper.NoArrayConverter
 import com.cmlee.executiful.letswinmarksix.helper.UnitPriceConverter
 import com.cmlee.executiful.letswinmarksix.helper.WinningUnitConverter
@@ -14,7 +14,7 @@ import com.cmlee.executiful.letswinmarksix.helper.WinningUnitConverter
     entities = [DrawResult::class],
     views = [viewDrawYears::class],
     exportSchema = false)
-@TypeConverters(/*LocalDateConverter::class, */DayYearConvert::class,
+@TypeConverters(/*LocalDateConverter::class, */DayYearConverter::class,
     UnitPriceConverter::class, WinningUnitConverter::class, NoArrayConverter::class)
 abstract class M6Db : RoomDatabase() {
     abstract fun DrawResultDao(): DrawResultDao
@@ -28,9 +28,10 @@ abstract class M6Db : RoomDatabase() {
                         INSTANCE = Room.databaseBuilder(
                             context.applicationContext,
                             M6Db::class.java,
-                            "m6.7.sqlite.db3"
+                            "m6.db3"
                         )
-                            .addTypeConverter(DayYearConvert())
+                            .createFromAsset("databases/m6.v2.db3")
+                            .addTypeConverter(DayYearConverter())
                             //.addTypeConverter(LocalDateConverter())
                             .addTypeConverter(UnitPriceConverter())
                             .addTypeConverter(WinningUnitConverter())

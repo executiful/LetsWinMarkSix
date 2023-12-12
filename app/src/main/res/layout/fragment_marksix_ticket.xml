@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/id_ticket"
+    style="@style/Ticket"
+    android:background="@android:color/white"
+    android:padding="3dp">
+
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/ticket_header_margin"
+        android:orientation="horizontal">
+
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/id_single"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ticket_single" />
+
+        <TextView
+            android:id="@+id/id_btn_single"
+            style="@style/entry_button"
+            android:text="@string/text_single" />
+
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/id_multiple"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ticket_multiple" />
+
+        <TextView
+            android:id="@+id/id_btn_multiple"
+            style="@style/entry_button"
+            android:text="@string/text_multiple" />
+
+        <androidx.constraintlayout.utils.widget.ImageFilterView
+            android:id="@+id/id_banker"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/ticket_banker" />
+
+        <TextView
+            android:id="@+id/id_btn_banker"
+            style="@style/entry_button"
+            android:text="@string/text_banker" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:divider="@color/color_ticket">
+
+        <TableRow>
+
+            <View style="@style/ticket_horizonal_divider" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <View style="@style/ticket_vertical_divider" />
+
+            <TextView
+                style="@style/entry_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="@string/banker_text" />
+
+            <View style="@style/ticket_vertical_divider" />
+
+            <TextView
+                style="@style/entry_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/leg_text" />
+
+            <View style="@style/ticket_vertical_divider" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <View style="@style/ticket_horizonal_divider" />
+        </TableRow>
+
+        <TableRow>
+
+            <View style="@style/ticket_vertical_divider" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/id_bankers"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/color_ticket_banker"
+                android:orientation="horizontal">
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <View style="@style/ticket_vertical_divider" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/id_legs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:orientation="horizontal">
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+
+                <include layout="@layout/column_of_number" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <View style="@style/ticket_vertical_divider" />
+
+        </TableRow>
+
+        <TableRow>
+
+            <View style="@style/ticket_horizonal_divider" />
+        </TableRow>
+    </TableLayout>
+
+    <!--    <com.google.android.material.divider.MaterialDivider-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="1dp"-->
+    <!--            tools:dividerColor="@color/color_ticket" />-->
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>

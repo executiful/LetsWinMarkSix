@@ -3,17 +3,21 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <dimen name="numsize">6pt</dimen>
-    <dimen name="ticket_numsize">14sp</dimen>
-<!--    <dimen name="ticket_textsize">8sp</dimen>-->
+    <!--    <dimen name="ticket_textsize">8sp</dimen>-->
     <dimen name="ball_numsize">20sp</dimen>
-    <dimen name="ticket_num_margin">5dp</dimen>
+    <dimen name="ticket_num_margin">1mm</dimen>
+    <dimen name="ticket_header_margin">.5mm</dimen>
 
-    <dimen name="ticket_textsize">8sp</dimen>
+    <dimen name="ticket_numsize">2.4mm</dimen>
+    <dimen name="ticket_textsize">1mm</dimen>
 
 
-    <dimen name="ball_txt_size">11sp</dimen>
+    <dimen name="ball_txt_size">14sp</dimen>
     <dimen name="stat_txt_size">8sp</dimen>
 
     <dimen name="ball_radius">3sp</dimen>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
 
 </resources>

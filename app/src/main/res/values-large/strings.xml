@@ -3,6 +3,6 @@
     <string name="text_single" translatable="false">單式\nSingle</string>
     <string name="text_multiple" translatable="false">複式\nMultiple</string>
     <string name="text_banker" translatable="false">胆拖\nBanker</string>
-    <string name="banker_text" translatable="false">胆拖選擇號碼\nbanker numbers</string>
-    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼\nsingle, multiple or other banker selections</string>
+    <string name="banker_text" translatable="false">胆拖選擇號碼\nbanker number(s)</string>
+    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼\nsingle, multiple or \nother banker selections</string>
 </resources>
