@@ -6,6 +6,7 @@ import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
+import com.cmlee.executiful.letswinmarksix.BuildConfig
 import com.cmlee.executiful.letswinmarksix.helper.ConnectURLThread.Companion.toQuery
 import com.cmlee.executiful.letswinmarksix.model.NoArray
 import com.cmlee.executiful.letswinmarksix.model.UnitPrice
@@ -147,9 +148,11 @@ object ConnectionObject {
                 try {
                     val text = Jsoup.parse(str).text()
                     if (text.isNullOrEmpty().not()) {
-                        println(text)
-                        println(TAG_JSON)
-                        File.createTempFile("test", ".json", context.cacheDir).writeText(text)
+                        if(BuildConfig.DEBUG){
+                            println(text)
+                            println(TAG_JSON)
+                            File.createTempFile("test", ".json", context.cacheDir).writeText(text)
+                        }
                         val tmp = gson.fromJson(text, DrawResultArray::class.java)
                         arrResult.addAll(tmp)
                     }
@@ -173,9 +176,6 @@ object ConnectionObject {
     private fun getLatestDDate(schuPref: SharedPreferences): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
         val today = Calendar.getInstance()  //TODO  : 如何更新可能出現已下載的日期表之後有所改變，而不需經常訪問網址。
         today.clearTimePart()
-//        today.add(Calendar.DATE, -20)
-//        today.set(Calendar.HOUR_OF_DAY, 0)
-//        while(today.get(Calendar.DAY_OF_WEEK)!=Calendar.SUNDAY) today.add(Calendar.DATE, -1)
         println("first day of week ${today.time}")
         today.add(Calendar.DATE,-today.get(Calendar.DAY_OF_WEEK))
         val drawYearJsonString =
@@ -270,7 +270,7 @@ object ConnectionObject {
                 val date = Calendar.getInstance()
                 date.clear()
                 date.time = sdf_now.parse(it)
-                if(date.isEarlyBy(now, Calendar.MINUTE, if(latest.p1==null)2 else 15)){
+                if(date.isEarlyBy(now, Calendar.MINUTE, if(latest.p1==null||(sharedPreferences.getString(KEY_NEXT, "")?:"").contains(latest.id))2 else 15)){
                     return download_next_draw(sharedPreferences)
                 }
                 return sharedPreferences.getString(KEY_NEXT, null)
@@ -282,18 +282,22 @@ object ConnectionObject {
     }
     fun UpdateLatestDraw(context : Context, exec:(message:String)->Unit){
         val db = M6Db.getDatabase(context)
-        val drawResultDao = db.DrawResultDao()
-        getIndex(context, drawResultDao.getLatest())?.also{
-            // load schedule , today not found ==> fixtures => draw schedule
-            // latest date < today => error
-            val (_, _) = getLatestSchecule(context)
-            val latestResult = getLatestResult(drawResultDao, context)
+        if(db.isOpen) {//java.lang.IllegalStateException:
+            val drawResultDao = db.DrawResultDao()
+            getIndex(context, drawResultDao.getLatest())?.also {
+                // load schedule , today not found ==> fixtures => draw schedule
+                // latest date < today => error
+                val (_, _) = getLatestSchecule(context)
+                val latestResult = getLatestResult(drawResultDao, context)
 
-            if(latestResult.isNotEmpty())
-                exec("OK")
-            else exec("what")
-            return
+                if (latestResult.isNotEmpty())
+                    exec("OK")
+                else exec("what")
+                return
+            }
+            exec("nook")
+
         }
-        exec("nook")
+         exec("db not open??")
     }
 }

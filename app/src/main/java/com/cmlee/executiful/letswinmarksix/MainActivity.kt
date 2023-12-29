@@ -67,10 +67,7 @@ import java.util.Date
 import java.util.Locale
 
 
-class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelection { //, Runnable,
-       // (Pair<String,String>) -> Unit
-
-
+class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelection {
     private lateinit var binding: ActivityMainBinding
     private lateinit var legViews: List<NumberTextviewBinding>
     private lateinit var bankerViews: List<NumberTextviewBinding>
@@ -80,7 +77,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private val ht = HandlerThread("m6thread")
     private lateinit var hr :Handler
 
-//    private lateinit var db: M6Db
     private var msgCalc:String = "good luck!!"
 
     @SuppressLint("FileEndsWithExt", "RestrictedApi", "SuspiciousIndentation")
@@ -126,8 +122,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 */
         if(BuildConfig.DEBUG) {
             hr.post {
-
-
                 cacheDir.listFiles()?.filter { it.length() == 0L }?.parallelStream()
                     ?.forEach { it.delete() }
                 cacheDir.listFiles()?.let {
@@ -187,19 +181,19 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     /*currentStatus!=DrawStatus.UnClassify&&!getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(
                             msgNumbers)*/) {
                         val dlg = AlertDialog.Builder(this).setMessage(R.string.action_redraw)
-                            .setNegativeButton(android.R.string.cancel) { d, i -> }
+                            .setNegativeButton(android.R.string.cancel) { _, _ -> }
                         if(currentStatus!=DrawStatus.UnClassify&&!getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(
                                 msgNumbers)) {
-                            dlg.setPositiveButton(R.string.action_save_n_redraw) { d, i ->
+                            dlg.setPositiveButton(R.string.action_save_n_redraw) { _, _ ->
                                 saveEntry()
                                 refresh()
                             }
-                                .setNeutralButton(R.string.action_redraw) { d, i ->
+                                .setNeutralButton(R.string.action_redraw) { _, _ ->
                                     refresh()
                                 }
                                 .show()
                         } else {
-                            dlg.setPositiveButton(R.string.action_redraw){d, i->
+                            dlg.setPositiveButton(R.string.action_redraw){ _, _ ->
                                 refresh()
                             }.show()
                         }
@@ -258,13 +252,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     saveEntry()
                 }
                 R.id.action_info ->{
-                    val gson = GsonBuilder().setPrettyPrinting()//.registerTypeAdapter(LocalDate::class.java, LocalDateConverter())
-                        .registerTypeAdapter(Date::class.java, DayYearConverter())
-                        .registerTypeAdapter(UnitPrice::class.java, UnitPriceConverter())
-                        .registerTypeAdapter(WinningUnit::class.java, WinningUnitConverter())
-                        .registerTypeAdapter(NoArray::class.java, NoArrayConverter())
-                        .create()
-
                     val ssb = SpannableStringBuilder()
 
                     val dao = M6Db.getDatabase(this).DrawResultDao()
@@ -288,13 +275,15 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }
 
                     ssb.append("!1")
+                    ssb.appendLine(dao.getLatest().id)
                     ssb.appendLine(getString(R.string.action_redraw))
                     ssb.appendLine(getString(R.string.info_redraw))
                         ssb.setSpan(ImageSpan(this, R.drawable.baseline_refresh_24), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 
 
-                    AlertDialog.Builder(this).setMessage(ssb).setPositiveButton("刪除") { d, i ->
-                        dao.delete(*dao.getAll().sortedByDescending { it.date }.take(1).toTypedArray())
+                    AlertDialog.Builder(this).setMessage(ssb).setPositiveButton("刪除") { _, _ ->
+                        dao.delete(dao.getLatest())
+                        initball()
                     }.show().setOnCancelListener {
                         pauseDlg.show()
                     }
@@ -494,7 +483,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             } else
                 ssb.append(value)
             ssb.setSpan(TextAppearanceSpan(this, R.style.money), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            if(name.contains('金') || name.contains("奬")) {
+            if(name.contains('金') || name.contains('奬')) {
                 val end = if(value.contains('\t')) value.indexOfFirst { it == '\t' }+start else ssb.length
                 ssb.setSpan(
                     ForegroundColorSpan(Color.RED),
@@ -548,35 +537,48 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             )
         } else {
             val nextstring = sf.getString(KEY_NEXT, "--") ?: ""
-            val ndata =
-                nextstring.split(";").map { it.replace('$', dollar).split(":".toRegex(), 2) }
-                    .filter { it.size == 2 }
-                    .map {
-                        it[0] to if (it[0].contains("金") && it[1].startsWith(dollar)) String.format(
-                            "%11s",
-                            it[1]
-                        ) else it[1]
-                    }
+            if(nextstring.contains(pre.id)){
+                ssb.appendLine(dotdotdot)
+            } else {
+                val ndata =
+                    nextstring.split(";").map { it.replace('$', dollar).split(":".toRegex(), 2) }
+                        .filter { it.size == 2 }
+                        .map {
+                            it[0] to if (it[0].contains('金') && it[1].startsWith(dollar)) String.format(
+                                "%11s",
+                                it[1]
+                            ) else it[1]
+                        }
 
-            ndata.forEach(act)
-            ssb.setSpan(TabStopSpan.Standard(100), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            ssb.appendLine().appendLine()
-            start = ssb.length
-            val updateat = sf.getString(KEY_NEXT_UPDATE, "--") ?: "--"
-            ssb.append("更新時間　：　$updateat").setSpan(
-                AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
-                start,
-                ssb.length,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            ssb.setSpan(
-                TextAppearanceSpan(this, android.R.style.TextAppearance_Small),
-                start,
-                ssb.length,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
+                ndata.forEach(act)
+                ssb.setSpan(
+                    TabStopSpan.Standard(100),
+                    0,
+                    ssb.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                ssb.appendLine().appendLine()
+                start = ssb.length
+                val updateat = sf.getString(KEY_NEXT_UPDATE, "--") ?: "--"
+                ssb.append("更新時間　：　$updateat").setSpan(
+                    AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
+                    start,
+                    ssb.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+                ssb.setSpan(
+                    TextAppearanceSpan(this, android.R.style.TextAppearance_Small),
+                    start,
+                    ssb.length,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
             println("更新:$ssb")
         }
+        ssb.appendLine()
+        start = ssb.length
+        ssb.append(getText(R.string.disclaimer))
+        ssb.setSpan(TextAppearanceSpan(this, android.R.style.TextAppearance_Small), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         return ssb
     }
     private fun show_draw_schedule(): Boolean {
@@ -589,7 +591,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
     private fun show_checking(): Boolean {
         hr.post {
-            UpdateLatestDraw(this){ms->
+            UpdateLatestDraw(this){ _ ->
                 startActivity(Intent(this, DrawnNumberCheckingActivity::class.java))
 //                initball()
             }
@@ -872,11 +874,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
         return false
     }
-    private fun isNetworkAvailable(): Boolean {
-        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetworkInfo = connectivityManager?.activeNetworkInfo
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected
-    }
+//    private fun isNetworkAvailable(): Boolean {
+//        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+//        val activeNetworkInfo = connectivityManager?.activeNetworkInfo
+//        return activeNetworkInfo != null && activeNetworkInfo.isConnected
+//    }
     fun allCombination(): MutableList<List<Int>> {
         val combinations = mutableListOf<List<Int>>()
         val m = 6 - bankers.size
@@ -914,14 +916,14 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         private const val KEY_ORDER = "NUMBER_ORDER"
         private const val KEY_STATUS = "status"
         private const val NAME_ENTRIES = "ENTRIES"
-        val d2 = '\uFF04'
+//        val d2 = '\uFF04'
         val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }
         val legs get() = originalballs.filter { it.status== NumStat.NUMSTATUS.LEG }.map{it.num}
         var msgNumbers:String = "+"
 
         private val originalballs = (1..49).withIndex()//.sortedBy { Math.random() }
             .map { NumStat(it.value, it.index) }
-        val sinces get() = originalballs.map { it.since }
+//        val sinces get() = originalballs.map { it.since }
         private var numberordering = originalballs
         private var currentStatus = DrawStatus.UnClassify
         fun nextCount(sel: Int): Boolean =

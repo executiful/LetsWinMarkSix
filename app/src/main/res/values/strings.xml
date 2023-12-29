@@ -78,4 +78,6 @@
     <string name="chprize_5th">五奬</string>
     <string name="chprize_6th">六奬</string>
     <string name="chprize_7th">七奬</string>
+    <string name="disclaimer">＊＊＊本程式所提供的香港馬會六合彩資料僅供參考之用，並不保證其正確性、完整性、及時性或適用性。作者不承擔任何因使用本程式而產生的任何損失或損害之責任。使用者應自行承擔使用本程式的風險。\n如有任何疑問，請參閱香港馬會網站上的相關條款。＊＊＊</string>
+    <string name="disclaimer1">＊＊＊本程式所有資料只供參考，敬請查看香港賽馬會之公佈。＊＊＊</string>
 </resources>

@@ -43,7 +43,7 @@ class ConnectURLThread(database: M6Db, val cacheDir: File, val lang: String) : T
         var sd = "19930101"
         cacheDir.listFiles()?.find { it.name == "getAll2275520674976205633.json" }?.let {
             val temp = gson.fromJson(it.readText(), DrawResultArray::class.java)
-            drawResultDao.insertOrIgnoreAll(*temp.distinct().toTypedArray())
+            drawResultDao.insertOrIgnore(*temp.distinct().toTypedArray())
             it.delete()
         }
         drawResultDao.getLatest().let { sd = DayYearConverter.getJson.format(it.date) }
@@ -71,12 +71,12 @@ class ConnectURLThread(database: M6Db, val cacheDir: File, val lang: String) : T
         }
         arrResult.sortBy { it.date }
 //        File.createTempFile("getAll", ".json", cacheDir).writeText(gson.toJson(arrResult))
-        drawResultDao.insertOrIgnoreAll(*arrResult.distinct().toTypedArray())
+        drawResultDao.insertOrIgnore(*arrResult.distinct().toTypedArray())
 
         val failstr = TAG_ALL.filter {
             val (res, doc) = getUrlContent(it, mapOf("lang" to lang))
             if(res.code== HttpURLConnection.HTTP_OK) {
-                res.let { itm ->
+                res.let { _ ->
                     /*println*/(when (it) {
                     TAG_INDEX -> {
                         val data = runIndex(doc)

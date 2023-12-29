@@ -5,6 +5,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+        storeFile file('/home/cmlee/Documents/projects/android_keys/marksix.jks')
+            storePassword 'marksix1234'
+            keyAlias 'key0'
+            keyPassword 'm61234'
+        }
+    }
     namespace 'com.cmlee.executiful.letswinmarksix'
     compileSdk 33
 
@@ -20,6 +28,7 @@ android {
 //            useSupportLibrary true
 //        }
         setProperty("archivesBaseName", "${projectName}${String.format('-v%04d', versionCode)}(${versionName})-${buildTime}")
+        signingConfig signingConfigs.release
     }
 
     buildTypes {
