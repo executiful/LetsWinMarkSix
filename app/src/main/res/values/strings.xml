@@ -42,7 +42,7 @@
     <string name="action_save">保存</string>
     <string name="action_list_saved">列出保存</string>
     <string name="message_save">已儲存</string>
-    <string name="action_previous_next_draw">上期/下期 攪珠</string>
+    <string name="action_previous_next_draw">上期／下期 攪珠</string>
     <string name="sunday">日\u2003</string>
     <string name="monday">一\u2003</string>
     <string name="tuesday">二\u2003</string>
@@ -80,4 +80,7 @@
     <string name="chprize_7th">七奬</string>
     <string name="disclaimer">＊＊＊本程式所提供的香港馬會六合彩資料僅供參考之用，並不保證其正確性、完整性、及時性或適用性。作者不承擔任何因使用本程式而產生的任何損失或損害之責任。使用者應自行承擔使用本程式的風險。\n如有任何疑問，請參閱香港馬會網站上的相關條款。＊＊＊</string>
     <string name="disclaimer1">＊＊＊本程式所有資料只供參考，敬請查看香港賽馬會之公佈。＊＊＊</string>
+    <string name="action_disclaimer">免責聲明</string>
+    <string name="copy2clipboard">剪貼薄</string>
+    <string name="replace_numbers">取代</string>
 </resources>

@@ -2,13 +2,14 @@ package com.cmlee.executiful.letswinmarksix
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -47,20 +48,12 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT_UPDATE
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.UpdateLatestDraw
-import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.jsonDate
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.sqlDate
-import com.cmlee.executiful.letswinmarksix.helper.NoArrayConverter
-import com.cmlee.executiful.letswinmarksix.helper.UnitPriceConverter
-import com.cmlee.executiful.letswinmarksix.helper.WinningUnitConverter
 import com.cmlee.executiful.letswinmarksix.model.DrawStatus
-import com.cmlee.executiful.letswinmarksix.model.NoArray
 import com.cmlee.executiful.letswinmarksix.model.NumStat
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
-import com.cmlee.executiful.letswinmarksix.model.UnitPrice
-import com.cmlee.executiful.letswinmarksix.model.WinningUnit
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
-import com.google.gson.GsonBuilder
 import java.lang.Math.random
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -95,19 +88,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             .setOnCancelListener { it.dismiss() }.create()
 //        pauseDlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
         pauseDlg.setCanceledOnTouchOutside(false)
-//            val readText = BufferedReader(InputStreamReader(resources.openRawResource(R.raw.hkscs2016))).readText()
-//            val fromJson = Gson().fromJson(readText, hkscs::class.java)
-//            println(fromJson.filter { it.hkscsVer == 2016 }.joinToString { "'${it.char}'" })
-//    val associateBy = fromJson.associateBy { it.codepoint }
-//    val dao = ChinesePhraseDB.getDatabase(this).ChineseCharDao()
-//    val chineseChars = dao.getAll()
-//    chineseChars.take(20).forEach {
-//        val pronunciation = dao.getPronunciation(it.cc)
-//        println(pronunciation.joinToString { it.fcode })
-//        val cv = dao.getcj(it.cc)
-//        val ch = associateBy[it.cc.toString(16).uppercase()]
-//        println("IME : ${cv.cangjie}")
-//    }
 /*
         Handler(mainLooper).post {
             cacheDir.listFiles()?.forEach {
@@ -184,10 +164,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                             .setNegativeButton(android.R.string.cancel) { _, _ -> }
                         if(currentStatus!=DrawStatus.UnClassify&&!getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(
                                 msgNumbers)) {
-                            dlg.setPositiveButton(R.string.action_save_n_redraw) { _, _ ->
+                            dlg/*.setPositiveButton(R.string.action_save_n_redraw) { _, _ ->
                                 saveEntry()
                                 refresh()
-                            }
+                            }*/
                                 .setNeutralButton(R.string.action_redraw) { _, _ ->
                                     refresh()
                                 }
@@ -224,7 +204,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 R.id.action_past -> {
                     show_checking()
                 }
-
+                R.id.action_disclaimer ->{
+                    AlertDialog.Builder(this).setMessage(R.string.disclaimer).setTitle(R.string.action_disclaimer).show()
+                    true
+                }
                 R.id.action_draw_schedule -> {
                     show_draw_schedule()
                 }
@@ -256,13 +239,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
                     val dao = M6Db.getDatabase(this).DrawResultDao()
 
-//                    dao.getAll().sortedByDescending { it.date }.take(1).forEach {
-//                        dao.delete(it)
-//                    }
-/*                    cacheDir.listFiles()?.find { it.name.startsWith("source") }?.let {
-                        val rs = gson.fromJson(it.readText(), DrawResultArray::class.java)
-                        dao.insertOrIgnore(*rs.toTypedArray())
-                    }*/
                     val results = dao.getAll()
 //                    File.createTempFile("source", ".json", cacheDir).writeText(gson.toJson(results, DrawResultArray::class.java))
                     results.groupBy { it.id.substring(0,2) }.entries.parallelStream().forEach {
@@ -287,7 +263,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }.show().setOnCancelListener {
                         pauseDlg.show()
                     }
-
                     true
                 }
                 R.id.action_list_saved->{
@@ -314,7 +289,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         }
                     }.setNeutralButton(android.R.string.cancel) { dlg, _ ->
                         dlg.dismiss()
-                    }.setPositiveButton(if(originalballs.any { it.status!=NumStat.NUMSTATUS.UNSEL }) R.string.message_replace else android.R.string.copy)  { dlg, _ ->
+                    }.setPositiveButton(if(originalballs.any { it.status!=NumStat.NUMSTATUS.UNSEL }) R.string.message_replace else R.string.replace_numbers)  { dlg, _ ->
                         val selectedPosition = dlg.ListView().checkedItemPosition
                         if(dlg.ListView().indices.contains(selectedPosition)) {
                             val strings = adp.getItem(selectedPosition)?.split('>') ?: listOf()
@@ -323,8 +298,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                             val bnums = if (strings.size > 1) cnv2Int(strings.first()) else listOf()
 
                             originalballs.parallelStream()
-                                .forEach {
-                                    it.status = when (it.num) {
+                                .forEach { item ->
+                                    item.status = when (item.num) {
                                         in lnums -> NumStat.NUMSTATUS.LEG
                                         in bnums -> NumStat.NUMSTATUS.BANKER
                                         else -> NumStat.NUMSTATUS.UNSEL
@@ -350,10 +325,14 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             val dlg = AlertDialog.Builder(this)
                 .setTitle(msgCalc).setMessage(msgNumbers)
             if (!(currentStatus == DrawStatus.UnClassify || getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(msgNumbers)))
-                dlg.setPositiveButton(R.string.action_save) { d, _ ->
+                dlg.setPositiveButton(R.string.copy2clipboard) { d, _ ->
                 d.dismiss()
-                saveEntry()
-            }
+//                saveEntry()
+
+                    val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText("label", msgNumbers)
+                    clipboard.setPrimaryClip(clip)
+                }
             dlg.show()
         }
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
@@ -365,17 +344,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             binding.idBallselect.addView(it.root, layoutParams)
             balldata(it, numberordering[index])
 
-/*            it.idSwitch.setFactory {
-                val iv = ImageFilterView(applicationContext)
-                iv.layoutParams = FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT
-                )
-                iv.scaleType = ImageView.ScaleType.FIT_CENTER
-                iv.background =
-                    AppCompatResources.getDrawable(this, android.R.color.holo_orange_light)
-                iv
-            }*/
             it.idBallnumber.setOnClickListener {
                 updateball(index)
             }
@@ -478,9 +446,9 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             ssb.append("$name$nbsp： ")
 
             start = ssb.length
-            if(name.contains("多寶")&&value.equals("-")){
-                ssb.append(dotdotdot)
-            } else
+//            if(name.contains("多寶")&&value.equals("-")){
+//                ssb.append(dotdotdot)
+//            } else
                 ssb.append(value)
             ssb.setSpan(TextAppearanceSpan(this, R.style.money), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             if(name.contains('金') || name.contains('奬')) {
@@ -557,28 +525,29 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     ssb.length,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
-                ssb.appendLine().appendLine()
-                start = ssb.length
-                val updateat = sf.getString(KEY_NEXT_UPDATE, "--") ?: "--"
-                ssb.append("更新時間　：　$updateat").setSpan(
-                    AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
-                    start,
-                    ssb.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-                ssb.setSpan(
-                    TextAppearanceSpan(this, android.R.style.TextAppearance_Small),
-                    start,
-                    ssb.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
             }
             println("更新:$ssb")
         }
-        ssb.appendLine()
+        ssb.appendLine().appendLine()
         start = ssb.length
-        ssb.append(getText(R.string.disclaimer))
-        ssb.setSpan(TextAppearanceSpan(this, android.R.style.TextAppearance_Small), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        val updateat = sf.getString(KEY_NEXT_UPDATE, "--") ?: "--"
+        ssb.append("更新時間　：　$updateat").setSpan(
+            AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
+            start,
+            ssb.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        ssb.setSpan(
+            TextAppearanceSpan(this, android.R.style.TextAppearance_Small),
+            start,
+            ssb.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+//        ssb.appendLine()
+//        start = ssb.length
+//        ssb.append(getText(R.string.disclaimer))
+//        ssb.setSpan(TextAppearanceSpan(this, android.R.style.TextAppearance_Small), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         return ssb
     }
     private fun show_draw_schedule(): Boolean {
@@ -700,9 +669,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }
                 }
             }
-//            m6b.idSwitch.showNext()
-//            m6b.idBackground.rotation += listOf(15, 25, 30, -15, -25, -30).sortedBy { random() }.first()
-//            m6b.idBallnumber.rotation = m6b.idBackground.rotation
             updateStatus()
         }
         return item
@@ -767,6 +733,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
     fun initball(){
         if(System.currentTimeMillis() > lastInitMilliSec+ minInitMillSec) {
+            genBall(numberordering)
             Handler(Looper.getMainLooper()).post {
                 waitDlg {d->
                     numberordering.indices.toList().parallelStream().forEach {

@@ -18,8 +18,13 @@ interface DrawResultDao {
     fun find(): DrawResult
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertOrIgnore(vararg drawResults: DrawResult)
+    fun insertOrReplace(vararg drawResults: DrawResult)
 
+    @Query("SELECT last_insert_rowid()")
+    fun lastInsertRowId():Int
+
+    @Query("SELECT id FROM DrawResult WHERE rowid = last_insert_rowid()")
+    fun lastInsertId() : String
 //    @Insert(onConflict = OnConflictStrategy.IGNORE)
 //    fun _insertOrIgnoreAll(vararg drawResults: DrawResult)
 

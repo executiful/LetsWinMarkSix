@@ -7,7 +7,6 @@ import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import com.cmlee.executiful.letswinmarksix.BuildConfig
-import com.cmlee.executiful.letswinmarksix.helper.ConnectURLThread.Companion.toQuery
 import com.cmlee.executiful.letswinmarksix.model.NoArray
 import com.cmlee.executiful.letswinmarksix.model.UnitPrice
 import com.cmlee.executiful.letswinmarksix.model.WinningUnit
@@ -44,8 +43,11 @@ object ConnectionObject {
     private const val TAG_STATISTICS = "Statistics"
     private const val TAG_JSON = "getJson"
     private const val KEY_FIXTURES = "DrawDateList"
+    fun Map<String, String>.toQuery():String{
+        return this.map{ "${it.key}=${it.value}"}.joinToString("&")
+    }
     const val TAG_INDEX = "index"
-    const val KEY_NEXT_DRAW_DATE = "next_draw_date"
+    private const val KEY_NEXT_DRAW_DATE = "next_draw_date"
     const val KEY_NEXT = "next_draw_data"
     const val KEY_NEXT_UPDATE = "next_date_save_datetime"
     @SuppressLint("SimpleDateFormat")
@@ -168,7 +170,7 @@ object ConnectionObject {
         }
         if(arrResult.isNotEmpty()) {
             arrResult.sortedByDescending { it.date }
-            drawResultDao.insertOrIgnore(*arrResult.distinct().toTypedArray())
+            drawResultDao.insertOrReplace(*arrResult.distinct().toTypedArray())
         }
         return arrResult
     }
@@ -263,22 +265,28 @@ object ConnectionObject {
      * return next_draw_data
      */
     fun getIndex(context: Context, latest: DrawResult) :String?{
-        val sharedPreferences = context.getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
+        val indexsharedPreferences = context.getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
         val now = Calendar.getInstance()
-        sharedPreferences.getString(KEY_NEXT_UPDATE, null)?.let{
+        indexsharedPreferences.getString(KEY_NEXT_UPDATE, null)?.let{
             try {
                 val date = Calendar.getInstance()
                 date.clear()
                 date.time = sdf_now.parse(it)
-                if(date.isEarlyBy(now, Calendar.MINUTE, if(latest.p1==null||(sharedPreferences.getString(KEY_NEXT, "")?:"").contains(latest.id))2 else 15)){
-                    return download_next_draw(sharedPreferences)
+                if(date.isEarlyBy(now, Calendar.MINUTE,
+                        when {
+                            latest.p1==null || (indexsharedPreferences.getString(KEY_NEXT, "")?:"").contains(latest.id) -> 2
+                            (indexsharedPreferences.getString(KEY_NEXT_UPDATE, "")?:"").contains("估計頭獎基金:-")->3
+                            else -> 15
+                        }
+                    )){
+                    return download_next_draw(indexsharedPreferences)
                 }
-                return sharedPreferences.getString(KEY_NEXT, null)
+                return indexsharedPreferences.getString(KEY_NEXT, null)
             } catch (e: Exception){
                 return null
             }
         }
-        return download_next_draw(sharedPreferences)
+        return download_next_draw(indexsharedPreferences)
     }
     fun UpdateLatestDraw(context : Context, exec:(message:String)->Unit){
         val db = M6Db.getDatabase(context)
