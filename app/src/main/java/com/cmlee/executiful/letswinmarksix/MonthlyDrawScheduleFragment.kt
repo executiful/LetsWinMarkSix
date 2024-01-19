@@ -94,7 +94,6 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
         }
         ddates.groupBy { it.first.get(Calendar.MONTH) }.forEach { (i, pairs) ->
             commontv("${i+1}${ensp}月", spec, spec7, MATCH_PARENT)
-            divider()
             "日,一,二,三,四,五,六".split(",").map { "$it$ensp" }.forEach { s ->
                 val week = TextView(requireContext())
                 week.layoutParams = GridLayout.LayoutParams(spec, spec)
@@ -104,6 +103,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                 week.text = s
                 binding.idDates.addView(week)
             }
+            divider()
 
             val step = pairs.first().first.clone() as Calendar
 
@@ -128,7 +128,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                         checked==it.second.jackpot -> {
                             tv.background = AppCompatResources.getDrawable(
                                 requireContext(),
-                                R.drawable.icon_snowball
+                                R.drawable.dayborder
                             )
                         }
                         checked==it.second.draw -> {
