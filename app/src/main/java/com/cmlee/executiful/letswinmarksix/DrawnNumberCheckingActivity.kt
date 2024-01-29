@@ -2,18 +2,23 @@ package com.cmlee.executiful.letswinmarksix
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.SuperscriptSpan
+import android.text.style.TextAppearanceSpan
 import android.text.style.UnderlineSpan
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.bankers
@@ -23,6 +28,7 @@ import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgNumbers
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityDrawnNumberCheckingBinding
 import com.cmlee.executiful.letswinmarksix.databinding.DrawnListItemBinding
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.UpdateLatestDraw
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.sqlDate
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
@@ -46,8 +52,6 @@ private lateinit var db:M6Db
         }
     }
     class DrawnVH(val item:DrawnListItemBinding):RecyclerView.ViewHolder(item.root){
-//        private val intersect = bankers.plus(legs)
-//@SuppressLint("SuspiciousIndentation")
     fun setnum(context: Context, c: Button, i: Int, match:Boolean) {
         val sp = SpannableString(i.toString())
         if (match) {
@@ -90,12 +94,11 @@ private lateinit var db:M6Db
         override fun getItemCount() = result.size
     }
 
-    override val adUnitId = AD_UNIT_ID_SAMPLE
+    override val adUnitStringId: Int
+        get() = R.string.admob_drawn_check
 
     override fun onAdLoaded() {
-        TODO("Not yet implemented")
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -114,48 +117,17 @@ private lateinit var db:M6Db
         hr = Handler(ht.looper)
         waitdlg.setOnShowListener {
             hr.post{
-                db = M6Db.getDatabase(this)
-                val allresult = db.DrawResultDao().getAll().filter{ it.date >= dateStart }
-                val max1 = 6-bankers.size
-
-                val gb = allresult.parallelStream().map { rs ->
-                    val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
-                    rs.no.nos.map { it in m6 }.plus( rs.sno in bankers || rs.sno in legs) to rs
-                }.filter {  it.first.take(6).count { it } >=3}.toList().groupBy {
-                    when(it.first.take(6).count{it}){
-                        6->{0}
-                        5->{if(it.first[6]) 1 else 2 }
-                        4->{if(it.first[6]) 3 else 4 }
-                        3->{if(it.first[6]) 5 else 6 }
-                        else ->-1
-                    }
-                }//.filter { it.key>=3 }
-
-//                adps = gb.values.map { DrawnAdapter(it, this) }
-//                val result =
-//                        allresult.parallelStream().map { it.no.nos.intersect(bankers).plus(it.no.nos.intersect(legs).take(max1)) to it }.filter { it.first.size >= 3 }.toList()
-                runOnUiThread{
-                    waitdlg.dismiss()
-//                    binding.idPrizeList.adapter = adps[0]
-                        //DrawnAdapter(result, this)
-                    resources.getStringArray(R.array.prize).forEachIndexed { index, s ->
-                        gb.get(index)?.let {
-                            val ssb = SpannableStringBuilder(s)
-//                            ssb.appendLine()
-
-                            ssb.append("(${it.size})")
-//                            ssb.setSpan(SubscriptSpan(), 3, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-//                            ssb.setSpan(SuperscriptSpan(), 1, 3, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-//                            ssb.setSpan(TextAppearanceSpan(this, android.R.style.TextAppearance_Holo_Small), 3, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                            adps.add(DrawnAdapter(it, this))
-                            val t = binding.tabPrize.newTab().setText(s)
-                            t.text = "$s(${it.size})"
-                            binding.tabPrize.addTab(t)
+                population(waitdlg)
+/*                UpdateLatestDraw(this){
+                    if (it == "OK") {
+                        runOnUiThread {
+                            waitdlg.show()
+                            adps.clear()
+                            binding.tabPrize.removeAllTabs()
                         }
+                        population(waitdlg)
                     }
-
-                    binding.tabPrize.selectTab(binding.tabPrize.getTabAt(0))
-                }
+                }*/
             }
         }
         waitdlg.show()
@@ -169,13 +141,6 @@ private lateinit var db:M6Db
                     val temp = "頭獎 選中6個「攪出號碼」 獎金會因應該期獲中頭獎注數而有所不同，每期頭獎獎金基金\n" +
                             "訂為不少於港幣800萬元。 二獎 選中5個「攪出號碼」+「特別號碼」 獎金會因應該期獲中二獎注數而有所不同 三獎 選中5個「攪出號碼」 獎金會因應該期獲中三獎注數而有所不同 四獎 選中4個「攪出號碼」+「特別號碼」 固定獎金港幣9,600元 五獎 選中4個「攪出號碼」 固定獎金港幣640元 六獎 選中3個「攪出號碼」+「特別號碼」 固定獎金港幣320元 七獎 選中3個「攪出號碼」 固定獎金港幣40元"
                     AlertDialog.Builder(this).setMessage(temp.replace(" ", "\n")
-                        /*                        "頭奬:選中6個號碼\n" +
-                                                    "二奬:5個號碼+特別號碼\n" +
-                                                    "三奬:5個號碼\n" +
-                                                    "四奬:4個號碼+特別號碼\n" +
-                                                    "五奬:4個號碼\n" +
-                                                    "六奬:3個號碼+特別號碼\n" +
-                                                    "七奬:3個號碼\n"*/
                     ).show()
                     true
                 }
@@ -184,6 +149,42 @@ private lateinit var db:M6Db
         }
     }
 
+    fun population(waitdlg: AlertDialog) {
+        db = M6Db.getDatabase(this)
+        val allresult = db.DrawResultDao().getAll().filter{ it.date >= dateStart }
+        val max1 = 6-bankers.size
+
+        val gb = allresult.parallelStream().map { rs ->
+            val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
+            rs.no.nos.map { it in m6 }.plus( rs.sno in bankers || rs.sno in legs) to rs
+        }.filter { f -> f.first.take(6).count { it } >=3 }.toList().groupBy { a ->
+            when(a.first.take(6).count{ it }){
+                6-> 0
+                5-> if(a.first[6]) 1 else 2
+                4-> if(a.first[6]) 3 else 4
+                3-> if(a.first[6]) 5 else 6
+                else -> -1
+            }
+        }
+
+        runOnUiThread{
+            waitdlg.hide()
+            resources.getStringArray(R.array.prize).forEachIndexed { index, s ->
+                gb[index]?.let {
+                    val ssb = SpannableStringBuilder("(${it.size})")
+                    ssb.setSpan(TextAppearanceSpan(this, R.style.countnumber), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    ssb.setSpan(SuperscriptSpan(), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+//                    ssb.setSpan(ForegroundColorSpan(ContextCompat.getColor(this, R.color.count)), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    ssb.insert(0, s)
+                    adps.add(DrawnAdapter(it, this))
+                    val t = binding.tabPrize.newTab().setText(ssb)
+                    t.id = index
+                    binding.tabPrize.addTab(t)
+                }
+            }
+            binding.tabPrize.selectTab(binding.tabPrize.getTabAt(0))
+        }
+    }
     override fun onTabSelected(tab: TabLayout.Tab?) {
         binding.idPrizeList.adapter = adps[tab!!.position]
     }

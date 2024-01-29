@@ -12,4 +12,9 @@ data class DrawDate(
     val jackpot: String,
     @SerializedName("@preSell")
     val preSell: String
-)
+) {
+    companion object{
+        const val checked_value = "1"
+
+    }
+}

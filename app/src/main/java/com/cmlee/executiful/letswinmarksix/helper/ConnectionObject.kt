@@ -11,6 +11,7 @@ import com.cmlee.executiful.letswinmarksix.model.NoArray
 import com.cmlee.executiful.letswinmarksix.model.UnitPrice
 import com.cmlee.executiful.letswinmarksix.model.WinningUnit
 import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawDate
+import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawDate.Companion.checked_value
 import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawYear
 import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawYearItem
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
@@ -43,6 +44,8 @@ object ConnectionObject {
     private const val TAG_STATISTICS = "Statistics"
     private const val TAG_JSON = "getJson"
     private const val KEY_FIXTURES = "DrawDateList"
+    const val indexTD = "|"
+    const val indexTR = "#"
     fun Map<String, String>.toQuery():String{
         return this.map{ "${it.key}=${it.value}"}.joinToString("&")
     }
@@ -213,9 +216,10 @@ object ConnectionObject {
     }
 
     fun getLatestSchecule(context: Context): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
+        val today = Calendar.getInstance()
         val schuPref = context.getSharedPreferences(TAG_FIXTURES, MODE_PRIVATE)
         val commingDDate = getLatestDDate(schuPref)
-        if(commingDDate.first.isEmpty()) {
+        if(commingDDate.first.filter { it.second.draw==checked_value||it.second.preSell==checked_value }.count { it.first>today }< 3) {
             val doc = getJsoupDoc(TAG_FIXTURES, mapOf("lang" to "ch")) ?: return commingDDate
             val regex =
                 Regex("\\s*var\\s*dataJson\\s*=\\s*(.*)\\s*;", RegexOption.DOT_MATCHES_ALL)
@@ -249,7 +253,8 @@ object ConnectionObject {
         }
         m6_div.select(".m6-index-div table:not(:has(table)):has(.snowball1)").first()
             ?.let { tbl ->
-                tbl.getElementsByTag("tr").joinToString(";") {it.getElementsByTag("td").joinToString(":"){ it.text() }  }.run{
+                tbl.getElementsByTag("tr").joinToString(indexTR) {it.getElementsByTag("td").joinToString(
+                    indexTD){ it.text() }  }.run{
                     if(this.isNotEmpty()) {
                         sharedPreferences.edit()
                             .putString(KEY_NEXT, this)
@@ -272,10 +277,11 @@ object ConnectionObject {
                 val date = Calendar.getInstance()
                 date.clear()
                 date.time = sdf_now.parse(it)
+
                 if(date.isEarlyBy(now, Calendar.MINUTE,
                         when {
                             latest.p1==null || (indexsharedPreferences.getString(KEY_NEXT, "")?:"").contains(latest.id) -> 2
-                            (indexsharedPreferences.getString(KEY_NEXT_UPDATE, "")?:"").contains("估計頭獎基金:-")->3
+                            (indexsharedPreferences.getString(KEY_NEXT_UPDATE, "")?:"").contains("估計頭獎基金${indexTD}-")->3
                             else -> 15
                         }
                     )){

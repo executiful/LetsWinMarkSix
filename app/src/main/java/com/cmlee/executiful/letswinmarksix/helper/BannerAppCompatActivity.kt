@@ -25,7 +25,8 @@ abstract class BannerAppCompatActivity : AppCompatActivity() {
         super.onPostCreate(savedInstanceState)
     }
 
-    protected abstract val adUnitId: String
+    val adUnitId get() = getString(adUnitStringId)
+    protected abstract val adUnitStringId:Int
     private fun loadBanner() {
         // Create an ad request.
         adView = AdView(this)

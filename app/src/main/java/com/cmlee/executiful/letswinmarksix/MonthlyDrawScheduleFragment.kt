@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.ensp
 import com.cmlee.executiful.letswinmarksix.databinding.FragmentMonthlyDrawScheduleBinding
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject
+import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawDate.Companion.checked_value
 import java.util.Calendar
 
 // TODO: Rename parameter arguments, choose names that match
@@ -86,7 +87,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
             }
         }
         today.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
-        val ddates = allddates.filter { it.first >= today && it.first <= allddates.last{ it.second.draw == checked}.first }
+        val ddates = allddates.filter { it.first >= today && it.first <= allddates.last{ that-> that.second.draw == checked_value}.first }
         divider()
         if (ddates.isEmpty()) {
             commontv(getString(R.string.nothing_to_show), spec, spec7, MATCH_PARENT)
@@ -119,22 +120,22 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                 pairs.find { it.first == step }?.let {
                     tv.isEnabled = true
                     when {
-                        checked==it.second.draw && checked ==it.second.preSell -> {
+                        checked_value==it.second.draw && checked_value ==it.second.preSell -> {
                             //todo
                         }
-                        checked==it.second.preSell -> {
+                        checked_value==it.second.preSell -> {
                             //todo
                         }
-                        checked==it.second.jackpot -> {
+                        checked_value==it.second.jackpot -> {
                             tv.background = AppCompatResources.getDrawable(
                                 requireContext(),
                                 R.drawable.dayborder
                             )
                         }
-                        checked==it.second.draw -> {
+                        checked_value==it.second.draw -> {
                             tv.isSelected = true
                         }
-                        checked!=it.second.draw -> {
+                        checked_value!=it.second.draw -> {
                             sptext.setSpan(StrikethroughSpan(), 0, sptext.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
                     }
@@ -156,7 +157,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
     }
 
     companion object {
-        private const val checked = "1"
+//        private const val checked = "1"
         /**
          * Use this factory method to create a new instance of
          * this fragment using the provided parameters.

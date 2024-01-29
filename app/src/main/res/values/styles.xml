@@ -150,7 +150,7 @@
 <!--        <item name="android:textSize">@dimen/key_text_size</item>-->
         <!--        <item name="android:textColor">@color/orange</item>-->
         <item name="hintEnabled">false</item>
-        <item name="android:textAllCaps">false</item>
+        <item name="android:textAllCaps">false</item>x
     </style>
 
     <style name="AppTabLayout" parent="Widget.MaterialComponents.TabLayout.PrimarySurface">
@@ -165,5 +165,8 @@
         <item name="tabTextAppearance">@style/AppTabTextAppearance</item>
         <!--        <item name="tabIndicatorHeight">@dimen/margin_general</item>-->
         <!--        <item name="tabSelectedTextColor">@color/color_blue</item>-->
+    </style>
+    <style name="countnumber" parent="TextAppearance.AppCompat.Small">
+        <item name="android:textColor">@color/count</item>
     </style>
 </resources>

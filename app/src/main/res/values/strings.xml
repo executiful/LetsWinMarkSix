@@ -5,6 +5,9 @@
     <string name="lang">en</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="admob_app_id_sample" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="admob_app_id" translatable="false">ca-app-pub-1262158213182717~5166009225</string>
+    <string name="admob_m6_lottery" translatable="false">ca-app-pub-1262158213182717/2116377895</string>
+    <string name="admob_drawn_check" translatable="false">ca-app-pub-1262158213182717/9771506630</string>
 
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
 
