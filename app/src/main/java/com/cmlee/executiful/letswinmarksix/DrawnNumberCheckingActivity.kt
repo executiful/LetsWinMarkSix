@@ -25,6 +25,7 @@ import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.bankers
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.dateStart
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.legs
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgNumbers
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.thinsp
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityDrawnNumberCheckingBinding
 import com.cmlee.executiful.letswinmarksix.databinding.DrawnListItemBinding
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
@@ -171,10 +172,11 @@ private lateinit var db:M6Db
             waitdlg.hide()
             resources.getStringArray(R.array.prize).forEachIndexed { index, s ->
                 gb[index]?.let {
-                    val ssb = SpannableStringBuilder("(${it.size})")
+                    val ssb = SpannableStringBuilder("${thinsp}(${it.size})")
                     ssb.setSpan(TextAppearanceSpan(this, R.style.countnumber), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    ssb.setSpan(SuperscriptSpan(), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+//                    ssb.setSpan(SuperscriptSpan(), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 //                    ssb.setSpan(ForegroundColorSpan(ContextCompat.getColor(this, R.color.count)), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
                     ssb.insert(0, s)
                     adps.add(DrawnAdapter(it, this))
                     val t = binding.tabPrize.newTab().setText(ssb)

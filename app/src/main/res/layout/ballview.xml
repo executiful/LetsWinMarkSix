@@ -78,7 +78,6 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/ball_radius"
             android:gravity="start|bottom"
-            android:textColor="@color/black"
             android:text="888"
             android:textSize="@dimen/stat_txt_size"
             app:layout_constraintBottom_toBottomOf="parent"

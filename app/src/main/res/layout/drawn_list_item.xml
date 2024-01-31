@@ -4,21 +4,24 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="50dp"
-    app:cardCornerRadius="10dp"
-    app:strokeColor="?colorControlNormal"
-    app:strokeWidth="1dp">
+    android:layout_margin="0dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    app:cardMaxElevation="0dp"
+    app:cardPreventCornerOverlap="true"
+    app:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_margin="5dp"
         android:orientation="vertical">
 
         <TextView
             android:id="@+id/id_date"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:text="TextView" />
 
         <LinearLayout

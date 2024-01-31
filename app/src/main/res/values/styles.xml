@@ -160,13 +160,13 @@
         <!--        <item name="tabPaddingStart">6dp</item>-->
         <!--        <item name="tabPaddingEnd">6dp</item>-->
         <item name="tabMode">fixed</item>
-        <item name="tabGravity">center</item>
+        <item name="tabGravity">fill</item>
         <!--        <item name="tabBackground">?attr/boxBackgroundColor</item>-->
         <item name="tabTextAppearance">@style/AppTabTextAppearance</item>
         <!--        <item name="tabIndicatorHeight">@dimen/margin_general</item>-->
         <!--        <item name="tabSelectedTextColor">@color/color_blue</item>-->
     </style>
-    <style name="countnumber" parent="TextAppearance.AppCompat.Small">
+    <style name="countnumber" parent="TextAppearance.Material3.LabelSmall">
         <item name="android:textColor">@color/count</item>
     </style>
 </resources>

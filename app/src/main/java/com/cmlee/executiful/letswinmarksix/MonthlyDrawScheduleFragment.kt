@@ -16,6 +16,7 @@ import android.widget.GridLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
 import androidx.core.view.isEmpty
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -71,7 +72,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                 val lp = GridLayout.LayoutParams(spec, spec7)
                 lp.width = MATCH_PARENT
                 lp.height = 2
-                it.setBackgroundColor(Color.RED)
+                it.setBackgroundColor(ContextCompat.getColor(requireContext(), com.google.android.material.R.color.design_default_color_primary))
                 binding.idDates.addView(it, lp)
             }
         }
@@ -105,11 +106,13 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                 binding.idDates.addView(week)
             }
             divider()
+            val lastdayofmonth = pairs.first().first.clone() as Calendar
+            lastdayofmonth.set(Calendar.DATE,pairs.first().first.getActualMaximum(Calendar.DAY_OF_MONTH))
 
             val step = pairs.first().first.clone() as Calendar
 
             step.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
-            while (step <= pairs.last().first) {
+            while (step <= lastdayofmonth) {
                 val layoutParams = GridLayout.LayoutParams(spec, spec)
                 layoutParams.width = 0
                 layoutParams.height = WRAP_CONTENT

@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">六合彩好手氣</string>
-    <string name="action_settings" translatable="false">Settings</string>
+    <string name="action_settings" translatable="false">\u22EE</string>
     <string name="todo" translatable="false">notTODO</string>
     <string name="lang">en</string>
     <!-- TODO: Remove or change this placeholder text -->
@@ -25,7 +25,9 @@
     <string name="str_banker">膽</string>
     <string name="beside" translatable="false">&lt; %1$s &gt;</string>
     <string name="ask_select">選下方其中一個單或雙</string>
-    <string name="bankerexceeded">膽的數目多於5</string>
+    <string name="msg_too_many_banker">膽的數目多於5。</string>
+    <string name="msg_incomplete_single">最少選六個號碼成為一注，即單式。</string>
+    <string name="msg_incomplete_banker">膽和腳總數不可少於七個號碼。</string>
     <string name="singledraw">單式</string>
     <string name="unclassifydraw">注數：&#8212; (%1$d膽，%2$d腳)</string>
     <string name="multipledraw">複式，%1$d注 (%2$d)</string>
@@ -40,7 +42,6 @@
         This is an ad unit ID for an interstitial test ad. Replace with your own interstitial ad unit id.
         For more information, see https://support.google.com/admob/answer/3052638
     <!- -->
-    <string name="interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string>
     <string name="drawn_number_checking">核對過往攪珠</string>
     <string name="action_save">保存</string>
     <string name="action_list_saved">列出保存</string>
@@ -60,8 +61,8 @@
     <string name="info_redraw">重新攪珠:49號碼(7行7列)随機排序，並隱藏號碼。</string>
     <string name="action_save_n_redraw">先保存，後重新</string>
     <string name="how_to_start">如何使用此程式</string>
-    <string name="draw_number">攪珠期數%1$s</string>
-    <string name="draw_date">攪珠日期%1$s</string>
+    <string name="draw_number">攪珠期數 %1$s</string>
+    <string name="draw_date">攪珠日期 %1$s</string>
     <string name="title_activity_splash_screen">SplashScreen</string>
     <string name="nothing_to_show">無法下載相關資料！</string>
     <string name="prizeof">%1$s奬項</string>

@@ -156,8 +156,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             menu.findItem(R.id.action_info)?.isVisible= BuildConfig.DEBUG //visible if is debug
         }
 
-        binding.toolbar.setOnMenuItemClickListener {
-            when (it.itemId) {
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
                 R.id.action_generate -> {
                     if(originalballs.any{it.status!=NumStat.NUMSTATUS.UNSEL}) {
                         val dlg = AlertDialog.Builder(this).setMessage(R.string.action_redraw)
@@ -576,8 +576,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     }
     private fun show_draw_schedule(): Boolean {
         if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
-            val monthlyDrawScheduleFragment = MonthlyDrawScheduleFragment.newInstance()
-            monthlyDrawScheduleFragment.show(supportFragmentManager.beginTransaction(), TAG_BALL_DIALOG)
+            hr.post {
+                val monthlyDrawScheduleFragment = MonthlyDrawScheduleFragment.newInstance()
+                monthlyDrawScheduleFragment.show(supportFragmentManager.beginTransaction(), TAG_BALL_DIALOG)
+            }
         }
         return true
     }
@@ -809,7 +811,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     fun calcDrawStatus(leg: Int, ban: Int): Pair<DrawStatus, Int> {
         msgNumbers = "+"
         if (ban > 5) {
-            msgCalc = getString(R.string.bankerexceeded)
+            msgCalc = getString(R.string.unclassifydraw, ban, leg)
+            msgNumbers = getString(R.string.msg_too_many_banker)
             return DrawStatus.UnClassify to 0
         }
         if (leg + ban < 7) return if (leg == 6) {
@@ -818,6 +821,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             DrawStatus.Single to 1
         } else {
             msgCalc = getString(R.string.unclassifydraw, ban, leg)
+            msgNumbers = if(ban==0) getString(R.string.msg_incomplete_single) else getString(R.string.msg_incomplete_banker)
             DrawStatus.UnClassify to 0
         }
         val x = 6 - ban

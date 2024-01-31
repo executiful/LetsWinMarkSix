@@ -219,7 +219,8 @@ object ConnectionObject {
         val today = Calendar.getInstance()
         val schuPref = context.getSharedPreferences(TAG_FIXTURES, MODE_PRIVATE)
         val commingDDate = getLatestDDate(schuPref)
-        if(commingDDate.first.filter { it.second.draw==checked_value||it.second.preSell==checked_value }.count { it.first>today }< 3) {
+        if(commingDDate.first.isEmpty() ||
+            commingDDate.first.filter { it.second.draw==checked_value||it.second.preSell==checked_value }.count { it.first>today }< 3) {
             val doc = getJsoupDoc(TAG_FIXTURES, mapOf("lang" to "ch")) ?: return commingDDate
             val regex =
                 Regex("\\s*var\\s*dataJson\\s*=\\s*(.*)\\s*;", RegexOption.DOT_MATCHES_ALL)
