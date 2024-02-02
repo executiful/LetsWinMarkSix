@@ -55,11 +55,7 @@ private lateinit var db:M6Db
     class DrawnVH(val item:DrawnListItemBinding):RecyclerView.ViewHolder(item.root){
     fun setnum(context: Context, c: Button, i: Int, match:Boolean) {
         val sp = SpannableString(i.toString())
-        if (match) {
-            sp.setSpan(UnderlineSpan(), 0, sp.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        } else {
-            c.setTextColor(ContextCompat.getColor(context, android.R.color.darker_gray))
-        }
+        c.isSelected = match
         c.text = sp
         c.backgroundTintList =
             ColorStateList(arrayOf(intArrayOf(android.R.attr.state_enabled)), intArrayOf(i.BallColor()))

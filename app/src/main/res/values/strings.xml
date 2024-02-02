@@ -26,8 +26,8 @@
     <string name="beside" translatable="false">&lt; %1$s &gt;</string>
     <string name="ask_select">選下方其中一個單或雙</string>
     <string name="msg_too_many_banker">膽的數目多於5。</string>
-    <string name="msg_incomplete_single">最少選六個號碼成為一注，即單式。</string>
-    <string name="msg_incomplete_banker">膽和腳總數不可少於七個號碼。</string>
+    <string name="msg_incomplete_single">單式或複式最少選六個號碼。</string>
+    <string name="msg_incomplete_banker">膽拖的膽和腳總數不可少於七個號碼。</string>
     <string name="singledraw">單式</string>
     <string name="unclassifydraw">注數：&#8212; (%1$d膽，%2$d腳)</string>
     <string name="multipledraw">複式，%1$d注 (%2$d)</string>

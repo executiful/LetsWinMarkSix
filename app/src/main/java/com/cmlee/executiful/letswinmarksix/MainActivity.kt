@@ -44,6 +44,7 @@ import com.cmlee.executiful.letswinmarksix.databinding.NumberTextviewBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.ListView
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT_UPDATE
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
@@ -336,6 +337,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
             dlg.show()
         }
+        binding.ticketlayout.idTicket.setOnLongClickListener {
+            if (currentStatus != DrawStatus.UnClassify)
+                show_checking()
+            else false
+        }
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         genBall(numberordering)
         m6bViews.forEachIndexed { index, it ->
@@ -344,7 +350,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             layoutParams.height = 0
             binding.idBallselect.addView(it.root, layoutParams)
             balldata(it, numberordering[index])
-
+//it.idDrawtype.text=""
             it.idBallnumber.setOnClickListener {
                 updateball(index)
             }
@@ -513,7 +519,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
         if(sf.all.isEmpty()) {
             start = ssb.length
-            ssb.append("${getString(R.string.nothing_to_show)}").setSpan(
+            ssb.append(getString(R.string.nothing_to_show)).setSpan(
                 AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
                 start,
                 ssb.length,
@@ -577,9 +583,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private fun show_draw_schedule(): Boolean {
         if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
             hr.post {
-                val monthlyDrawScheduleFragment = MonthlyDrawScheduleFragment.newInstance()
-                monthlyDrawScheduleFragment.show(supportFragmentManager.beginTransaction(), TAG_BALL_DIALOG)
+                ConnectionObject.getLatestSchecule(this)
             }
+            val monthlyDrawScheduleFragment = MonthlyDrawScheduleFragment.newInstance()
+            monthlyDrawScheduleFragment.show(supportFragmentManager.beginTransaction(), TAG_BALL_DIALOG)
         }
         return true
     }
@@ -668,12 +675,14 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //                    nxv.setImageResource(R.drawable.ic_baseline_push_pin_24)
                     item.status = NumStat.NUMSTATUS.BANKER
                     updatemark(leg, banker)
+//                    m6b.idDrawtype.text = "B"
                 }
 
                 NumStat.NUMSTATUS.BANKER -> {
 //                    nxv.setImageResource(R.drawable.ic_baseline_star_24)
                     item.status = NumStat.NUMSTATUS.LEG
                     updatemark(banker, leg)
+//                    m6b.idDrawtype.text = "L"
                 }
 
                 NumStat.NUMSTATUS.UNSEL -> {
@@ -686,13 +695,14 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }
 
                     val targets = originalballs.filter { (item.idx + 1 == it.idx || item.idx - 1 == it.idx) &&it.status == NumStat.NUMSTATUS.UNSEL}
-                    targets.forEach {
-                            println("中招號碼 ${numberordering.indexOf(it)}")
-
-                    }
+//                    targets.forEach {
+//                            println("中招號碼 ${numberordering.indexOf(it)}")
+//
+//                    }
                     targets.forEach {
                         m6bViews[numberordering.indexOf(it)].imageBeside.isVisible = true
                     }
+//                    m6b.idDrawtype.text="L"
                 }
             }
             updateStatus()
