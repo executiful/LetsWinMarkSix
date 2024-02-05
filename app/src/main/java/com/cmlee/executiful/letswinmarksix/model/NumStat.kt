@@ -1,6 +1,6 @@
 package com.cmlee.executiful.letswinmarksix.model
 
-import android.graphics.Color
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.ballcolor
 import java.io.Serializable
 
 
@@ -16,6 +16,8 @@ data class NumStat(val num: Int, val idx: Int, var times: Int = 0, var since: In
         BANKER(222),
         UNSEL(0)
     }
+    val color get() =
+        ballcolor[num]
 
     val numString get() = if (status == NUMSTATUS.UNSEL) if (num % 2 == 0) "雙" else "單" else "$num"
     override fun toString(): String {
@@ -24,11 +26,11 @@ data class NumStat(val num: Int, val idx: Int, var times: Int = 0, var since: In
     }
 
     companion object {
-        fun Int.BallColor() =
-            when ((this % 2 + this) % 3) {
+        fun Int.BallColor() = ballcolor[this]!!
+/*            when ((this % 2 + this) % 3) {
                 0 -> Color.GREEN
                 1 -> Color.BLUE
                 else -> Color.RED
-            }
+            }*/
     }
 }

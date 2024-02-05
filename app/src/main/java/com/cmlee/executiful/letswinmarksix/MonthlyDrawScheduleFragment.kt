@@ -1,7 +1,6 @@
 package com.cmlee.executiful.letswinmarksix
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned

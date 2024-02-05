@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.Animatable2
@@ -38,7 +39,7 @@ import androidx.core.view.isVisible
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.TAG_BALL_DIALOG
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.newInstance
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityMainBinding
-import com.cmlee.executiful.letswinmarksix.databinding.BallviewBinding
+import com.cmlee.executiful.letswinmarksix.databinding.BallBinding
 import com.cmlee.executiful.letswinmarksix.databinding.ColumnOfNumberBinding
 import com.cmlee.executiful.letswinmarksix.databinding.NumberTextviewBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.ListView
@@ -67,7 +68,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private lateinit var binding: ActivityMainBinding
     private lateinit var legViews: List<NumberTextviewBinding>
     private lateinit var bankerViews: List<NumberTextviewBinding>
-    private lateinit var m6bViews: List<BallviewBinding>
+    private lateinit var m6bViews: List<BallBinding>
     private lateinit var pauseDlg : AlertDialog
 
     private val ht = HandlerThread("m6thread")
@@ -130,7 +131,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         originalballs.also {
             legViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
             bankerViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
-            m6bViews = it.map { BallviewBinding.inflate(layoutInflater) }
+            m6bViews = it.map { BallBinding.inflate(layoutInflater) }
             val iterator = it.map{it.num.toString()}.withIndex().iterator()
             while (iterator.hasNext()) {
                 val numB =
@@ -351,11 +352,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             binding.idBallselect.addView(it.root, layoutParams)
             balldata(it, numberordering[index])
 //it.idDrawtype.text=""
-            it.idBallnumber.setOnClickListener {
+            it.idNumber.setOnClickListener {
                 updateball(index)
             }
             if(BuildConfig.DEBUG){
-                it.idBallnumber.setOnLongClickListener {
+                it.idNumber.setOnLongClickListener {
                     if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
                         val phraseDialog = newInstance(index)
                         phraseDialog.show(
@@ -385,9 +386,17 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
     }
 
-    private fun balldata(view: BallviewBinding, item: NumStat) {
+    private fun balldata(view: BallBinding, item: NumStat) {
         with(view){
-            idBackground.setColorFilter(item.num.BallColor())
+//            idNumber.setBackgroundColor(item.num.BallColor())
+            "${item.since}\n${item.times}".also { idStatistics.text = it }
+            idNumber.text = item.numString
+            idNumber.backgroundTintList =
+                ColorStateList(
+                    DrawnNumberCheckingActivity.DrawnVH.colors,
+                    intArrayOf(item.num.BallColor())
+                )
+/*            idBackground.setColorFilter(item.num.BallColor())
             idBackground.rotation = angle
             angle += 10
             val temp = (2 * minTimes / 5)
@@ -396,6 +405,15 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             idTimes.text = (item.times).toString()
             idSince.text = item.since.toString()
             idBallnumber.text = item.numString
+            idBallinfo.strokeColor =
+                ContextCompat.getColor(
+                    this@MainActivity, when (item.status) {
+                        NumStat.NUMSTATUS.LEG -> R.color.color_ticket_banker
+                        NumStat.NUMSTATUS.BANKER -> R.color.gold
+                        NumStat.NUMSTATUS.UNSEL -> android.R.color.transparent
+                    }
+                )*/
+
         }
     }
 
@@ -449,6 +467,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //            if(name.contains("多寶")&&value.equals("-")){
 //                ssb.append(dotdotdot)
 //            } else
+//        ssb.append(value)
         ssb.append(value)
         ssb.setSpan(TextAppearanceSpan(this, R.style.money), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         if(name.contains('金') || name.contains('奬')) {
@@ -638,10 +657,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //        val nxv: ImageFilterView = m6b.idSwitch.nextView as ImageFilterView
 //        m6b.idBallinfo.strokeColor = item.num.BallColor()
         if (reset) {
-            m6b.idProgress.max = maxTimes + (minTimes/2.0).toInt()
+/*            m6b.idProgress.max = maxTimes + (minTimes/2.0).toInt()
             m6b.idProgress.progress = item.times// - minTimes
             m6b.idTimes.text = item.times.toString()
-            m6b.idSince.text = item.since.toString()
+            m6b.idSince.text = item.since.toString()*/
 //            m6b.idSwitch.showNext()
             banker.idBackground.setImageResource(R.drawable.ticket_number)
             leg.idBackground.setImageResource(R.drawable.ticket_number)
@@ -666,10 +685,12 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             item.status = NumStat.NUMSTATUS.UNSEL
 //            m6b.idSwitch.showNext()
 //            m6b.idBallinfo.strokeColor = item.num.BallColor()
-            m6b.idBackground.setColorFilter(item.num.BallColor())
-            m6b.idBallnumber.text = item.numString
+/*            m6b.idBackground.setColorFilter(item.num.BallColor())
+            m6b.idBallnumber.text = item.numString*/
+            m6b.idNumber.text=item.numString
+//            m6b.idNumber.setBackgroundColor(item.num.BallColor())
         } else {
-            m6b.imageBeside.isVisible = false
+//            m6b.imageBeside.isVisible = false
             when (item.status) {
                 NumStat.NUMSTATUS.LEG -> {
 //                    nxv.setImageResource(R.drawable.ic_baseline_push_pin_24)
@@ -688,23 +709,43 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 NumStat.NUMSTATUS.UNSEL -> {
 //                    nxv.setImageResource(R.drawable.ic_baseline_star_24)
                     item.status = NumStat.NUMSTATUS.LEG
-                    m6bViews[index].idBallnumber.text = item.numString
+//                    m6bViews[index].idBallnumber.text = item.numString
+                    m6bViews[index].idNumber.text=item.numString
                     leg.idBackground.apply {
                         setImageResource(R.drawable.pen_mark_ani_vec)
                         (drawable as AnimatedVectorDrawable).start()
                     }
 
-                    val targets = originalballs.filter { (item.idx + 1 == it.idx || item.idx - 1 == it.idx) &&it.status == NumStat.NUMSTATUS.UNSEL}
+//                    val targets = originalballs.filter { (item.idx + 1 == it.idx || item.idx - 1 == it.idx) &&it.status == NumStat.NUMSTATUS.UNSEL}
+
 //                    targets.forEach {
 //                            println("中招號碼 ${numberordering.indexOf(it)}")
 //
 //                    }
-                    targets.forEach {
+                    /*targets.forEach {
                         m6bViews[numberordering.indexOf(it)].imageBeside.isVisible = true
-                    }
+                    }*/
 //                    m6b.idDrawtype.text="L"
                 }
             }
+            m6b.idNumber.backgroundTintList =
+                ColorStateList(
+                    DrawnNumberCheckingActivity.DrawnVH.colors,
+                    intArrayOf(item.num.BallColor())
+                )
+/*            m6b.idBallinfo.setStrokeColor(
+                ContextCompat.getColor(
+                    this@MainActivity, when (item.status) {
+                        NumStat.NUMSTATUS.LEG -> R.color.pen_color
+                        NumStat.NUMSTATUS.BANKER -> R.color.color_ticket
+                        NumStat.NUMSTATUS.UNSEL -> android.R.color.transparent
+                    }
+                ))*/
+//            m6b.idBallnumber.isEnabled = when(item.status) {
+//                NumStat.NUMSTATUS.LEG -> true
+//                NumStat.NUMSTATUS.BANKER -> false
+//                NumStat.NUMSTATUS.UNSEL -> true
+//            }
             updateStatus()
         }
         return item
@@ -802,8 +843,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                     bankerViews[item.idx].idBackground.setImageResource(
                                         R.drawable.ticket_number
                                     )
+/*
                                         m6bViews[it].imageBeside.isVisible = originalballs.filter { item.idx + 1 == it.idx || item.idx - 1 == it.idx }
                                             .any { it.status != NumStat.NUMSTATUS.UNSEL }
+*/
 
                                 }
                             }
@@ -921,6 +964,57 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         private const val KEY_ORDER = "NUMBER_ORDER"
         private const val KEY_STATUS = "status"
         private const val NAME_ENTRIES = "ENTRIES"
+        val ballcolor = mapOf(
+            1	to Color.RED,
+            2	to Color.RED,
+            3	to Color.BLUE,
+            4	to Color.BLUE,
+            5	to Color.GREEN,
+            6	to Color.GREEN,
+            7	to Color.RED,
+            8	to Color.RED,
+            9	to Color.BLUE,
+            10	to Color.BLUE,
+            11	to Color.GREEN,
+            12	to Color.RED,
+            13	to Color.RED,
+            14	to Color.BLUE,
+            15	to Color.BLUE,
+            16	to Color.GREEN,
+            17	to Color.GREEN,
+            18	to Color.RED,
+            19	to Color.RED,
+            20	to Color.BLUE,
+            21	to Color.GREEN,
+            22	to Color.GREEN,
+            23	to Color.RED,
+            24	to Color.RED,
+            25	to Color.BLUE,
+            26	to Color.BLUE,
+            27	to Color.GREEN,
+            28	to Color.GREEN,
+            29	to Color.RED,
+            30	to Color.RED,
+            31	to Color.BLUE,
+            32	to Color.GREEN,
+            33	to Color.GREEN,
+            34	to Color.RED,
+            35	to Color.RED,
+            36	to Color.BLUE,
+            37	to Color.BLUE,
+            38	to Color.GREEN,
+            39	to Color.GREEN,
+            40	to Color.RED,
+            41	to Color.BLUE,
+            42	to Color.BLUE,
+            43	to Color.GREEN,
+            44	to Color.GREEN,
+            45	to Color.RED,
+            46	to Color.RED,
+            47	to Color.BLUE,
+            48	to Color.BLUE,
+            49	to Color.GREEN,
+        )
 //        val d2 = '\uFF04'
         val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }
         val legs get() = originalballs.filter { it.status== NumStat.NUMSTATUS.LEG }.map{it.num}
@@ -972,22 +1066,24 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     val that = ordering[i]
                     with(m6bViews[i]) {
 //                        idBallinfo.strokeColor = that.num.BallColor()
-                        idProgress.max = maxTimes + (minTimes/2.0).toInt()
+/*                        idProgress.max = maxTimes + (minTimes/2.0).toInt()
                         idProgress.progress = that.times
                         idTimes.text = that.times.toString()
                         idSince.text = that.since.toString()
-                        idBallnumber.text = that.numString
+                        idBallnumber.text = that.numString*/
+                        idNumber.text=that.numString
+                        "${that.since}\n${that.times}".also { idStatistics.text = it }
                     }
                 } else
                     ordering.add(i, n)
             }
             numberordering = ordering
-            numberordering.filter { it.status == NumStat.NUMSTATUS.UNSEL }.forEach { next ->
+/*            numberordering.filter { it.status == NumStat.NUMSTATUS.UNSEL }.forEach { next ->
                 val filter =
                     numberordering.filter { it.idx == next.idx + 1 || it.idx == next.idx - 1 }
                 m6bViews[numberordering.indexOf(next)].imageBeside.isVisible =
                     (filter.any { it.status != NumStat.NUMSTATUS.UNSEL })
-            }
+            }*/
 
             updateStatus()
             return item
