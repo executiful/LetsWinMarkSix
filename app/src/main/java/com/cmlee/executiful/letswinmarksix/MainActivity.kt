@@ -211,6 +211,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     true
                 }
                 R.id.action_draw_schedule -> {
+//                    genYi()
                     show_draw_schedule()
                 }
                 R.id.action_previous_next_draw->{
@@ -250,7 +251,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                             if (dr.id != String.format("%s/%03d", ent.key, index + 1))
                                 ssb.append(dr.id).append(System.lineSeparator()).append(jsonDate.format(dr.date))
                         }
-//                        println("date sequence ${ent.key}")
                     }
 
                     ssb.append("!1")
@@ -351,7 +351,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             layoutParams.height = 0
             binding.idBallselect.addView(it.root, layoutParams)
             balldata(it, numberordering[index])
-//it.idDrawtype.text=""
             it.idNumber.setOnClickListener {
                 updateball(index)
             }
@@ -388,32 +387,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
     private fun balldata(view: BallBinding, item: NumStat) {
         with(view){
-//            idNumber.setBackgroundColor(item.num.BallColor())
             "${item.since}\n${item.times}".also { idStatistics.text = it }
             idNumber.text = item.numString
             idNumber.backgroundTintList =
-                ColorStateList(
-                    DrawnNumberCheckingActivity.DrawnVH.colors,
-                    intArrayOf(item.num.BallColor())
-                )
-/*            idBackground.setColorFilter(item.num.BallColor())
-            idBackground.rotation = angle
-            angle += 10
-            val temp = (2 * minTimes / 5)
-            idProgress.max = maxTimes + (minTimes / 10.0).toInt() - temp
-            idProgress.progress = item.times - temp
-            idTimes.text = (item.times).toString()
-            idSince.text = item.since.toString()
-            idBallnumber.text = item.numString
-            idBallinfo.strokeColor =
-                ContextCompat.getColor(
-                    this@MainActivity, when (item.status) {
-                        NumStat.NUMSTATUS.LEG -> R.color.color_ticket_banker
-                        NumStat.NUMSTATUS.BANKER -> R.color.gold
-                        NumStat.NUMSTATUS.UNSEL -> android.R.color.transparent
-                    }
-                )*/
-
+                ColorStateList.valueOf(item.num.BallColor())
         }
     }
 
@@ -464,10 +441,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         ssb.append("$name$nbsp： ")
 
         val start = ssb.length
-//            if(name.contains("多寶")&&value.equals("-")){
-//                ssb.append(dotdotdot)
-//            } else
-//        ssb.append(value)
         ssb.append(value)
         ssb.setSpan(TextAppearanceSpan(this, R.style.money), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         if(name.contains('金') || name.contains('奬')) {
@@ -487,26 +460,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
         val ssb = SpannableStringBuilder()
         var start: Int
-/*        val act : (Pair<String,String>)->Unit ={(name,value)->
-            ssb.append("$name$nbsp： ")
-
-            start = ssb.length
-//            if(name.contains("多寶")&&value.equals("-")){
-//                ssb.append(dotdotdot)
-//            } else
-                ssb.append(value)
-            ssb.setSpan(TextAppearanceSpan(this, R.style.money), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            if(name.contains('金') || name.contains('奬')) {
-                val end = if(value.contains('\t')) value.indexOfFirst { it == '\t' }+start else ssb.length
-                ssb.setSpan(
-                    ForegroundColorSpan(Color.RED),
-                    start,
-                    end,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
-            }
-            ssb.appendLine()
-        }*/
 
         val pdata = mutableListOf(
             "攪珠期數" to pre.id,
@@ -520,8 +473,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         ssb.append("${emsp}上期攪珠").appendLine()
         start = ssb.length
         ssb.setSpan(StyleSpan(Typeface.BOLD), 0, start, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-// fulldollar $ \uFF04
-
         pdata.forEach{
             drawSpannableLine(it, ssb)
         }
@@ -593,10 +544,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
 
-//        ssb.appendLine()
-//        start = ssb.length
-//        ssb.append(getText(R.string.disclaimer))
-//        ssb.setSpan(TextAppearanceSpan(this, android.R.style.TextAppearance_Small), start, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         return ssb
     }
     private fun show_draw_schedule(): Boolean {
@@ -611,11 +558,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     }
 
     private fun show_checking(): Boolean {
-//        hr.post {
-//            UpdateLatestDraw(this){ _ ->
-                startActivity(Intent(this, DrawnNumberCheckingActivity::class.java))
-//            }
-//        }
+        startActivity(Intent(this, DrawnNumberCheckingActivity::class.java))
         return true
     }
 
@@ -654,14 +597,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         val leg = legViews[item.idx]
         val banker = bankerViews[item.idx]
         val m6b = m6bViews[index]
-//        val nxv: ImageFilterView = m6b.idSwitch.nextView as ImageFilterView
-//        m6b.idBallinfo.strokeColor = item.num.BallColor()
         if (reset) {
-/*            m6b.idProgress.max = maxTimes + (minTimes/2.0).toInt()
-            m6b.idProgress.progress = item.times// - minTimes
-            m6b.idTimes.text = item.times.toString()
-            m6b.idSince.text = item.since.toString()*/
-//            m6b.idSwitch.showNext()
             banker.idBackground.setImageResource(R.drawable.ticket_number)
             leg.idBackground.setImageResource(R.drawable.ticket_number)
             when (item.status) {
@@ -681,35 +617,22 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             binding.ticketlayout.idSingle.setImageResource(R.drawable.ticket_single)
             binding.ticketlayout.idMultiple.setImageResource(R.drawable.ticket_multiple)
             binding.ticketlayout.idBanker.setImageResource(R.drawable.ticket_banker)
-//            nxv.setImageResource(R.drawable.ic_baseline_radio_button_unchecked_24)
             item.status = NumStat.NUMSTATUS.UNSEL
-//            m6b.idSwitch.showNext()
-//            m6b.idBallinfo.strokeColor = item.num.BallColor()
-/*            m6b.idBackground.setColorFilter(item.num.BallColor())
-            m6b.idBallnumber.text = item.numString*/
             m6b.idNumber.text=item.numString
-//            m6b.idNumber.setBackgroundColor(item.num.BallColor())
         } else {
-//            m6b.imageBeside.isVisible = false
             when (item.status) {
                 NumStat.NUMSTATUS.LEG -> {
-//                    nxv.setImageResource(R.drawable.ic_baseline_push_pin_24)
                     item.status = NumStat.NUMSTATUS.BANKER
                     updatemark(leg, banker)
-//                    m6b.idDrawtype.text = "B"
                 }
 
                 NumStat.NUMSTATUS.BANKER -> {
-//                    nxv.setImageResource(R.drawable.ic_baseline_star_24)
                     item.status = NumStat.NUMSTATUS.LEG
                     updatemark(banker, leg)
-//                    m6b.idDrawtype.text = "L"
                 }
 
                 NumStat.NUMSTATUS.UNSEL -> {
-//                    nxv.setImageResource(R.drawable.ic_baseline_star_24)
                     item.status = NumStat.NUMSTATUS.LEG
-//                    m6bViews[index].idBallnumber.text = item.numString
                     m6bViews[index].idNumber.text=item.numString
                     leg.idBackground.apply {
                         setImageResource(R.drawable.pen_mark_ani_vec)
@@ -729,23 +652,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
             }
             m6b.idNumber.backgroundTintList =
-                ColorStateList(
-                    DrawnNumberCheckingActivity.DrawnVH.colors,
-                    intArrayOf(item.num.BallColor())
-                )
-/*            m6b.idBallinfo.setStrokeColor(
-                ContextCompat.getColor(
-                    this@MainActivity, when (item.status) {
-                        NumStat.NUMSTATUS.LEG -> R.color.pen_color
-                        NumStat.NUMSTATUS.BANKER -> R.color.color_ticket
-                        NumStat.NUMSTATUS.UNSEL -> android.R.color.transparent
-                    }
-                ))*/
-//            m6b.idBallnumber.isEnabled = when(item.status) {
-//                NumStat.NUMSTATUS.LEG -> true
-//                NumStat.NUMSTATUS.BANKER -> false
-//                NumStat.NUMSTATUS.UNSEL -> true
-//            }
+                ColorStateList.valueOf(item.num.BallColor())
+
             updateStatus()
         }
         return item
@@ -927,6 +835,18 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //        val activeNetworkInfo = connectivityManager?.activeNetworkInfo
 //        return activeNetworkInfo != null && activeNetworkInfo.isConnected
 //    }
+//    fun genYi(){
+//        val guaNames = listOf(
+//            "地势坤", "震为雷", "坎为水", "兑为泽",
+//            "艮为山", "离为火", "巽为风", "天行健（乾）"
+//        )
+//
+//        for (i in 0 until 64) {
+//            val binaryString = Integer.toBinaryString(i).padStart(6, '0')
+//            val guaName = guaNames[i % 8]
+//            println("$binaryString $guaName")
+//        }
+//    }
     fun allCombination(): MutableList<List<Int>> {
         val combinations = mutableListOf<List<Int>>()
         val m = 6 - bankers.size
@@ -1015,14 +935,12 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             48	to Color.BLUE,
             49	to Color.GREEN,
         )
-//        val d2 = '\uFF04'
         val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }
         val legs get() = originalballs.filter { it.status== NumStat.NUMSTATUS.LEG }.map{it.num}
         var msgNumbers:String = "+"
 
         private val originalballs = (1..49).withIndex()//.sortedBy { Math.random() }
             .map { NumStat(it.value, it.index) }
-//        val sinces get() = originalballs.map { it.since }
         private var numberordering = originalballs.sortedBy { random() }
         private var currentStatus = DrawStatus.UnClassify
         fun nextCount(sel: Int): Boolean =
@@ -1065,12 +983,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 if (n.status == NumStat.NUMSTATUS.UNSEL) {
                     val that = ordering[i]
                     with(m6bViews[i]) {
-//                        idBallinfo.strokeColor = that.num.BallColor()
-/*                        idProgress.max = maxTimes + (minTimes/2.0).toInt()
-                        idProgress.progress = that.times
-                        idTimes.text = that.times.toString()
-                        idSince.text = that.since.toString()
-                        idBallnumber.text = that.numString*/
                         idNumber.text=that.numString
                         "${that.since}\n${that.times}".also { idStatistics.text = it }
                     }
