@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="text_single" translatable="false">單式\nSingle</string>
-    <string name="text_multiple" translatable="false">複式\nMultiple</string>
-    <string name="text_banker" translatable="false">胆拖\nBanker</string>
-    <string name="banker_text" translatable="false">胆拖選擇號碼\nbanker number(s)</string>
-    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼\nsingle, multiple or \nother banker selections</string>
+    <string name="banker_text" translatable="false">胆拖選擇號碼L\nbanker number(s)</string>
+    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼L\nsingle, multiple or \nother banker selections</string>
 </resources>

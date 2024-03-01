@@ -15,9 +15,9 @@
     <dimen name="ball_txt_size">14sp</dimen>
     <dimen name="stat_txt_size">8sp</dimen>
 
-    <dimen name="ball_radius">1sp</dimen>
+    <dimen name="ball_radius">3sp</dimen>
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="ball_ratio">.55</dimen>
+    <dimen name="ball_ratio">.6</dimen>
 </resources>

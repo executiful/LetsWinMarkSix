@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="text_single" translatable="false">單式</string>
+    <string name="text_multiple" translatable="false">複</string>
+    <string name="text_banker" translatable="false">胆拖</string>
+    <string name="banker_text" translatable="false">胆拖選擇號碼s</string>
+    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼</string>
+</resources>

@@ -3,7 +3,7 @@
     android:id="@+id/id_ticket"
     style="@style/Ticket"
     android:background="@android:color/white"
-    android:padding="3dp">
+    android:padding="0dp">
 
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -17,6 +17,7 @@
             android:id="@+id/id_single"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
+            android:layout_gravity="end"
             android:src="@drawable/ticket_single" />
 
         <TextView

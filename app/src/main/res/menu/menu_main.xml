@@ -8,6 +8,11 @@
         android:icon="@drawable/baseline_refresh_24"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_view_all"
+        android:icon="@drawable/baseline_remove_red_eye_24"
+        android:title="@string/title_view_all"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_info"
         android:title="@string/action_info"
         android:icon="@drawable/icon_snowball"
@@ -17,7 +22,6 @@
         android:icon="@drawable/baseline_more_vert_24"
         android:menuCategory="container"
         android:orderInCategory="100"
-        android:title="@string/action_settings"
         app:showAsAction="ifRoom">
         <menu
             android:layout_width="match_parent"

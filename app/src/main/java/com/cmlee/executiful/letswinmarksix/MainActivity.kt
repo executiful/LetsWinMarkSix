@@ -34,6 +34,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.menu.MenuBuilder
+import androidx.core.content.ContextCompat
 import androidx.core.view.indices
 import androidx.core.view.isVisible
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.TAG_BALL_DIALOG
@@ -128,11 +129,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //        getString(R.string.ask_select).also { binding.toolbar.title = it }
 
 
-        originalballs.also {
+        originalballs.also { it ->
             legViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
             bankerViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
             m6bViews = it.map { BallBinding.inflate(layoutInflater) }
-            val iterator = it.map{it.num.toString()}.withIndex().iterator()
+            val iterator = it.map{ he -> he.num.toString()}.withIndex().iterator()
             while (iterator.hasNext()) {
                 val numB =
                     ColumnOfNumberBinding.inflate(layoutInflater).apply { root.removeAllViews() }
@@ -157,12 +158,38 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             if (menu is MenuBuilder) (menu as MenuBuilder).setOptionalIconsVisible(true)
             menu.findItem(R.id.action_info)?.isVisible= BuildConfig.DEBUG //visible if is debug
         }
-
+        binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
+            it.isVisible = false
+        }
         binding.toolbar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
+                R.id.action_view_all -> {
+                        item.isEnabled = false
+
+                        AlertDialog.Builder(this).setIcon(R.drawable.baseline_remove_red_eye_24).setTitle(item.title).setPositiveButton(android.R.string.ok){ _,_->
+                            item.isVisible = false
+                            blind = false
+                            numberordering.indices.forEach { index ->
+                                val numStat1 = numberordering[index]
+                                val m6b = m6bViews[index]
+                                m6b.idNumber.text = numStat1.numString
+                            }
+                            item.isEnabled = true
+                        }.setNegativeButton(android.R.string.cancel){_,_->
+                            item.isEnabled = true
+                        }.show()
+
+                        true
+
+                }
                 R.id.action_generate -> {
-                    if(originalballs.any{it.status!=NumStat.NUMSTATUS.UNSEL}) {
-                        val dlg = AlertDialog.Builder(this).setMessage(R.string.action_redraw)
+                    blind = true
+                    binding.toolbar.menu.findItem(R.id.action_view_all).run {
+                        isVisible = blind
+                        isEnabled = blind
+                    }
+//                    if(originalballs.any{it.status!=NumStat.NUMSTATUS.UNSEL}) {
+                        val dlg = AlertDialog.Builder(this).setIcon(R.drawable.baseline_refresh_24).setTitle(item.title)
                             .setNegativeButton(android.R.string.cancel) { _, _ -> }
                         if(currentStatus!=DrawStatus.UnClassify&&!getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(
                                 msgNumbers)) {
@@ -170,17 +197,17 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                 saveEntry()
                                 refresh()
                             }*/
-                                .setNeutralButton(R.string.action_redraw) { _, _ ->
+                                .setPositiveButton(android.R.string.ok) { _, _ ->
                                     refresh()
                                 }
                                 .show()
                         } else {
-                            dlg.setPositiveButton(R.string.action_redraw){ _, _ ->
+                            dlg.setPositiveButton(android.R.string.ok){ _, _ ->
                                 refresh()
                             }.show()
                         }
-                    } else
-                        refresh()
+//                    } else
+//                        refresh()
                     true
                 }
                 R.id.action_settings -> {
@@ -211,7 +238,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     true
                 }
                 R.id.action_draw_schedule -> {
-//                    genYi()
+                    try {
+                        genYi()
+                    } catch (e: Exception) {
+                        AlertDialog.Builder(this).setMessage(e.message).show()
+                    }
                     show_draw_schedule()
                 }
                 R.id.action_previous_next_draw->{
@@ -345,6 +376,21 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         genBall(numberordering)
+
+        if (savedInstanceState == null) {
+//            numberordering = originalballs.sortedBy { random() }
+            binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
+                it.isVisible = true
+            }
+        } else {
+            savedInstanceState.getIntArray(KEY_ORDER)?.let { ord ->
+                numberordering = ord.map { originalballs[it] }
+            }
+            savedInstanceState.getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
+                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
+            }
+            updateStatus()
+        }
         m6bViews.forEachIndexed { index, it ->
             val layoutParams = GridLayout.LayoutParams(spec, spec)
             layoutParams.width = 0
@@ -367,15 +413,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
             }
         }
-        savedInstanceState?.run {
-            getIntArray(KEY_ORDER)?.let { ord ->
-                numberordering = ord.map { originalballs[it] }
-            }
-            getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
-                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
-            }
-            updateStatus()
-        }
+
         hr.post{
             UpdateLatestDraw(this){
                 runOnUiThread{
@@ -389,8 +427,23 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         with(view){
             "${item.since}\n${item.times}".also { idStatistics.text = it }
             idNumber.text = item.numString
-            idNumber.backgroundTintList =
-                ColorStateList.valueOf(item.num.BallColor())
+            idNumber.backgroundTintList = ColorStateList.valueOf(item.num.BallColor())
+            imageView.text =
+                when (item.status) {
+                    NumStat.NUMSTATUS.BANKER -> {
+                        this.idBallinfo.isChecked = true
+                        getString(R.string.banker_indicator)
+                    }
+                    NumStat.NUMSTATUS.LEG -> {
+                        this.idBallinfo.isChecked = true
+                        getString(R.string.leg_indicator)
+                    }
+                    else -> {
+                        ""
+                    }
+                }
+
+            imageView.isVisible = item.status!=NumStat.NUMSTATUS.UNSEL
         }
     }
 
@@ -564,7 +617,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putIntArray(KEY_ORDER, originalballs.map { numberordering.indexOf(it) }.toIntArray())
+        outState.putIntArray(KEY_ORDER, numberordering.map { originalballs.indexOf(it) }.toIntArray())
         outState.putStringArray(KEY_STATUS, originalballs.map{ it.status.toString()}.toTypedArray())
     }
 
@@ -623,17 +676,23 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             when (item.status) {
                 NumStat.NUMSTATUS.LEG -> {
                     item.status = NumStat.NUMSTATUS.BANKER
+                    m6b.imageView.isVisible = true
+//                    m6b.imageView.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_ticket))
                     updatemark(leg, banker)
                 }
 
                 NumStat.NUMSTATUS.BANKER -> {
                     item.status = NumStat.NUMSTATUS.LEG
+                    m6b.imageView.isVisible = true
+//                    m6b.imageView.backgroundTintList = null
                     updatemark(banker, leg)
                 }
 
                 NumStat.NUMSTATUS.UNSEL -> {
                     item.status = NumStat.NUMSTATUS.LEG
                     m6bViews[index].idNumber.text=item.numString
+                    m6b.imageView.isVisible = true
+//                    m6b.imageView.backgroundTintList = null
                     leg.idBackground.apply {
                         setImageResource(R.drawable.pen_mark_ani_vec)
                         (drawable as AnimatedVectorDrawable).start()
@@ -653,7 +712,22 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             }
             m6b.idNumber.backgroundTintList =
                 ColorStateList.valueOf(item.num.BallColor())
-
+            m6b.imageView.text =
+                when (item.status) {
+                    NumStat.NUMSTATUS.BANKER -> {
+//                        m6b.idBallinfo.performClick()
+                        if(!m6b.idBallinfo.isChecked) m6b.idBallinfo.isChecked=true
+                        getString(R.string.banker_indicator)
+                    }
+                    NumStat.NUMSTATUS.LEG -> {
+//                        m6b.idBallinfo.performClick()
+                        if(!m6b.idBallinfo.isChecked) m6b.idBallinfo.isChecked=true
+                        getString(R.string.leg_indicator)
+                    }
+                    else -> {
+                        ""
+                    }
+                }
             updateStatus()
         }
         return item
@@ -835,18 +909,36 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //        val activeNetworkInfo = connectivityManager?.activeNetworkInfo
 //        return activeNetworkInfo != null && activeNetworkInfo.isConnected
 //    }
-//    fun genYi(){
-//        val guaNames = listOf(
-//            "地势坤", "震为雷", "坎为水", "兑为泽",
-//            "艮为山", "离为火", "巽为风", "天行健（乾）"
-//        )
-//
-//        for (i in 0 until 64) {
-//            val binaryString = Integer.toBinaryString(i).padStart(6, '0')
-//            val guaName = guaNames[i % 8]
-//            println("$binaryString $guaName")
-//        }
-//    }
+    fun genYi() {
+        val guaNames = listOf(
+            "地势坤", "震为雷", "坎为水", "兑为泽",
+            "艮为山", "离为火", "巽为风", "天行健（乾）"
+        )
+        val temp = resources.getStringArray(R.array.cleromancy)
+        val ans = mutableSetOf<Int>()
+        while (ans.size<6) {
+            val i = StringBuilder()
+            (1..6).toList().parallelStream().forEach {
+                i.append( (0..1).sortedBy { random() }.first())
+            }
+            val idx = temp.indexOf(i.toString())
+            if (idx == -1) throw Exception("error $i") else {
+                (if(idx>48) idx-49 else idx).run{
+                    if(!ans.contains(this))
+                        ans.add(this)
+                }
+            }
+        }
+        ans.forEach{
+            updateball(it)
+        }
+//        val d = temp.distinct()
+        for (i in 0 until 64) {
+            val binaryString = Integer.toBinaryString(i).padStart(6, '0')
+            val guaName = guaNames[i % 8]
+            println("$binaryString $guaName")
+        }
+    }
     fun allCombination(): MutableList<List<Int>> {
         val combinations = mutableListOf<List<Int>>()
         val m = 6 - bankers.size
@@ -878,6 +970,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         const val dollar = '\uFE69'
         const val emdash = '\u2014'
         const val dotdotdot = '\u2026'
+        const val banker_symbol = "&#x1F170;"
+//        const val tick_sym = '\u2611'
+        const val whiteheavycheckmark = '\u2714'
+        const val heavycheckmark = "☑"
         const val numberseperator = "$thinsp+"
         const val m6_49StartDate = "2002/07/04"
         private const val NAME_ORDER = "ORDER"
@@ -941,7 +1037,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
         private val originalballs = (1..49).withIndex()//.sortedBy { Math.random() }
             .map { NumStat(it.value, it.index) }
-        private var numberordering = originalballs.sortedBy { random() }
+        private var numberordering = originalballs//.sortedBy { random() }
         private var currentStatus = DrawStatus.UnClassify
         fun nextCount(sel: Int): Boolean =
             numberordering.filter { it.status != NumStat.NUMSTATUS.UNSEL }.map { (it.num - sel) }
@@ -952,6 +1048,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         val maxSince get() = numberordering.maxOf { it.since }
         val dateStart get() = sqlDate.parse(m6_49StartDate)
         val sdf_display = SimpleDateFormat("dd/MM/yyyy (EEEE)", Locale.CHINESE)
+        var blind = true
     }
 
     override fun getItem(idx: Int) = numberordering[idx]

@@ -11,11 +11,12 @@
 
     <string name="hello_blank_fragment" translatable="false">Hello blank fragment</string>
 
+
     <string name="text_single" translatable="false">單式\nSingle</string>
-    <string name="text_multiple" translatable="false">複\nMultiple</string>
+    <string name="text_multiple" translatable="false">複式\nMultiple</string>
     <string name="text_banker" translatable="false">胆拖\nBanker</string>
-    <string name="banker_text" translatable="false">胆拖選擇號碼\nbanker number(s)</string>
-    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼\nsingle, multiple or \nother banker selections</string>
+    <string name="banker_text" translatable="false">胆拖選擇號碼d\nbanker number(s)</string>
+    <string name="leg_text" translatable="false">單式，複式或胆拖配腳號碼d\nsingle, multiple or \nother banker selections</string>
     <string name="action_redraw">重新</string>
     <string name="field_sincedrawn">號碼攪出相隔期數</string>
     <string name="field_timesdrawn">號碼攪出次數</string>
@@ -87,4 +88,9 @@
     <string name="action_disclaimer">免責聲明</string>
     <string name="copy2clipboard">剪貼薄</string>
     <string name="replace_numbers">取代</string>
+    <string name="title_view_all">顯示所有號碼</string>
+    <string name="previous_sym">㊤</string>
+    <string name="next_sym">㊦</string>
+    <string name="banker_indicator">&#x2714;</string>
+    <string name="leg_indicator"></string>
 </resources>

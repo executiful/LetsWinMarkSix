@@ -9,6 +9,7 @@
     app:strokeWidth="2dp"
     app:cardElevation="1dp"
     app:cardMaxElevation="1dp"
+    android:layout_margin="0dp"
     app:cardPreventCornerOverlap="true"
     app:cardUseCompatPadding="true"
     app:layout_anchorGravity="center">

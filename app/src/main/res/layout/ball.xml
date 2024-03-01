@@ -3,11 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/id_ballinfo"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/ball_radius"
+    android:checkable="true"
+    android:padding="1dp"
     app:cardCornerRadius="@dimen/ball_radius"
     app:cardElevation="1dp"
-    app:cardMaxElevation="0dp"
+    app:cardMaxElevation="1dp"
     app:cardPreventCornerOverlap="true"
     app:cardUseCompatPadding="true"
     app:layout_anchorGravity="center">
@@ -22,23 +25,37 @@
             android:layout_height="0dp"
             android:background="@drawable/ballcircle1"
             android:text="68"
-            android:backgroundTint="@color/gold"
+            android:typeface="monospace"
+            android:layout_marginStart="@dimen/ball_radius"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1:1"
-            app:layout_constraintEnd_toStartOf="@id/id_statistics"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="@dimen/ball_ratio" />
 
-        <com.google.android.material.textview.MaterialTextView
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/id_statistics"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/id_statistics"
-            android:text="19\n234"
+            android:layout_marginEnd="@dimen/ball_radius"
             android:fontFamily="monospace"
+            android:text="19\n234☑"
             android:textAlignment="viewEnd"
             android:textSize="@dimen/stat_txt_size"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:clickable="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/imageView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\u2705&#x1F170;\u2611"
+            android:clickable="false"
+            android:textSize="@dimen/stat_txt_size"
+            android:typeface="normal"
+            android:visibility="visible"
             app:layout_constraintStart_toEndOf="@id/id_number"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

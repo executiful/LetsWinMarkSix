@@ -10,5 +10,5 @@
     <dimen name="ball_txt_size">20sp</dimen>
     <dimen name="stat_txt_size">10sp</dimen>
     <dimen name="ball_radius">8sp</dimen>
-    <dimen name="ball_ratio">.7</dimen>
+    <dimen name="ball_ratio">.6</dimen>
 </resources>

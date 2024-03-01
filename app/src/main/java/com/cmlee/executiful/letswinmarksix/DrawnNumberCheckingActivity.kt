@@ -53,7 +53,7 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         companion object{
             val colors = arrayOf(intArrayOf(android.R.attr.state_enabled))
         }
-        fun setnum(context: Context, c: AppCompatButton, i: Int, match: Boolean) {
+        fun setnum(c: AppCompatButton, i: Int, match: Boolean) {
             val sp = SpannableString(i.toString())
 //        c.isSelected = !match
 //            sp.setSpan(StyleSpan(if (match)Typeface.BOLD_ITALIC else Typeface.NORMAL), 0, sp.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -69,13 +69,13 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
 
         fun bind(ints: Pair<List<Boolean>, DrawResult>, context: Context) {
             with(ints.second) {
-                setnum(context, item.chip1st, no.nos[0], ints.first[0])
-                setnum(context, item.chip2nd, no.nos[1], ints.first[1])
-                setnum(context, item.chip3rd, no.nos[2], ints.first[2])
-                setnum(context, item.chip4th, no.nos[3], ints.first[3])
-                setnum(context, item.chip5th, no.nos[4], ints.first[4])
-                setnum(context, item.chip6th, no.nos[5], ints.first[5])
-                setnum(context, item.chipsp, sno, ints.first[6])
+                setnum(item.chip1st, no.nos[0], ints.first[0])
+                setnum(item.chip2nd, no.nos[1], ints.first[1])
+                setnum(item.chip3rd, no.nos[2], ints.first[2])
+                setnum(item.chip4th, no.nos[3], ints.first[3])
+                setnum(item.chip5th, no.nos[4], ints.first[4])
+                setnum(item.chip6th, no.nos[5], ints.first[5])
+                setnum(item.chipsp, sno, ints.first[6])
             }
 
             "${

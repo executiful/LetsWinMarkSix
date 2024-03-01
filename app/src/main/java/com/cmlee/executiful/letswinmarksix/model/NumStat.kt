@@ -1,6 +1,7 @@
 package com.cmlee.executiful.letswinmarksix.model
 
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.ballcolor
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.blind
 import java.io.Serializable
 
 
@@ -19,7 +20,7 @@ data class NumStat(val num: Int, val idx: Int, var times: Int = 0, var since: In
     val color get() =
         ballcolor[num]
 
-    val numString get() = if (status == NUMSTATUS.UNSEL) if (num % 2 == 0) "雙" else "單" else "$num"
+    val numString get() = if (blind && status == NUMSTATUS.UNSEL) if (num % 2 == 0) "雙" else "單" else "$num"
     override fun toString(): String {
         return "︿@{System.lineSeparator()}${num}${System.lineSeparator()}﹀"
 //        return "︿${System.lineSeparator()}${num}${System.lineSeparator()}﹀"

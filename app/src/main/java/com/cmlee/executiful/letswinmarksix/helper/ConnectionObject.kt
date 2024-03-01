@@ -121,6 +121,7 @@ object ConnectionObject {
             try {
                 return Jsoup.connect((uristr)).timeout(1000 * (connectTO + readTO + i * incTO)).get()
             } catch (e: Exception) {
+                println("what ex ${e.message} ${e.javaClass.simpleName}")
                 when(e){
                     is UnknownHostException->break
                     is TimeoutException->continue
