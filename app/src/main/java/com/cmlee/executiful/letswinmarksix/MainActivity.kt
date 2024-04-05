@@ -22,19 +22,17 @@ import android.text.Spanned
 import android.text.style.AlignmentSpan
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
-import android.text.style.ImageSpan
 import android.text.style.StyleSpan
 import android.text.style.TabStopSpan
 import android.text.style.TextAppearanceSpan
 import android.text.style.UnderlineSpan
+import android.view.KeyEvent
 import android.widget.ArrayAdapter
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.appcompat.view.menu.MenuBuilder
-import androidx.core.content.ContextCompat
 import androidx.core.view.indices
 import androidx.core.view.isVisible
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.TAG_BALL_DIALOG
@@ -53,7 +51,6 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.UpdateLatestDraw
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTD
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTR
-import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.jsonDate
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.sqlDate
 import com.cmlee.executiful.letswinmarksix.model.DrawStatus
 import com.cmlee.executiful.letswinmarksix.model.NumStat
@@ -71,6 +68,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private lateinit var bankerViews: List<NumberTextviewBinding>
     private lateinit var m6bViews: List<BallBinding>
     private lateinit var pauseDlg : AlertDialog
+    private var alertDialog:AlertDialog? = null
 
     private val ht = HandlerThread("m6thread")
     private lateinit var hr :Handler
@@ -128,8 +126,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //        setSupportActionBar(binding.toolbar)
 //        getString(R.string.ask_select).also { binding.toolbar.title = it }
 
-
-        originalballs.also { it ->
+        originalballs.also {
             legViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
             bankerViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
             m6bViews = it.map { BallBinding.inflate(layoutInflater) }
@@ -141,7 +138,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     ColumnOfNumberBinding.inflate(layoutInflater).apply { root.removeAllViews() }
                 binding.ticketlayout.idBankers.addView(numB.root)
                 binding.ticketlayout.idLegs.addView(numL.root)
-                (1..9).forEach {
+                repeat(9) {
                     if (iterator.hasNext()) {
                         val next = iterator.next()
                         val bankeritem = bankerViews[next.index]
@@ -154,63 +151,139 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
             }
         }
-        with(binding.toolbar) {
-            if (menu is MenuBuilder) (menu as MenuBuilder).setOptionalIconsVisible(true)
-            menu.findItem(R.id.action_info)?.isVisible= BuildConfig.DEBUG //visible if is debug
-        }
-        binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
-            it.isVisible = false
-        }
-        binding.toolbar.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.action_view_all -> {
-                        item.isEnabled = false
+//        with(binding.toolbar) {
+//            if (menu is MenuBuilder) (menu as MenuBuilder).setOptionalIconsVisible(true)
+//            menu.findItem(R.id.action_info)?.isVisible= BuildConfig.DEBUG //visible if is debug
+//        }
 
-                        AlertDialog.Builder(this).setIcon(R.drawable.baseline_remove_red_eye_24).setTitle(item.title).setPositiveButton(android.R.string.ok){ _,_->
-                            item.isVisible = false
-                            blind = false
-                            numberordering.indices.forEach { index ->
-                                val numStat1 = numberordering[index]
-                                val m6b = m6bViews[index]
-                                m6b.idNumber.text = numStat1.numString
-                            }
-                            item.isEnabled = true
-                        }.setNegativeButton(android.R.string.cancel){_,_->
-                            item.isEnabled = true
-                        }.show()
+        populate_toobar()
+        populate_menu()
 
-                        true
+        binding.ticketlayout.idTicket.setOnClickListener{
+            alertDialog?.let {
+                if (it.isShowing)
+                    return@setOnClickListener
+            }
+            val dlg = AlertDialog.Builder(this)
+                .setTitle(msgCalc).setMessage(msgNumbers)
+            if (!(currentStatus == DrawStatus.UnClassify || getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(msgNumbers)))
+                dlg.setPositiveButton(android.R.string.copy) { d, _ ->
+                d.dismiss()
+//                saveEntry()
 
+                    val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText(getString(R.string.chprize_1st), msgNumbers)
+                    clipboard.setPrimaryClip(clip)
                 }
-                R.id.action_generate -> {
-                    blind = true
-                    binding.toolbar.menu.findItem(R.id.action_view_all).run {
-                        isVisible = blind
-                        isEnabled = blind
+            alertDialog = dlg.show()
+        }
+
+        // release later
+//        binding.ticketlayout.idTicket.setOnLongClickListener {
+//            if (currentStatus != DrawStatus.UnClassify)
+//                show_checking()
+//            else false
+//        }
+
+        genBall(numberordering)
+
+        if (savedInstanceState == null) {
+            binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
+                it.isVisible = true
+            }
+        } else {
+            savedInstanceState.getIntArray(KEY_ORDER)?.let { ord ->
+                numberordering = ord.map { originalballs[it] }
+            }
+            savedInstanceState.getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
+                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
+            }
+            updateStatus()
+        }
+        val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+        m6bViews.forEachIndexed { index, it ->
+            val layoutParams = GridLayout.LayoutParams(spec, spec)
+            layoutParams.width = 0
+            layoutParams.height = 0
+            binding.idBallselect.addView(it.root, layoutParams)
+            balldata(it, numberordering[index])
+            it.idNumber.setOnClickListener {
+                updateball(index)
+            }
+            if(BuildConfig.DEBUG){
+                it.idNumber.setOnLongClickListener {
+                    if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
+                        val phraseDialog = newInstance(index)
+                        phraseDialog.show(
+                            supportFragmentManager.beginTransaction(),
+                            TAG_BALL_DIALOG
+                        )
                     }
-//                    if(originalballs.any{it.status!=NumStat.NUMSTATUS.UNSEL}) {
-                        val dlg = AlertDialog.Builder(this).setIcon(R.drawable.baseline_refresh_24).setTitle(item.title)
-                            .setNegativeButton(android.R.string.cancel) { _, _ -> }
-                        if(currentStatus!=DrawStatus.UnClassify&&!getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(
-                                msgNumbers)) {
-                            dlg/*.setPositiveButton(R.string.action_save_n_redraw) { _, _ ->
-                                saveEntry()
-                                refresh()
-                            }*/
-                                .setPositiveButton(android.R.string.ok) { _, _ ->
-                                    refresh()
-                                }
-                                .show()
-                        } else {
-                            dlg.setPositiveButton(android.R.string.ok){ _, _ ->
-                                refresh()
-                            }.show()
-                        }
-//                    } else
-//                        refresh()
                     true
                 }
-                R.id.action_settings -> {
+            }
+        }
+
+        hr.post{
+            UpdateLatestDraw(this){
+                runOnUiThread{
+                    initball()
+                }
+            }
+        }
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        return when (keyCode) {
+            KeyEvent.KEYCODE_8 -> {
+                blind = !blind
+                binding.toolbar.menu.findItem(R.id.action_view_all).isVisible = blind
+                numberordering.forEachIndexed { index, numStat ->
+                    m6bViews[index].idNumber.text = numStat.numString
+                }
+                true
+            }
+            KeyEvent.KEYCODE_0 -> {
+                    if (currentStatus != DrawStatus.UnClassify) {
+                        show_checking()
+                        true
+                    } else false
+            }
+            else -> super.onKeyDown(keyCode, event)
+        }
+    }
+
+    private fun populate_toobar(){
+        binding.toolbar.setOnMenuItemClickListener { item ->
+            alertDialog?.let{
+                if(it.isShowing){
+                    return@setOnMenuItemClickListener false
+                }
+            }
+            when (item.itemId) {
+                R.id.action_view_all -> {
+                    alertDialog = AlertDialog.Builder(this).setIcon(R.drawable.baseline_remove_red_eye_24)
+                        .setTitle(item.title).setPositiveButton(android.R.string.ok) { _, _ ->
+                            item.isVisible = false
+                            blind = false
+                            numberordering.forEachIndexed { index, numStat ->
+                                m6bViews[index].idNumber.text = numStat.numString
+                            }
+                        }.setNegativeButton(android.R.string.cancel) { _, _ ->
+                        }.show()
+                    alertDialog!=null
+                }
+                R.id.action_generate -> {
+
+                    alertDialog = AlertDialog.Builder(this).setIcon(R.drawable.baseline_refresh_24).setTitle(item.title)//.setView(R.layout.pause_dialog_layout)
+                        .setNegativeButton(android.R.string.cancel) { _, _ -> }
+                        .setPositiveButton(android.R.string.ok){ d, _ ->
+                            d.dismiss()
+                            refresh()
+                        }.show()
+                    alertDialog!=null
+                }
+                R.id.action_marksix -> {
                     with(binding.toolbar.menu) {
                         findItem(R.id.action_past)?.let {
                             it.isEnabled = (currentStatus != DrawStatus.UnClassify)
@@ -234,71 +307,70 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     show_checking()
                 }
                 R.id.action_disclaimer ->{
-                    AlertDialog.Builder(this).setMessage(R.string.disclaimer).setTitle(R.string.action_disclaimer).show()
-                    true
+                    alertDialog = AlertDialog.Builder(this).setMessage(R.string.disclaimer).setTitle(R.string.action_disclaimer).show()
+                    alertDialog!=null
                 }
                 R.id.action_draw_schedule -> {
-                    try {
-                        genYi()
-                    } catch (e: Exception) {
-                        AlertDialog.Builder(this).setMessage(e.message).show()
-                    }
+//                    try {
+//                        genYi()
+//                    } catch (e: Exception) {
+//                        AlertDialog.Builder(this).setMessage(e.message).show()
+//                    }
                     show_draw_schedule()
                 }
                 R.id.action_previous_next_draw->{
                     val ssb = SpannableString(getString(R.string.action_previous_next_draw))
                     ssb.setSpan(AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     ssb.setSpan(BackgroundColorSpan(Color.LTGRAY), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    val dlg = AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog)//.setTitle(ssb)
-                        .setMessage(getDrawString()).create()
-                        dlg.show()
-                    hr.postDelayed({
-                        UpdateLatestDraw(this) {
-                            runOnUiThread {
-                                if (it == "OK")
-                                    initball()
-                                else
-                                    println("更新:\n    $it")
-                                if(dlg.isShowing)
-                                    dlg.setMessage(getDrawString())
-                            }
+                    alertDialog = AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog)//.setTitle(ssb)
+                        .setMessage(getDrawString()).show().also { dlg ->
+                            alertDialog = dlg
+                            hr.postDelayed({
+                                UpdateLatestDraw(this) {
+                                    runOnUiThread {
+                                        if (it == "OK")
+                                            initball()
+                                        if(dlg.isShowing)
+                                            dlg.setMessage(getDrawString())
+                                    }
+                                }
+                            },1000)
                         }
-                    },1000)
-                    true
+                    alertDialog!=null
                 }
                 R.id.action_save ->{
                     saveEntry()
                 }
-                R.id.action_info ->{
-                    val ssb = SpannableStringBuilder()
-
-                    val dao = M6Db.getDatabase(this).DrawResultDao()
-
-                    val results = dao.getAll()
-//                    File.createTempFile("source", ".json", cacheDir).writeText(gson.toJson(results, DrawResultArray::class.java))
-                    results.groupBy { it.id.substring(0,2) }.entries.parallelStream().forEach {
-                        ent->
-                        ent.value.sortedBy { it.date }.forEachIndexed { index, dr ->
-                            if (dr.id != String.format("%s/%03d", ent.key, index + 1))
-                                ssb.append(dr.id).append(System.lineSeparator()).append(jsonDate.format(dr.date))
-                        }
-                    }
-
-                    ssb.append("!1")
-                    ssb.appendLine(dao.getLatest().id)
-                    ssb.appendLine(getString(R.string.action_redraw))
-                    ssb.appendLine(getString(R.string.info_redraw))
-                        ssb.setSpan(ImageSpan(this, R.drawable.baseline_refresh_24), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-
-                    AlertDialog.Builder(this).setMessage(ssb).setPositiveButton("刪除") { _, _ ->
-                        dao.delete(dao.getLatest())
-                        initball()
-                    }.show().setOnCancelListener {
-                        pauseDlg.show()
-                    }
-                    true
-                }
+//                R.id.action_info ->{
+//                    val ssb = SpannableStringBuilder()
+//
+//                    val dao = M6Db.getDatabase(this).DrawResultDao()
+//
+//                    val results = dao.getAll()
+////                    File.createTempFile("source", ".json", cacheDir).writeText(gson.toJson(results, DrawResultArray::class.java))
+//                    results.groupBy { it.id.substring(0,2) }.entries.parallelStream().forEach {
+//                        ent->
+//                        ent.value.sortedBy { it.date }.forEachIndexed { index, dr ->
+//                            if (dr.id != String.format("%s/%03d", ent.key, index + 1))
+//                                ssb.append(dr.id).append(System.lineSeparator()).append(jsonDate.format(dr.date))
+//                        }
+//                    }
+//
+//                    ssb.append("!1")
+//                    ssb.appendLine(dao.getLatest().id)
+//                    ssb.appendLine(getString(R.string.action_redraw))
+//                    ssb.appendLine(getString(R.string.info_redraw))
+//                        ssb.setSpan(ImageSpan(this, R.drawable.baseline_refresh_24), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+//
+//
+//                    AlertDialog.Builder(this).setMessage(ssb).setPositiveButton("刪除") { _, _ ->
+//                        dao.delete(dao.getLatest())
+//                        initball()
+//                    }.show().setOnCancelListener {
+//                        pauseDlg.show()
+//                    }
+//                    true
+//                }
                 R.id.action_list_saved->{
                     val items = getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).all.map{
                         val ssb = SpannableString(it.key)
@@ -307,19 +379,13 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         ssb
                     }
                     val adp = ArrayAdapter(this, android.R.layout.select_dialog_singlechoice, items
-                        )
+                    )
                     val cnv2Int = fun(str:String): List<Int> {
                         return str.split("\\s*\\+\\s*".toRegex()).map { Integer.parseInt(it) }
                     }
                     AlertDialog.Builder(this).setSingleChoiceItems(adp, -1) { di, i->
                         adp.getItem(i)?.let{
-                            if(it.toString() == msgNumbers) {
-                                di.PositiveButton().isVisible = false
-                            } else {
-                                val string = it.split('>')
-                                println("this numbers are $string")
-                                di.PositiveButton().isVisible = true
-                            }
+                            di.PositiveButton().isVisible = it.toString() != msgNumbers
                         }
                     }.setNeutralButton(android.R.string.cancel) { dlg, _ ->
                         dlg.dismiss()
@@ -355,74 +421,13 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             }
         }
 
-        binding.ticketlayout.idTicket.setOnClickListener{
-            val dlg = AlertDialog.Builder(this)
-                .setTitle(msgCalc).setMessage(msgNumbers)
-            if (!(currentStatus == DrawStatus.UnClassify || getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(msgNumbers)))
-                dlg.setPositiveButton(R.string.copy2clipboard) { d, _ ->
-                d.dismiss()
-//                saveEntry()
-
-                    val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText("label", msgNumbers)
-                    clipboard.setPrimaryClip(clip)
-                }
-            dlg.show()
-        }
-        binding.ticketlayout.idTicket.setOnLongClickListener {
-            if (currentStatus != DrawStatus.UnClassify)
-                show_checking()
-            else false
-        }
-        val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-        genBall(numberordering)
-
-        if (savedInstanceState == null) {
-//            numberordering = originalballs.sortedBy { random() }
-            binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
-                it.isVisible = true
-            }
-        } else {
-            savedInstanceState.getIntArray(KEY_ORDER)?.let { ord ->
-                numberordering = ord.map { originalballs[it] }
-            }
-            savedInstanceState.getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
-                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
-            }
-            updateStatus()
-        }
-        m6bViews.forEachIndexed { index, it ->
-            val layoutParams = GridLayout.LayoutParams(spec, spec)
-            layoutParams.width = 0
-            layoutParams.height = 0
-            binding.idBallselect.addView(it.root, layoutParams)
-            balldata(it, numberordering[index])
-            it.idNumber.setOnClickListener {
-                updateball(index)
-            }
-            if(BuildConfig.DEBUG){
-                it.idNumber.setOnLongClickListener {
-                    if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
-                        val phraseDialog = newInstance(index)
-                        phraseDialog.show(
-                            supportFragmentManager.beginTransaction(),
-                            TAG_BALL_DIALOG
-                        )
-                    }
-                    true
-                }
-            }
-        }
-
-        hr.post{
-            UpdateLatestDraw(this){
-                runOnUiThread{
-                    initball()
-                }
-            }
-        }
     }
 
+    private fun populate_menu(){
+        binding.toolbar.menu.findItem(R.id.action_view_all).also { v ->
+            v.isVisible = blind
+        }
+    }
     private fun balldata(view: BallBinding, item: NumStat) {
         with(view){
             "${item.since}\n${item.times}".also { idStatistics.text = it }
@@ -431,14 +436,15 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             imageView.text =
                 when (item.status) {
                     NumStat.NUMSTATUS.BANKER -> {
-                        this.idBallinfo.isChecked = true
+                        if(!idBallinfo.isChecked) this.idBallinfo.isChecked = true
                         getString(R.string.banker_indicator)
                     }
                     NumStat.NUMSTATUS.LEG -> {
-                        this.idBallinfo.isChecked = true
+                        if(!idBallinfo.isChecked) this.idBallinfo.isChecked = true
                         getString(R.string.leg_indicator)
                     }
-                    else -> {
+                    NumStat.NUMSTATUS.UNSEL -> {
+                        if(idBallinfo.isChecked)this.idBallinfo.isChecked = false
                         ""
                     }
                 }
@@ -579,7 +585,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                 )
             }
-            println("更新:$ssb")
         }
         ssb.appendLine().appendLine()
         start = ssb.length
@@ -626,7 +631,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     override fun onAdLoaded() {
     }
 
-    fun updatemark(old: NumberTextviewBinding, new: NumberTextviewBinding) {
+    private fun updatemark(old: NumberTextviewBinding, new: NumberTextviewBinding) {
 
         old.idBackground.apply {
             setImageResource(R.drawable.pen_unmark_ani_vec)
@@ -724,7 +729,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         if(!m6b.idBallinfo.isChecked) m6b.idBallinfo.isChecked=true
                         getString(R.string.leg_indicator)
                     }
-                    else -> {
+                    NumStat.NUMSTATUS.UNSEL -> {
+                        m6b.idBallinfo.isChecked=false
                         ""
                     }
                 }
@@ -772,13 +778,17 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         currentStatus = calcDrawStatus.first
     }
 
-    fun refresh() {
+    private fun refresh() {
+        blind = true
+        binding.toolbar.menu.findItem(R.id.action_view_all).run {
+            isVisible = blind
+        }
         numberordering = originalballs.sortedBy { random() }
         numberordering.parallelStream().forEach { it.status = NumStat.NUMSTATUS.UNSEL }
         getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit().putString(KEY_ORDER, numberordering.joinToString { it.idx.toString() }).apply()
         initball()
     }
-    fun waitDlg(p:(d: Dialog)->Unit){
+    private fun waitDlg(p:(d: Dialog)->Unit){
         runOnUiThread{
             if (!pauseDlg.isShowing) {
                 pauseDlg.setOnShowListener {
@@ -790,7 +800,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
     }
 
-    fun initball(){
+    private fun initball(){
         if(System.currentTimeMillis() > lastInitMilliSec+ minInitMillSec) {
             genBall(numberordering)
             Handler(Looper.getMainLooper()).post {
@@ -842,8 +852,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             }
         }
     }
-    private var angle = 18.5f
-    fun calcDrawStatus(leg: Int, ban: Int): Pair<DrawStatus, Int> {
+    private fun calcDrawStatus(leg: Int, ban: Int): Pair<DrawStatus, Int> {
         msgNumbers = "+"
         if (ban > 5) {
             msgCalc = getString(R.string.unclassifydraw, ban, leg)
@@ -887,7 +896,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             DrawStatus.Banker to draw
         }
     }
-    fun genBall(/*db: M6Db, */order: List<NumStat>):Boolean {
+    private fun genBall(order: List<NumStat>):Boolean {
         val db = M6Db.getDatabase(this)
         val drawResultDao = db.DrawResultDao()
         val dr = drawResultDao.getAll()
@@ -948,7 +957,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             val combination = mutableListOf<Int>()
             for (j in legs.indices) {
                 if ((i and (1 shl j)) > 0) {
-                    combination.add(legs[j])
+                    combination.add(legs.elementAt(j))
                 }
             }
             if (combination.size == m) {
@@ -970,10 +979,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         const val dollar = '\uFE69'
         const val emdash = '\u2014'
         const val dotdotdot = '\u2026'
-        const val banker_symbol = "&#x1F170;"
+//        const val banker_symbol = "&#x1F170;"
 //        const val tick_sym = '\u2611'
-        const val whiteheavycheckmark = '\u2714'
-        const val heavycheckmark = "☑"
+//        const val whiteheavycheckmark = '\u2714'
+//        const val heavycheckmark = "☑"
         const val numberseperator = "$thinsp+"
         const val m6_49StartDate = "2002/07/04"
         private const val NAME_ORDER = "ORDER"
@@ -1031,13 +1040,13 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             48	to Color.BLUE,
             49	to Color.GREEN,
         )
-        val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }
-        val legs get() = originalballs.filter { it.status== NumStat.NUMSTATUS.LEG }.map{it.num}
+        val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }.toSet()
+        val legs get() = originalballs.filter { it.status== NumStat.NUMSTATUS.LEG }.map{it.num}.toSet()
         var msgNumbers:String = "+"
 
         private val originalballs = (1..49).withIndex()//.sortedBy { Math.random() }
             .map { NumStat(it.value, it.index) }
-        private var numberordering = originalballs//.sortedBy { random() }
+        private var numberordering = originalballs.sortedBy { random() }
         private var currentStatus = DrawStatus.UnClassify
         fun nextCount(sel: Int): Boolean =
             numberordering.filter { it.status != NumStat.NUMSTATUS.UNSEL }.map { (it.num - sel) }

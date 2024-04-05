@@ -155,8 +155,8 @@ object ConnectionObject {
                     val text = Jsoup.parse(str).text()
                     if (text.isNullOrEmpty().not()) {
                         if(BuildConfig.DEBUG){
-                            println(text)
-                            println(TAG_JSON)
+//                            println(text)
+//                            println(TAG_JSON)
                             File.createTempFile("test", ".json", context.cacheDir).writeText(text)
                         }
                         val tmp = gson.fromJson(text, DrawResultArray::class.java)
@@ -182,7 +182,7 @@ object ConnectionObject {
     private fun getLatestDDate(schuPref: SharedPreferences): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
         val today = Calendar.getInstance()  //TODO  : 如何更新可能出現已下載的日期表之後有所改變，而不需經常訪問網址。
         today.clearTimePart()
-        println("first day of week ${today.time}")
+//        println("first day of week ${today.time}")
         today.add(Calendar.DATE,-today.get(Calendar.DAY_OF_WEEK))
         val drawYearJsonString =
             schuPref.getString(KEY_FIXTURES, JSONArray().toString())

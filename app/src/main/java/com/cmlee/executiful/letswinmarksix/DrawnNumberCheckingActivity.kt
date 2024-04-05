@@ -31,14 +31,12 @@ import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
 import com.google.android.material.tabs.TabLayout
-import kotlin.streams.toList
 
 class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
     TabLayout.OnTabSelectedListener/*, OnBackPressedCallback*/ {
     private lateinit var db: M6Db
     private val ht = HandlerThread("m6thread")
     private lateinit var hr: Handler
-    private val TAG = "DrawnNumberChecking"
     private lateinit var binding: ActivityDrawnNumberCheckingBinding
     private val adps = mutableListOf<DrawnAdapter>()
     private var bpcb = object : OnBackPressedCallback(
@@ -53,7 +51,7 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         companion object{
             val colors = arrayOf(intArrayOf(android.R.attr.state_enabled))
         }
-        fun setnum(c: AppCompatButton, i: Int, match: Boolean) {
+        private fun setnum(c: AppCompatButton, i: Int, match: Boolean) {
             val sp = SpannableString(i.toString())
 //        c.isSelected = !match
 //            sp.setSpan(StyleSpan(if (match)Typeface.BOLD_ITALIC else Typeface.NORMAL), 0, sp.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -95,7 +93,7 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         }
     }
 
-    class DrawnAdapter(val result: List<Pair<List<Boolean>, DrawResult>>, val context: Context) :
+    class DrawnAdapter(private val result: List<Pair<List<Boolean>, DrawResult>>, val context: Context) :
         RecyclerView.Adapter<DrawnVH>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DrawnVH {
@@ -171,12 +169,12 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         }
     }
 
-    fun population(waitdlg: AlertDialog) {
+    private fun population(waitdlg: AlertDialog) {
         db = M6Db.getDatabase(this)
         val allresult = db.DrawResultDao().getAll().filter { it.date >= dateStart }
         val max1 = 6 - bankers.size
 
-        val gb = allresult.parallelStream().map { rs ->
+        val gb = allresult/*.parallelStream()*/.map { rs ->
             val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
             rs.no.nos.map { it in m6 }.plus(rs.sno in bankers || rs.sno in legs) to rs
         }.filter { f -> f.first.take(6).count { it } >= 3 }.toList().groupBy { a ->

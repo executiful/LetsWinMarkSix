@@ -15,11 +15,17 @@ class SplashScreenActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        Handler(mainLooper).also{
-            it.postDelayed({
-                it.postDelayed({finish()}, 500)
-                startActivity(Intent(this, MainActivity::class.java))
-           }, 100)
+        if (BuildConfig.DEBUG) {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
+        } else {
+            Handler(mainLooper).also {
+                it.postDelayed({
+                    it.postDelayed({ finish() }, 500)
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                }, 100)
+            }
         }
     }
 }

@@ -4,25 +4,27 @@
     xmlns:tools="http://schemas.android.com/tools">
     <item
         android:id="@+id/action_generate"
-        android:title="@string/action_redraw"
         android:icon="@drawable/baseline_refresh_24"
-        app:showAsAction="ifRoom" />
+        android:title="@string/action_redraw"
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_view_all"
         android:icon="@drawable/baseline_remove_red_eye_24"
         android:title="@string/title_view_all"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
+<!--    <item-->
+<!--        android:id="@+id/action_info"-->
+<!--        android:icon="@drawable/icon_snowball"-->
+<!--        android:title="@string/action_info"-->
+<!--        android:visible="true"-->
+<!--        app:showAsAction="ifRoom" />-->
     <item
-        android:id="@+id/action_info"
-        android:title="@string/action_info"
-        android:icon="@drawable/icon_snowball"
-        app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_marksix"
         android:icon="@drawable/baseline_more_vert_24"
         android:menuCategory="container"
         android:orderInCategory="100"
-        app:showAsAction="ifRoom">
+        app:showAsAction="always"
+        tools:ignore="MenuTitle">
         <menu
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -63,6 +65,7 @@
                 android:layout_height="wrap_content"
                 android:icon="@drawable/checking_history_24"
                 android:title="@string/drawn_number_checking"
+                android:visible="false"
                 app:showAsAction="ifRoom" />
         </menu>
     </item>

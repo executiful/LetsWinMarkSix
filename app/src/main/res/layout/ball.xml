@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/id_ballinfo"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
@@ -17,6 +16,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_margin="@dimen/ball_radius"
         android:layout_weight="1">
 
         <androidx.appcompat.widget.AppCompatButton
@@ -26,7 +26,6 @@
             android:background="@drawable/ballcircle1"
             android:text="68"
             android:typeface="monospace"
-            android:layout_marginStart="@dimen/ball_radius"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintStart_toStartOf="parent"
@@ -37,24 +36,25 @@
             android:id="@+id/id_statistics"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/ball_radius"
+            android:clickable="false"
             android:fontFamily="monospace"
             android:text="19\n234☑"
-            android:textAlignment="viewEnd"
+            android:textAlignment="textEnd"
             android:textSize="@dimen/stat_txt_size"
-            android:clickable="false"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
         <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/imageView"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="\u2705&#x1F170;\u2611"
             android:clickable="false"
+            android:gravity="left"
+            android:text="A"
             android:textSize="@dimen/stat_txt_size"
             android:typeface="normal"
             android:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/id_number"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
