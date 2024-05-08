@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.bankers
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.dateStart
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.legs
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgMatch
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgNumbers
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.thinsp
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityDrawnNumberCheckingBinding
@@ -150,7 +151,7 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         binding.toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_entry -> {
-                    AlertDialog.Builder(this).setMessage(msgNumbers).show()
+                    AlertDialog.Builder(this).setMessage(msgNumbers+"\n"+ msgMatch).show()
                     true
                 }
 

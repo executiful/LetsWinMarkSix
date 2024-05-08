@@ -8,7 +8,7 @@ plugins {
 android {
     signingConfigs {
         release {
-            storeFile file('C:\\Users\\cmlee\\Documents\\My Project\\key4android\\m6_executiful.jks')
+            storeFile file('/home/cmlee/Documents/google-signed-keys/m6_executiful.jks')
             storePassword '7711&&!!nec'
             keyAlias 'm6_upload'
             keyPassword '9876!@#$nec'
@@ -22,8 +22,8 @@ android {
         minSdk 24
 
         targetSdk 33
-        versionCode 2
-        versionName "1.0"
+        versionCode 3
+        versionName '1.0.1'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 //        vectorDrawables {

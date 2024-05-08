@@ -142,7 +142,9 @@ object ConnectionObject {
         val ref = Calendar.getInstance()
         val today = Calendar.getInstance()
         ref.clear()
-        ref.time = drawResultDao.getLatestNotNull().date
+        val lat = drawResultDao.getLatestNotNull()
+        ref.time = lat.date
+        println(lat.id)
         ref.add(Calendar.DATE, 1)
         var sd = sdf.format(ref.time)
         val arrResult = mutableListOf<DrawResult>()
@@ -174,9 +176,30 @@ object ConnectionObject {
         }
         if(arrResult.isNotEmpty()) {
             arrResult.sortedByDescending { it.date }
-            drawResultDao.insertOrReplace(*arrResult.distinct().toTypedArray())
+            drawResultDao.insertOrReplace(*arrResult.distinct().filter { it.date<=Calendar.getInstance().time }.toTypedArray())
         }
         return arrResult
+    }
+    fun getScheduleAll(context: Context): List<Pair<Calendar, DrawDate>>{
+        return getScheduleAll(context.getSharedPreferences(TAG_FIXTURES, MODE_PRIVATE))
+    }
+    fun getScheduleAll(schuPref: SharedPreferences): List<Pair<Calendar, DrawDate>>{
+        val drawYearJsonString =
+            schuPref.getString(KEY_FIXTURES, JSONArray().toString())
+        val drawYear =
+            GsonBuilder().registerTypeAdapter(DrawYearItem::class.java, DrawMonthConverter())
+                .create().fromJson(drawYearJsonString, DrawYear::class.java)
+        val flatMap = drawYear.flatMap { yy ->
+            yy.drawMonth.flatMap { mm ->
+                mm.drawDate.map { dd ->
+                    val date = Calendar.getInstance()
+                    date.clear()
+                    date.set(yy.year, mm.month-1, dd.date)
+                    date to dd
+                }
+            }
+        }//.filter { it.first > today }
+        return flatMap
     }
     @SuppressLint("SimpleDateFormat")
     private fun getLatestDDate(schuPref: SharedPreferences): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {

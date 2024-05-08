@@ -33,7 +33,7 @@ interface DrawResultDao {
 
     @Delete
     fun delete(vararg drawResults: DrawResult)
-    companion object{
-        const val latestID = ""
-    }
+//    companion object{
+//        const val latestID = ""
+//    }
 }

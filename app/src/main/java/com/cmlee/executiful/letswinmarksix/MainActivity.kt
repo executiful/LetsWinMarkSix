@@ -49,15 +49,18 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT_UPDATE
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.UpdateLatestDraw
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getScheduleAll
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTD
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTR
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.sqlDate
 import com.cmlee.executiful.letswinmarksix.model.DrawStatus
 import com.cmlee.executiful.letswinmarksix.model.NumStat
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
+import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
 import java.lang.Math.random
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -616,6 +619,29 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     }
 
     private fun show_checking(): Boolean {
+        if(currentStatus!=DrawStatus.UnClassify){
+            latestDrawResult?.let {rs->
+                val max1 = 6 - bankers.size
+                val scheduleAll = getScheduleAll(this)
+                val today = Calendar.getInstance()
+//            today.add(Calendar.DATE, 14)
+                val take = scheduleAll.filter {
+                    it.first.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                            it.first.get(Calendar.DAY_OF_YEAR) <= today.get(Calendar.DAY_OF_YEAR)
+                }.last()
+                if(take.first.get(Calendar.DAY_OF_YEAR)==today.get(Calendar.DAY_OF_YEAR)){
+                    println("what is the day of ${take.first.time}, ${today.time}")
+
+                    val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
+                    msgMatch = rs.no.nos.map{ if(m6.contains(it)) "<$it>" else it}.plus(if(rs.sno in bankers || rs.sno in legs) "(<$rs.sno>)" else "($rs.sno)").joinToString()
+//                    msgMatch=if(rs.sno in bankers || rs.sno in legs)
+//                        m6.plus(rs.sno).joinToString()
+//                    else
+//                        m6.joinToString()
+//        rs.no.nos.map { it in m6 }.plus(rs.sno in bankers || rs.sno in legs) to rs
+                }
+            }
+        }
         startActivity(Intent(this, DrawnNumberCheckingActivity::class.java))
         return true
     }
@@ -775,6 +801,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             changeStatus (calcDrawStatus.first, true)
         }
         println("$TAG_BALL_DIALOG ${calcDrawStatus.first}")
+
+
         currentStatus = calcDrawStatus.first
     }
 
@@ -899,6 +927,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private fun genBall(order: List<NumStat>):Boolean {
         val db = M6Db.getDatabase(this)
         val drawResultDao = db.DrawResultDao()
+        latestDrawResult = drawResultDao.getLatest()
         val dr = drawResultDao.getAll()
         val temp = dr.sortedByDescending { it.date }
             .filter { it.date >= dateStart }
@@ -1043,7 +1072,9 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }.toSet()
         val legs get() = originalballs.filter { it.status== NumStat.NUMSTATUS.LEG }.map{it.num}.toSet()
         var msgNumbers:String = "+"
-
+        var msgMatch:String = "?"
+        val userChoices get() = originalballs.filterNot { it.status == NumStat.NUMSTATUS.UNSEL }.map { it.num }
+        var latestDrawResult :DrawResult?=null
         private val originalballs = (1..49).withIndex()//.sortedBy { Math.random() }
             .map { NumStat(it.value, it.index) }
         private var numberordering = originalballs.sortedBy { random() }
