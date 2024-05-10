@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:icon="@drawable/checking_history_24"
                 android:title="@string/drawn_number_checking"
-                android:visible="false"
+                android:visible="true"
                 app:showAsAction="ifRoom" />
         </menu>
     </item>

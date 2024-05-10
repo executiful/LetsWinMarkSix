@@ -625,20 +625,14 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 val scheduleAll = getScheduleAll(this)
                 val today = Calendar.getInstance()
 //            today.add(Calendar.DATE, 14)
-                val take = scheduleAll.filter {
-                    it.first.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
-                            it.first.get(Calendar.DAY_OF_YEAR) <= today.get(Calendar.DAY_OF_YEAR)
-                }.last()
-                if(take.first.get(Calendar.DAY_OF_YEAR)==today.get(Calendar.DAY_OF_YEAR)){
-                    println("what is the day of ${take.first.time}, ${today.time}")
+
+                if(rs.date in scheduleAll.filter { it.first <= today }.map{it.first.time}){
 
                     val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
-                    msgMatch = rs.no.nos.map{ if(m6.contains(it)) "<$it>" else it}.plus(if(rs.sno in bankers || rs.sno in legs) "(<$rs.sno>)" else "($rs.sno)").joinToString()
-//                    msgMatch=if(rs.sno in bankers || rs.sno in legs)
-//                        m6.plus(rs.sno).joinToString()
-//                    else
-//                        m6.joinToString()
-//        rs.no.nos.map { it in m6 }.plus(rs.sno in bankers || rs.sno in legs) to rs
+                    msgMatch = if(m6.size >=3) rs.id+" : "+
+                    rs.no.nos.map{ if(m6.contains(it)) "<$it>" else it}.plus(if(rs.sno in bankers || rs.sno in legs) "(<${rs.sno}>)" else "(${rs.sno})").joinToString(
+                        numberseperator)
+                    else ""
                 }
             }
         }

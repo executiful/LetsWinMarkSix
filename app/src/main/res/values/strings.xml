@@ -33,7 +33,7 @@
     <string name="unclassifydraw">注數：&#8212; (%1$d膽，%2$d腳)</string>
     <string name="multipledraw">複式，%1$d注 (%2$d)</string>
     <string name="bankerdraw">膽拖，%1$d注 (%2$d膽，%3$d腳)</string>
-    <string name="title_activity_drawn_number_checking">DrawnNumberChecking</string>
+    <string name="title_activity_drawn_number_checking">過往好手氣</string>
 
 
     <string name="interstitial_ad_sample">Interstitial Ad Sample</string>

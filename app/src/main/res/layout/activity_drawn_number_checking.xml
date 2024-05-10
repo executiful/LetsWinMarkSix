@@ -13,11 +13,11 @@
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
-            app:title="@string/app_name"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            app:menu="@menu/menu_drawn_number_checking"
             app:navigationIcon="@drawable/baseline_close_24"
-            app:menu="@menu/menu_drawn_number_checking" />
+            app:title="@string/title_activity_drawn_number_checking" />
 
         <FrameLayout
             android:id="@+id/ad_view_container"
