@@ -30,6 +30,7 @@ import java.net.URL
 import java.net.UnknownHostException
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 import java.util.concurrent.TimeoutException
 
 object ConnectionObject {
@@ -57,6 +58,7 @@ object ConnectionObject {
     private val sdf = SimpleDateFormat("yyyyMMdd")
     @SuppressLint("SimpleDateFormat")
     val sdf_now = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+    val monthFmt = SimpleDateFormat("MMMM", Locale.CHINA)
 
     fun Calendar.clearTimePart(): Calendar {
         val y = get(Calendar.YEAR)

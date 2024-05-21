@@ -194,14 +194,14 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
                 it.isVisible = true
             }
-        } else {
-            savedInstanceState.getIntArray(KEY_ORDER)?.let { ord ->
-                numberordering = ord.map { originalballs[it] }
-            }
-            savedInstanceState.getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
-                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
-            }
-            updateStatus()
+//        } else {
+//            savedInstanceState.getIntArray(KEY_ORDER)?.let { ord ->
+//                numberordering = ord.map { originalballs[it] }
+//            }
+//            savedInstanceState.getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
+//                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
+//            }
+//            updateStatus()
         }
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         m6bViews.forEachIndexed { index, it ->
@@ -212,6 +212,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             balldata(it, numberordering[index])
             it.idNumber.setOnClickListener {
                 updateball(index)
+                updateStatus()
             }
             if(BuildConfig.DEBUG){
                 it.idNumber.setOnLongClickListener {
@@ -226,7 +227,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
             }
         }
-
+        changeStatus(currentStatus, true)
         hr.post{
             UpdateLatestDraw(this){
                 runOnUiThread{
@@ -456,21 +457,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
     }
 
-    override fun onResume() {
-        hr.post{
-            UpdateLatestDraw(this){
-                if(it=="OK"){
-                    initball()
-                }
-            }
-        }
-        super.onResume()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit().clear().apply()
-        M6Db.getDatabase(this).close()
+//        M6Db.getDatabase(this).close()
     }
 
     fun saveEntry():Boolean{
@@ -640,11 +630,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         return true
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putIntArray(KEY_ORDER, numberordering.map { originalballs.indexOf(it) }.toIntArray())
-        outState.putStringArray(KEY_STATUS, originalballs.map{ it.status.toString()}.toTypedArray())
-    }
+//    override fun onSaveInstanceState(outState: Bundle) {
+//        super.onSaveInstanceState(outState)
+//        outState.putIntArray(KEY_ORDER, numberordering.map { originalballs.indexOf(it) }.toIntArray())
+//        outState.putStringArray(KEY_STATUS, originalballs.map{ it.status.toString()}.toTypedArray())
+//    }
 
     override val adUnitStringId: Int
         get() = R.string.admob_m6_lottery
@@ -754,7 +744,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         ""
                     }
                 }
-            updateStatus()
+//            updateStatus()
         }
         return item
     }
@@ -790,11 +780,12 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             leg[NumStat.NUMSTATUS.LEG]?.count() ?: 0,
             leg[NumStat.NUMSTATUS.BANKER]?.count() ?: 0
         )
+        println("$TAG_BALL_DIALOG ${calcDrawStatus.first}\\")
         if (currentStatus != calcDrawStatus.first) {
             changeStatus(currentStatus, false)
             changeStatus (calcDrawStatus.first, true)
         }
-        println("$TAG_BALL_DIALOG ${calcDrawStatus.first}")
+        println("$TAG_BALL_DIALOG ${calcDrawStatus.first}/")
 
 
         currentStatus = calcDrawStatus.first
@@ -817,6 +808,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     p(it as Dialog)
 //                    it.dismiss()
                 }
+                pauseDlg.setOnDismissListener {
+                    updateStatus()
+                    Toast.makeText(this, msgNumbers, Toast.LENGTH_LONG).show()
+                }
                 pauseDlg.show()
             }
         }
@@ -825,9 +820,9 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private fun initball(){
         if(System.currentTimeMillis() > lastInitMilliSec+ minInitMillSec) {
             genBall(numberordering)
-            Handler(Looper.getMainLooper()).post {
+            hr.post {
                 waitDlg {d->
-                    numberordering.indices.toList().parallelStream().forEach {
+                    numberordering.indices.toList()/*.parallelStream()*/.forEach {
                         runOnUiThread {
                             val item = numberordering[it]
 
@@ -865,10 +860,9 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                 }
                             }
                             balldata(m6bViews[it], item)
-                            updateStatus()
-                            d.dismiss()
                         }
                     }
+                    d.dismiss()
                     lastInitMilliSec = System.currentTimeMillis()
                 }
             }
@@ -964,6 +958,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         ans.forEach{
             updateball(it)
         }
+    updateStatus()
 //        val d = temp.distinct()
         for (i in 0 until 64) {
             val binaryString = Integer.toBinaryString(i).padStart(6, '0')
