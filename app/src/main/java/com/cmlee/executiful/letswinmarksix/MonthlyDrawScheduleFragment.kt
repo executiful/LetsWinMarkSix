@@ -97,11 +97,11 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                 return@block this
             }
         }
-        if(today.get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY)
+//        if(today.get(Calendar.DAY_OF_WEEK)==Calendar.SUNDAY)
             today.add(Calendar.DATE, -7)
-        else
+//        else
             today.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
-        val ddates = allddates.filter { it.first >= today && it.first <= allddates.last{ that-> that.second.draw == checked_value}.first }
+        val ddates = allddates.filter { it.first >= today /*&& it.first <= allddates.last{ that-> that.second.draw == checked_value}.first*/ }
         divider(2)
         if (ddates.isEmpty()) {
             commontv(getString(R.string.nothing_to_show), spec, spec7, MATCH_PARENT)

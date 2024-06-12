@@ -616,14 +616,12 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 val today = Calendar.getInstance()
 //            today.add(Calendar.DATE, 14)
 
-                if(rs.date in scheduleAll.filter { it.first <= today }.map{it.first.time}){
-
+                msgMatch =if(rs.date in scheduleAll.filter { it.first <= today }.map{it.first.time}){
                     val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
-                    msgMatch = if(m6.size >=3) rs.id+" : "+
+                         rs.id+" : "+
                     rs.no.nos.map{ if(m6.contains(it)) "<$it>" else it}.plus(if(rs.sno in bankers || rs.sno in legs) "(<${rs.sno}>)" else "(${rs.sno})").joinToString(
                         numberseperator)
-                    else ""
-                }
+                } else ""
             }
         }
         startActivity(Intent(this, DrawnNumberCheckingActivity::class.java))
