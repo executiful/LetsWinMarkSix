@@ -32,6 +32,7 @@ import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
 import com.google.android.material.tabs.TabLayout
+import kotlin.streams.toList
 
 class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
     TabLayout.OnTabSelectedListener/*, OnBackPressedCallback*/ {
@@ -175,15 +176,17 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         val allresult = db.DrawResultDao().getAll().filter { it.date >= dateStart }
         val max1 = 6 - bankers.size
 
-        val gb = allresult/*.parallelStream()*/.map { rs ->
-            val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
-            rs.no.nos.map { it in m6 }.plus(rs.sno in bankers || rs.sno in legs) to rs
-        }.filter { f -> f.first.take(6).count { it } >= 3 }.toList().groupBy { a ->
-            when (a.first.take(6).count { it }) {
+        val gb = allresult.indices.toList().parallelStream().map {
+            allresult[it].let{ rs->
+                val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
+                rs.no.nos.map { c -> c in m6 }.plus(rs.sno in bankers || rs.sno in legs) to rs
+            }
+        }.filter { (n, _) -> n.take(6).count { it } >= 3 }.toList().groupBy { (n, _) ->
+            when (n.take(6).count { it }) {
                 6 -> 0
-                5 -> if (a.first[6]) 1 else 2
-                4 -> if (a.first[6]) 3 else 4
-                3 -> if (a.first[6]) 5 else 6
+                5 -> if (n[6]) 1 else 2
+                4 -> if (n[6]) 3 else 4
+                3 -> if (n[6]) 5 else 6
                 else -> -1
             }
         }

@@ -14,7 +14,6 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Looper
 import android.text.Layout
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -27,6 +26,7 @@ import android.text.style.TabStopSpan
 import android.text.style.TextAppearanceSpan
 import android.text.style.UnderlineSpan
 import android.view.KeyEvent
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.GridLayout
 import android.widget.ImageView
@@ -63,6 +63,8 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.random.Random
+import kotlin.streams.toList
 
 
 class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelection {
@@ -77,8 +79,25 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private lateinit var hr :Handler
 
     private var msgCalc:String = "good luck!!"
+    private val evtShowTicket = View.OnClickListener {
+        alertDialog?.let {
+            if (it.isShowing)
+                return@OnClickListener
+        }
+        val dlg = AlertDialog.Builder(this)
+            .setTitle(msgCalc).setMessage(msgNumbers)
+        if (!(currentStatus == DrawStatus.UnClassify || getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(msgNumbers)))
+            dlg.setPositiveButton(android.R.string.copy) { d, _ ->
+                d.dismiss()
+//                saveEntry()
 
-    @SuppressLint("FileEndsWithExt", "RestrictedApi", "SuspiciousIndentation")
+                val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText(getString(R.string.chprize_1st), msgNumbers)
+                clipboard.setPrimaryClip(clip)
+            }
+        alertDialog = dlg.show()
+    }
+//    @SuppressLint("FileEndsWithExt", "RestrictedApi", "SuspiciousIndentation")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -91,7 +110,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         binding.ticketlayout.idLegs.removeAllViews()
         binding.ticketlayout.idBankers.removeAllViews()
         pauseDlg = AlertDialog.Builder(this, R.style.Theme_Wait_Dialog).setView(R.layout.pause_dialog_layout)
+            .setMessage("Wait...wait...`")
+            .setNeutralButton(android.R.string.ok, null)
             /*.setOnCancelListener { it.dismiss() }*/.create()
+    pauseDlg.show()
 //        pauseDlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
         pauseDlg.setCanceledOnTouchOutside(false)
 /*
@@ -132,7 +154,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         originalballs.also {
             legViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
             bankerViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
-            m6bViews = it.map { BallBinding.inflate(layoutInflater) }
+            m6bViews = it.map { BallBinding.inflate(layoutInflater).apply { this.root.isEnabled=false } }
             val iterator = it.map{ he -> he.num.toString()}.withIndex().iterator()
             while (iterator.hasNext()) {
                 val numB =
@@ -161,8 +183,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
         populate_toobar()
         populate_menu()
-
-        binding.ticketlayout.idTicket.setOnClickListener{
+        binding.ticketlayout.idTicket.setOnClickListener(evtShowTicket)
+/*        binding.ticketlayout.idTicket.setOnClickListener{
             alertDialog?.let {
                 if (it.isShowing)
                     return@setOnClickListener
@@ -179,16 +201,16 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     clipboard.setPrimaryClip(clip)
                 }
             alertDialog = dlg.show()
-        }
+        }*/
 
         // release later
-//        binding.ticketlayout.idTicket.setOnLongClickListener {
-//            if (currentStatus != DrawStatus.UnClassify)
-//                show_checking()
-//            else false
-//        }
+        binding.ticketlayout.idTicket.setOnLongClickListener {
+            if (currentStatus != DrawStatus.UnClassify)
+                show_checking()
+            else false
+        }
 
-        genBall(numberordering)
+//        genBall(numberordering)
 
         if (savedInstanceState == null) {
             binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
@@ -209,11 +231,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             layoutParams.width = 0
             layoutParams.height = 0
             binding.idBallselect.addView(it.root, layoutParams)
-            balldata(it, numberordering[index])
-            it.idNumber.setOnClickListener {
-                updateball(index)
-                updateStatus()
-            }
+//            balldata(it, numberordering[index])
+//            it.idNumber.setOnClickListener {
+//                updateball(index)
+//                updateStatus()
+//            }
             if(BuildConfig.DEBUG){
                 it.idNumber.setOnLongClickListener {
                     if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
@@ -228,10 +250,18 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             }
         }
         changeStatus(currentStatus, true)
+    pauseDlg.dismiss()
         hr.post{
             UpdateLatestDraw(this){
                 runOnUiThread{
                     initball()
+                    for (ballBinding in (m6bViews).parallelStream()) {
+                        ballBinding.root.isEnabled=true
+                        ballBinding.idNumber.setOnClickListener {
+                            updateball(m6bViews.indexOf(ballBinding))
+                            updateStatus()
+                        }
+                    }
                 }
             }
         }
@@ -248,10 +278,54 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 true
             }
             KeyEvent.KEYCODE_0 -> {
-                    if (currentStatus != DrawStatus.UnClassify) {
-                        show_checking()
-                        true
-                    } else false
+                    binding.ticketlayout.idTicket.performLongClick()
+            }
+            KeyEvent.KEYCODE_9->{
+                val allresult = M6Db.getDatabase(this).DrawResultDao().getAll().filter { it.date>= dateStart }
+                val datelist = StringBuilder()
+
+                val message = AlertDialog.Builder(this).setMessage("wait")
+//                    .setMessage(datelist.joinToString { sdf_display.format(it) })
+                    .create()
+                message.setOnShowListener {
+                        val odd_indices = allresult.indices.filter { it%2!=0 }.dropLast(1)
+                        val str = odd_indices.parallelStream().filter {
+                            allresult[it].no.nos.toList().intersect(allresult[it+1].no.nos.toSet()).size>2
+                        }.map{sdf_display.format(allresult[it].date)}.toList().joinToString()
+                        message.setMessage(str)
+                }
+                message.show()
+                true
+            }
+            KeyEvent.KEYCODE_4->{
+//                if(49-legs.size-bankers.size>6){
+                val luckies = originalballs
+                    .filterNot { it.num in legs }
+                    .filterNot { it.num in bankers }
+                    .sortedByDescending { if(it.since==0) Random.nextInt(50) else Random.nextInt(50) * it.since }//.take(bankers.size)
+                val sb = luckies.filterIndexed { index, numStat -> index> legs.size }
+                    .take(bankers.size)
+                    .sortedBy { it.num }
+                    .map{ it.num }
+                    .joinToString(numberseperator)
+                val sl = luckies.take(legs.size)
+//                    .sortedByDescending {  if(it.since==0) Random.nextInt(50) else Random.nextInt(50) * it.since }
+//                    .take(legs.size)
+                    .sortedBy{ it.num }
+                    .map{ it.num }
+                    .joinToString(numberseperator)
+                AlertDialog.Builder(this)
+                    .setTitle(legs.plus(bankers).sorted().joinToString(numberseperator))
+                    .setMessage(
+
+                        "$sb>${System.lineSeparator()}$sl"
+//                            .take(7).map { it.num }.sorted()
+//                            .joinToString(
+//                                numberseperator
+//                            )
+                    ).show()
+//                }
+                false
             }
             else -> super.onKeyDown(keyCode, event)
         }
@@ -608,6 +682,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         return true
     }
 
+    @SuppressLint("SuspiciousIndentation")
     private fun show_checking(): Boolean {
         if(currentStatus!=DrawStatus.UnClassify){
             latestDrawResult?.let {rs->
@@ -801,6 +876,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     }
     private fun waitDlg(p:(d: Dialog)->Unit){
         runOnUiThread{
+            pauseDlg.hide()
             if (!pauseDlg.isShowing) {
                 pauseDlg.setOnShowListener {
                     p(it as Dialog)
@@ -820,7 +896,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             genBall(numberordering)
             hr.post {
                 waitDlg {d->
-                    numberordering.indices.toList()/*.parallelStream()*/.forEach {
+                    numberordering.indices.toList().parallelStream().forEach {
                         runOnUiThread {
                             val item = numberordering[it]
 
