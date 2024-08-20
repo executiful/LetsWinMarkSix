@@ -17,4 +17,7 @@
     <color name="ballcircle4part">#0a0a0a</color>
     <color name="color_date">#8fFAE6E5</color>
     <color name="golden">#FFD700</color>
+    <color name="hkjc_red">#d9716d</color>
+    <color name="hkjc_blue">#4b7185</color>
+    <color name="hkjc_green">#8bb16f</color>
 </resources>

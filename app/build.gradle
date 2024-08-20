@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
     id 'kotlin-kapt'
     id 'base'
 }
@@ -8,22 +9,22 @@ plugins {
 android {
     signingConfigs {
         release {
-            storeFile file('/home/cmlee/Documents/google-signed-keys/m6_executiful.jks')
+            storeFile file('C:\\Users\\cmlee\\key4android\\m6_executiful.jks')
             storePassword '7711&&!!nec'
             keyAlias 'm6_upload'
             keyPassword '9876!@#$nec'
         }
     }
     namespace 'com.cmlee.executiful.letswinmarksix'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.cmlee.executiful.letswinmarksix"
         minSdk 24
 
-        targetSdk 33
+        targetSdk 34
         versionCode 3
-        versionName '1.0.1'
+        versionName '1.1.0'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 //        vectorDrawables {
