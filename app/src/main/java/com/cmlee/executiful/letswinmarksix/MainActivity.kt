@@ -66,7 +66,7 @@ import java.util.Locale
 import kotlin.random.Random
 
 
-class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelection {
+class MainActivity : BannerAppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var legViews: List<NumberTextviewBinding>
     private lateinit var bankerViews: List<NumberTextviewBinding>
@@ -113,40 +113,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             .setNeutralButton(android.R.string.ok, null)
             /*.setOnCancelListener { it.dismiss() }*/.create()
     pauseDlg.show()
-//        pauseDlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
         pauseDlg.setCanceledOnTouchOutside(false)
-/*
-        Handler(mainLooper).post {
-            cacheDir.listFiles()?.forEach {
-                if (it.endsWith(".json")) {
-                    if (it.length() == 0L || it.readText() == "[]") it.delete()
-//                }else if (it.endsWith(".txt")) {
-//                    val fromJson = Gson().fromJson(it.readText(), DrawYear::class.java)
-//                    File(it.name.replace(".txt", ".json")).writeText(Gson().toJson(fromJson, DrawYear::class.java))
-                }
-            }
-        }
-*/
-        if(BuildConfig.DEBUG) {
-            hr.post {
-                cacheDir.listFiles()?.filter { it.length() == 0L }?.parallelStream()
-                    ?.forEach { it.delete() }
-                cacheDir.listFiles()?.let {
-                    it.filter { it.isFile }
-                        .groupBy { it.readText() }.filter {
-                            it.value.size > 1
-                        }.entries.parallelStream()
-                        .forEach {
-                            it.value.sortedByDescending { it.lastModified() }
-                                .subList(1, it.value.lastIndex).parallelStream()
-                                .forEach {
-                                    println(it.name)
-                                    it.delete()
-                                }
-                        }
-                }
-            }
-        }
+
 //        setSupportActionBar(binding.toolbar)
 //        getString(R.string.ask_select).also { binding.toolbar.title = it }
 
@@ -175,54 +143,24 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
             }
         }
-//        with(binding.toolbar) {
-//            if (menu is MenuBuilder) (menu as MenuBuilder).setOptionalIconsVisible(true)
-//            menu.findItem(R.id.action_info)?.isVisible= BuildConfig.DEBUG //visible if is debug
-//        }
 
         populate_toobar()
         populate_menu()
         binding.ticketlayout.idTicket.setOnClickListener(evtShowTicket)
-/*        binding.ticketlayout.idTicket.setOnClickListener{
-            alertDialog?.let {
-                if (it.isShowing)
-                    return@setOnClickListener
-            }
-            val dlg = AlertDialog.Builder(this)
-                .setTitle(msgCalc).setMessage(msgNumbers)
-            if (!(currentStatus == DrawStatus.UnClassify || getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(msgNumbers)))
-                dlg.setPositiveButton(android.R.string.copy) { d, _ ->
-                d.dismiss()
-//                saveEntry()
 
-                    val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-                    val clip = ClipData.newPlainText(getString(R.string.chprize_1st), msgNumbers)
-                    clipboard.setPrimaryClip(clip)
-                }
-            alertDialog = dlg.show()
-        }*/
-
+/*
         // release later
         binding.ticketlayout.idTicket.setOnLongClickListener {
             if (currentStatus != DrawStatus.UnClassify)
                 show_checking()
             else false
         }
-
-//        genBall(numberordering)
+*/
 
         if (savedInstanceState == null) {
             binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
                 it.isVisible = true
             }
-//        } else {
-//            savedInstanceState.getIntArray(KEY_ORDER)?.let { ord ->
-//                numberordering = ord.map { originalballs[it] }
-//            }
-//            savedInstanceState.getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
-//                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
-//            }
-//            updateStatus()
         }
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         m6bViews.forEachIndexed { index, it ->
@@ -230,24 +168,13 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             layoutParams.width = 0
             layoutParams.height = 0
             binding.idBallselect.addView(it.root, layoutParams)
-            balldata(it, numberordering[index])
+//            balldata(it, numberordering[index])
             it.idNumber.setOnClickListener {
                 updateball(index)
                 updateStatus()
             }
-            if(BuildConfig.DEBUG){
-                it.idNumber.setOnLongClickListener {
-                    if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
-                        val phraseDialog = newInstance(index)
-                        phraseDialog.show(
-                            supportFragmentManager.beginTransaction(),
-                            TAG_BALL_DIALOG
-                        )
-                    }
-                    true
-                }
-            }
         }
+    initball()
         changeStatus(currentStatus, true)
     updateStatus()
     pauseDlg.dismiss()
@@ -509,31 +436,12 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     }
     private fun balldata(view: HkjcBallBinding, item: NumStat) {
         with(view){
-//            "${item.since}\n${item.times}".also { idStatistics.text = it }
             idNumber.text = item.numString
-//            idNumber.backgroundTintList = ColorStateList.valueOf(item.num.BallColor())
             if(item.status==NumStat.NUMSTATUS.BANKER){
                 idBallimage.setImageResource(R.drawable.marksix_ball_gold)
             } else {
                 balldrawable[item.num]?.let { idBallimage.setImageResource(it) }
             }
-/*            imageView.text =
-                when (item.status) {
-                    NumStat.NUMSTATUS.BANKER -> {
-                        if(!idBallinfo.isChecked) this.idBallinfo.isChecked = true
-                        getString(R.string.banker_indicator)
-                    }
-                    NumStat.NUMSTATUS.LEG -> {
-                        if(!idBallinfo.isChecked) this.idBallinfo.isChecked = true
-                        getString(R.string.leg_indicator)
-                    }
-                    NumStat.NUMSTATUS.UNSEL -> {
-                        if(idBallinfo.isChecked)this.idBallinfo.isChecked = false
-                        ""
-                    }
-                }
-
-            imageView.isVisible = item.status!=NumStat.NUMSTATUS.UNSEL*/
         }
     }
 
@@ -903,7 +811,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
     private fun initball(){
         if(System.currentTimeMillis() > lastInitMilliSec+ minInitMillSec) {
-            genBall(numberordering)
+//            genBall(numberordering)
             hr.post {
                 waitDlg {d->
                     numberordering.indices.toList().parallelStream().forEach {
@@ -1081,10 +989,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         const val dollar = '\uFE69'
         const val emdash = '\u2014'
         const val dotdotdot = '\u2026'
-//        const val banker_symbol = "&#x1F170;"
-//        const val tick_sym = '\u2611'
-//        const val whiteheavycheckmark = '\u2714'
-//        const val heavycheckmark = "☑"
         const val numberseperator = "$thinsp+"
         const val m6_49StartDate = "2002/07/04"
         private const val NAME_ORDER = "ORDER"
@@ -1215,52 +1119,4 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         var blind = true
     }
 
-    override fun getItem(idx: Int) = numberordering[idx]
-
-    @SuppressLint("SuspiciousIndentation")
-    override fun toggle(index: Int, reset: Boolean): NumStat {
-        if (reset) {
-            val item = numberordering[index]
-            val leg = legViews[item.idx]
-            val banker = bankerViews[item.idx]
-            when (item.status) {
-                NumStat.NUMSTATUS.LEG -> {
-                    leg.idBackground.setImageResource(R.drawable.pen_unmark_ani_vec)
-                    (leg.idBackground.drawable as AnimatedVectorDrawable).start()
-                }
-
-                NumStat.NUMSTATUS.BANKER -> {
-                    banker.idBackground.setImageResource(R.drawable.pen_unmark_ani_vec)
-                    (banker.idBackground.drawable as AnimatedVectorDrawable).start()
-                }
-
-                NumStat.NUMSTATUS.UNSEL -> {}
-            }
-            item.status = NumStat.NUMSTATUS.UNSEL
-            val ordering = originalballs.filter { it.status == NumStat.NUMSTATUS.UNSEL }
-                .sortedBy { random() }.toMutableList()
-
-            numberordering.forEachIndexed { i, n ->
-                if (n.status == NumStat.NUMSTATUS.UNSEL) {
-                    val that = ordering[i]
-                    with(m6bViews[i]) {
-                        idNumber.text=that.numString
-//                        "${that.since}\n${that.times}".also { idStatistics.text = it }
-                    }
-                } else
-                    ordering.add(i, n)
-            }
-            numberordering = ordering
-/*            numberordering.filter { it.status == NumStat.NUMSTATUS.UNSEL }.forEach { next ->
-                val filter =
-                    numberordering.filter { it.idx == next.idx + 1 || it.idx == next.idx - 1 }
-                m6bViews[numberordering.indexOf(next)].imageBeside.isVisible =
-                    (filter.any { it.status != NumStat.NUMSTATUS.UNSEL })
-            }*/
-
-            updateStatus()
-            return item
-        } else
-            return updateball(index, reset)
-    }
 }
