@@ -39,7 +39,7 @@ object ConnectionObject {
     private const val incTO = 5
     private const val readTO = 10
     private const val Scheme = "https"
-    private const val Auth = "bet.hkjc.com"
+    private const val Auth = "bet2.hkjc.com"
     private const val M6Path = "marksix"
     private const val TAG_FIXTURES = "Fixtures"
     private const val TAG_STATISTICS = "Statistics"

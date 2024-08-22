@@ -21,6 +21,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.bankers
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.dateStart
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.legs
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgCalc
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgMatch
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgNumbers
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.thinsp
@@ -152,7 +153,7 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         binding.toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_entry -> {
-                    AlertDialog.Builder(this).setMessage(msgNumbers+"\n"+ msgMatch).show()
+                    AlertDialog.Builder(this).setTitle(msgCalc).setMessage(msgNumbers/*+"\n"+ msgMatch*/).show()
                     true
                 }
 
@@ -176,7 +177,7 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         val allresult = db.DrawResultDao().getAll().filter { it.date >= dateStart }
         val max1 = 6 - bankers.size
 
-        val gb = allresult.indices.toList().parallelStream().map {
+        val gb = allresult.indices.toList()./*parallelStream().*/map {
             allresult[it].let{ rs->
                 val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
                 rs.no.nos.map { c -> c in m6 }.plus(rs.sno in bankers || rs.sno in legs) to rs

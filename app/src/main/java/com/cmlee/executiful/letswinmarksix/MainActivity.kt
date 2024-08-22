@@ -38,8 +38,8 @@ import androidx.core.view.isVisible
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.TAG_BALL_DIALOG
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.newInstance
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityMainBinding
+import com.cmlee.executiful.letswinmarksix.databinding.BallBinding
 import com.cmlee.executiful.letswinmarksix.databinding.ColumnOfNumberBinding
-import com.cmlee.executiful.letswinmarksix.databinding.HkjcBallBinding
 import com.cmlee.executiful.letswinmarksix.databinding.NumberTextviewBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.ListView
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
@@ -64,20 +64,21 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import kotlin.random.Random
+import kotlin.streams.toList
 
 
-class MainActivity : BannerAppCompatActivity() {
+class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelection {
     private lateinit var binding: ActivityMainBinding
     private lateinit var legViews: List<NumberTextviewBinding>
     private lateinit var bankerViews: List<NumberTextviewBinding>
-    private lateinit var m6bViews: List<HkjcBallBinding>
+    private lateinit var m6bViews: List<BallBinding>
     private lateinit var pauseDlg : AlertDialog
     private var alertDialog:AlertDialog? = null
 
     private val ht = HandlerThread("m6thread")
     private lateinit var hr :Handler
 
-    private var msgCalc:String = "good luck!!"
+//    private var msgCalc:String = "good luck!!"
     private val evtShowTicket = View.OnClickListener {
         alertDialog?.let {
             if (it.isShowing)
@@ -113,15 +114,47 @@ class MainActivity : BannerAppCompatActivity() {
             .setNeutralButton(android.R.string.ok, null)
             /*.setOnCancelListener { it.dismiss() }*/.create()
     pauseDlg.show()
+//        pauseDlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
         pauseDlg.setCanceledOnTouchOutside(false)
-
+/*
+        Handler(mainLooper).post {
+            cacheDir.listFiles()?.forEach {
+                if (it.endsWith(".json")) {
+                    if (it.length() == 0L || it.readText() == "[]") it.delete()
+//                }else if (it.endsWith(".txt")) {
+//                    val fromJson = Gson().fromJson(it.readText(), DrawYear::class.java)
+//                    File(it.name.replace(".txt", ".json")).writeText(Gson().toJson(fromJson, DrawYear::class.java))
+                }
+            }
+        }
+*/
+        if(BuildConfig.DEBUG) {
+            hr.post {
+                cacheDir.listFiles()?.filter { it.length() == 0L }?.parallelStream()
+                    ?.forEach { it.delete() }
+                cacheDir.listFiles()?.let {
+                    it.filter { it.isFile }
+                        .groupBy { it.readText() }.filter {
+                            it.value.size > 1
+                        }.entries.parallelStream()
+                        .forEach {
+                            it.value.sortedByDescending { it.lastModified() }
+                                .subList(1, it.value.lastIndex).parallelStream()
+                                .forEach {
+                                    println(it.name)
+                                    it.delete()
+                                }
+                        }
+                }
+            }
+        }
 //        setSupportActionBar(binding.toolbar)
 //        getString(R.string.ask_select).also { binding.toolbar.title = it }
 
         originalballs.also {
             legViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
             bankerViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
-            m6bViews = it.map { HkjcBallBinding.inflate(layoutInflater).apply { this.root.isEnabled=false } }
+            m6bViews = it.map { BallBinding.inflate(layoutInflater).apply { this.root.isEnabled=false } }
             val iterator = it.map{ he -> he.num.toString()}.withIndex().iterator()
             while (iterator.hasNext()) {
                 val numB =
@@ -143,24 +176,54 @@ class MainActivity : BannerAppCompatActivity() {
                 }
             }
         }
+//        with(binding.toolbar) {
+//            if (menu is MenuBuilder) (menu as MenuBuilder).setOptionalIconsVisible(true)
+//            menu.findItem(R.id.action_info)?.isVisible= BuildConfig.DEBUG //visible if is debug
+//        }
 
         populate_toobar()
         populate_menu()
         binding.ticketlayout.idTicket.setOnClickListener(evtShowTicket)
+/*        binding.ticketlayout.idTicket.setOnClickListener{
+            alertDialog?.let {
+                if (it.isShowing)
+                    return@setOnClickListener
+            }
+            val dlg = AlertDialog.Builder(this)
+                .setTitle(msgCalc).setMessage(msgNumbers)
+            if (!(currentStatus == DrawStatus.UnClassify || getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(msgNumbers)))
+                dlg.setPositiveButton(android.R.string.copy) { d, _ ->
+                d.dismiss()
+//                saveEntry()
 
-/*
+                    val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                    val clip = ClipData.newPlainText(getString(R.string.chprize_1st), msgNumbers)
+                    clipboard.setPrimaryClip(clip)
+                }
+            alertDialog = dlg.show()
+        }*/
+
         // release later
         binding.ticketlayout.idTicket.setOnLongClickListener {
             if (currentStatus != DrawStatus.UnClassify)
                 show_checking()
             else false
         }
-*/
+
+//        genBall(numberordering)
 
         if (savedInstanceState == null) {
             binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
                 it.isVisible = true
             }
+//        } else {
+//            savedInstanceState.getIntArray(KEY_ORDER)?.let { ord ->
+//                numberordering = ord.map { originalballs[it] }
+//            }
+//            savedInstanceState.getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
+//                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
+//            }
+//            updateStatus()
         }
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         m6bViews.forEachIndexed { index, it ->
@@ -169,17 +232,26 @@ class MainActivity : BannerAppCompatActivity() {
             layoutParams.height = 0
             binding.idBallselect.addView(it.root, layoutParams)
 //            balldata(it, numberordering[index])
-            it.idNumber.setOnClickListener {
-                updateball(index)
-                updateStatus()
+//            it.idNumber.setOnClickListener {
+//                updateball(index)
+//                updateStatus()
+//            }
+            if(BuildConfig.DEBUG){
+                it.idNumber.setOnLongClickListener {
+                    if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
+                        val phraseDialog = newInstance(index)
+                        phraseDialog.show(
+                            supportFragmentManager.beginTransaction(),
+                            TAG_BALL_DIALOG
+                        )
+                    }
+                    true
+                }
             }
         }
-    initball()
         changeStatus(currentStatus, true)
-    updateStatus()
     pauseDlg.dismiss()
-
-      /*  hr.post{
+        hr.post{
             UpdateLatestDraw(this){
                 runOnUiThread{
                     initball()
@@ -192,7 +264,7 @@ class MainActivity : BannerAppCompatActivity() {
                     }
                 }
             }
-        }*/
+        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -217,7 +289,7 @@ class MainActivity : BannerAppCompatActivity() {
                     .create()
                 message.setOnShowListener {
                         val odd_indices = allresult.indices.filter { it%2!=0 }.dropLast(1)
-                        val str = odd_indices/*.parallelStream()*/.filter {
+                        val str = odd_indices.parallelStream().filter {
                             allresult[it].no.nos.toList().intersect(allresult[it+1].no.nos.toSet()).size>2
                         }.map{sdf_display.format(allresult[it].date)}.toList().joinToString()
                         message.setMessage(str)
@@ -434,14 +506,28 @@ class MainActivity : BannerAppCompatActivity() {
             v.isVisible = blind
         }
     }
-    private fun balldata(view: HkjcBallBinding, item: NumStat) {
+    private fun balldata(view: BallBinding, item: NumStat) {
         with(view){
+            "${item.since}\n${item.times}".also { idStatistics.text = it }
             idNumber.text = item.numString
-            if(item.status==NumStat.NUMSTATUS.BANKER){
-                idBallimage.setImageResource(R.drawable.marksix_ball_gold)
-            } else {
-                balldrawable[item.num]?.let { idBallimage.setImageResource(it) }
-            }
+            idNumber.backgroundTintList = ColorStateList.valueOf(item.num.BallColor())
+            imageView.text =
+                when (item.status) {
+                    NumStat.NUMSTATUS.BANKER -> {
+                        if(!idBallinfo.isChecked) this.idBallinfo.isChecked = true
+                        getString(R.string.banker_indicator)
+                    }
+                    NumStat.NUMSTATUS.LEG -> {
+                        if(!idBallinfo.isChecked) this.idBallinfo.isChecked = true
+                        getString(R.string.leg_indicator)
+                    }
+                    NumStat.NUMSTATUS.UNSEL -> {
+                        if(idBallinfo.isChecked)this.idBallinfo.isChecked = false
+                        ""
+                    }
+                }
+
+            imageView.isVisible = item.status!=NumStat.NUMSTATUS.UNSEL
         }
     }
 
@@ -678,14 +764,14 @@ class MainActivity : BannerAppCompatActivity() {
             when (item.status) {
                 NumStat.NUMSTATUS.LEG -> {
                     item.status = NumStat.NUMSTATUS.BANKER
-//                    m6b.imageView.isVisible = true
+                    m6b.imageView.isVisible = true
 //                    m6b.imageView.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_ticket))
                     updatemark(leg, banker)
                 }
 
                 NumStat.NUMSTATUS.BANKER -> {
                     item.status = NumStat.NUMSTATUS.LEG
-//                    m6b.imageView.isVisible = true
+                    m6b.imageView.isVisible = true
 //                    m6b.imageView.backgroundTintList = null
                     updatemark(banker, leg)
                 }
@@ -693,7 +779,7 @@ class MainActivity : BannerAppCompatActivity() {
                 NumStat.NUMSTATUS.UNSEL -> {
                     item.status = NumStat.NUMSTATUS.LEG
                     m6bViews[index].idNumber.text=item.numString
-//                    m6b.imageView.isVisible = true
+                    m6b.imageView.isVisible = true
 //                    m6b.imageView.backgroundTintList = null
                     leg.idBackground.apply {
                         setImageResource(R.drawable.pen_mark_ani_vec)
@@ -712,13 +798,9 @@ class MainActivity : BannerAppCompatActivity() {
 //                    m6b.idDrawtype.text="L"
                 }
             }
-//            m6b.idNumber.backgroundTintList = ColorStateList.valueOf(item.num.BallColor())
-            if(item.status==NumStat.NUMSTATUS.BANKER){
-                m6b.idBallimage.setImageResource(R.drawable.marksix_ball_gold)
-            } else {
-                balldrawable[item.num]?.let { m6b.idBallimage.setImageResource(it) }
-            }
-/*            m6b.imageView.text =
+            m6b.idNumber.backgroundTintList =
+                ColorStateList.valueOf(item.num.BallColor())
+            m6b.imageView.text =
                 when (item.status) {
                     NumStat.NUMSTATUS.BANKER -> {
 //                        m6b.idBallinfo.performClick()
@@ -734,7 +816,7 @@ class MainActivity : BannerAppCompatActivity() {
                         m6b.idBallinfo.isChecked=false
                         ""
                     }
-                }*/
+                }
 //            updateStatus()
         }
         return item
@@ -811,7 +893,7 @@ class MainActivity : BannerAppCompatActivity() {
 
     private fun initball(){
         if(System.currentTimeMillis() > lastInitMilliSec+ minInitMillSec) {
-//            genBall(numberordering)
+            genBall(numberordering)
             hr.post {
                 waitDlg {d->
                     numberordering.indices.toList().parallelStream().forEach {
@@ -989,6 +1071,10 @@ class MainActivity : BannerAppCompatActivity() {
         const val dollar = '\uFE69'
         const val emdash = '\u2014'
         const val dotdotdot = '\u2026'
+//        const val banker_symbol = "&#x1F170;"
+//        const val tick_sym = '\u2611'
+//        const val whiteheavycheckmark = '\u2714'
+//        const val heavycheckmark = "☑"
         const val numberseperator = "$thinsp+"
         const val m6_49StartDate = "2002/07/04"
         private const val NAME_ORDER = "ORDER"
@@ -1046,61 +1132,12 @@ class MainActivity : BannerAppCompatActivity() {
             48	to Color.BLUE,
             49	to Color.GREEN,
         )
-        val balldrawable = mapOf(
-            1	to R.drawable.marksix_ball_red,
-            2	to R.drawable.marksix_ball_red,
-            3	to R.drawable.marksix_ball_blue,
-            4	to R.drawable.marksix_ball_blue,
-            5	to R.drawable.marksix_ball_green,
-            6	to R.drawable.marksix_ball_green,
-            7	to R.drawable.marksix_ball_red,
-            8	to R.drawable.marksix_ball_red,
-            9	to R.drawable.marksix_ball_blue,
-            10	to R.drawable.marksix_ball_blue,
-            11	to R.drawable.marksix_ball_green,
-            12	to R.drawable.marksix_ball_red,
-            13	to R.drawable.marksix_ball_red,
-            14	to R.drawable.marksix_ball_blue,
-            15	to R.drawable.marksix_ball_blue,
-            16	to R.drawable.marksix_ball_green,
-            17	to R.drawable.marksix_ball_green,
-            18	to R.drawable.marksix_ball_red,
-            19	to R.drawable.marksix_ball_red,
-            20	to R.drawable.marksix_ball_blue,
-            21	to R.drawable.marksix_ball_green,
-            22	to R.drawable.marksix_ball_green,
-            23	to R.drawable.marksix_ball_red,
-            24	to R.drawable.marksix_ball_red,
-            25	to R.drawable.marksix_ball_blue,
-            26	to R.drawable.marksix_ball_blue,
-            27	to R.drawable.marksix_ball_green,
-            28	to R.drawable.marksix_ball_green,
-            29	to R.drawable.marksix_ball_red,
-            30	to R.drawable.marksix_ball_red,
-            31	to R.drawable.marksix_ball_blue,
-            32	to R.drawable.marksix_ball_green,
-            33	to R.drawable.marksix_ball_green,
-            34	to R.drawable.marksix_ball_red,
-            35	to R.drawable.marksix_ball_red,
-            36	to R.drawable.marksix_ball_blue,
-            37	to R.drawable.marksix_ball_blue,
-            38	to R.drawable.marksix_ball_green,
-            39	to R.drawable.marksix_ball_green,
-            40	to R.drawable.marksix_ball_red,
-            41	to R.drawable.marksix_ball_blue,
-            42	to R.drawable.marksix_ball_blue,
-            43	to R.drawable.marksix_ball_green,
-            44	to R.drawable.marksix_ball_green,
-            45	to R.drawable.marksix_ball_red,
-            46	to R.drawable.marksix_ball_red,
-            47	to R.drawable.marksix_ball_blue,
-            48	to R.drawable.marksix_ball_blue,
-            49	to R.drawable.marksix_ball_green,
-        )
         val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }.toSet()
         val legs get() = originalballs.filter { it.status== NumStat.NUMSTATUS.LEG }.map{it.num}.toSet()
         var msgNumbers:String = "+"
         var msgMatch:String = "?"
+        var msgCalc:String = "good luck!!"
+
         val userChoices get() = originalballs.filterNot { it.status == NumStat.NUMSTATUS.UNSEL }.map { it.num }
         var latestDrawResult :DrawResult?=null
         private val originalballs = (1..49).withIndex()//.sortedBy { Math.random() }
@@ -1119,4 +1156,52 @@ class MainActivity : BannerAppCompatActivity() {
         var blind = true
     }
 
+    override fun getItem(idx: Int) = numberordering[idx]
+
+    @SuppressLint("SuspiciousIndentation")
+    override fun toggle(index: Int, reset: Boolean): NumStat {
+        if (reset) {
+            val item = numberordering[index]
+            val leg = legViews[item.idx]
+            val banker = bankerViews[item.idx]
+            when (item.status) {
+                NumStat.NUMSTATUS.LEG -> {
+                    leg.idBackground.setImageResource(R.drawable.pen_unmark_ani_vec)
+                    (leg.idBackground.drawable as AnimatedVectorDrawable).start()
+                }
+
+                NumStat.NUMSTATUS.BANKER -> {
+                    banker.idBackground.setImageResource(R.drawable.pen_unmark_ani_vec)
+                    (banker.idBackground.drawable as AnimatedVectorDrawable).start()
+                }
+
+                NumStat.NUMSTATUS.UNSEL -> {}
+            }
+            item.status = NumStat.NUMSTATUS.UNSEL
+            val ordering = originalballs.filter { it.status == NumStat.NUMSTATUS.UNSEL }
+                .sortedBy { random() }.toMutableList()
+
+            numberordering.forEachIndexed { i, n ->
+                if (n.status == NumStat.NUMSTATUS.UNSEL) {
+                    val that = ordering[i]
+                    with(m6bViews[i]) {
+                        idNumber.text=that.numString
+                        "${that.since}\n${that.times}".also { idStatistics.text = it }
+                    }
+                } else
+                    ordering.add(i, n)
+            }
+            numberordering = ordering
+/*            numberordering.filter { it.status == NumStat.NUMSTATUS.UNSEL }.forEach { next ->
+                val filter =
+                    numberordering.filter { it.idx == next.idx + 1 || it.idx == next.idx - 1 }
+                m6bViews[numberordering.indexOf(next)].imageBeside.isVisible =
+                    (filter.any { it.status != NumStat.NUMSTATUS.UNSEL })
+            }*/
+
+            updateStatus()
+            return item
+        } else
+            return updateball(index, reset)
+    }
 }

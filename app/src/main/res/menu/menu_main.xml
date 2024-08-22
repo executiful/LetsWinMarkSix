@@ -23,8 +23,7 @@
         android:icon="@drawable/baseline_more_vert_24"
         android:menuCategory="container"
         android:orderInCategory="100"
-        android:visible="false"
-        app:showAsAction="never"
+        app:showAsAction="always"
         tools:ignore="MenuTitle">
         <menu
             android:layout_width="match_parent"
