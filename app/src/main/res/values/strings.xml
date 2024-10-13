@@ -94,4 +94,5 @@
     <string name="banker_indicator">&#x2714;</string>
     <string name="leg_indicator"></string>
     <string name="action_marksix">六合彩資訊</string>
+    <string name="sortby_number">順序並顯示號碼</string>
 </resources>

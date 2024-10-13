@@ -25,7 +25,6 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.clearTimePart
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.monthFmt
 import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawDate.Companion.checked_value
-import java.text.SimpleDateFormat
 import java.util.Calendar
 
 // TODO: Rename parameter arguments, choose names that match
@@ -159,7 +158,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                 }
                 tv.text = sptext
                 binding.idDates.addView(tv, layoutParams)
-                tv.isVisible = ConnectionObject.monthFmt.format(step.time) == i
+                tv.isVisible = monthFmt.format(step.time) == i
                 step.add(Calendar.DATE, 1)
             }
             divider(2)
@@ -174,7 +173,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
     }
 
     companion object {
-        val monthformat = SimpleDateFormat("")
+//        val monthformat = SimpleDateFormat("")
 //        private const val checked = "1"
         /**
          * Use this factory method to create a new instance of

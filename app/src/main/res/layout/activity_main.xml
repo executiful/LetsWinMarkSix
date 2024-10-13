@@ -36,7 +36,7 @@
 
         <GridLayout
             android:id="@+id/id_ballselect"
-            android:layout_marginStart="2dp"
+            android:layout_marginStart="5dp"
             android:layout_marginEnd="2dp"
             android:layout_width="0dp"
             android:layout_height="0dp"

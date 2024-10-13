@@ -6,6 +6,8 @@ import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
+import android.text.Html
+import androidx.core.text.HtmlCompat
 import com.cmlee.executiful.letswinmarksix.BuildConfig
 import com.cmlee.executiful.letswinmarksix.model.NoArray
 import com.cmlee.executiful.letswinmarksix.model.UnitPrice
@@ -234,7 +236,7 @@ object ConnectionObject {
                     } catch (e: Exception) {
                         false
                     }
-                }.map { dfm.parse(it) to it }
+                }.map { dfm.parse(it) to Html.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString() }
             }
 
         }
@@ -247,7 +249,7 @@ object ConnectionObject {
         val commingDDate = getLatestDDate(schuPref)
         if(commingDDate.first.isEmpty() ||
             commingDDate.first.count {(it.second.draw==checked_value||it.second.preSell==checked_value)&& it.first>today } < 5) {
-            val doc = getJsoupDoc(TAG_FIXTURES, mapOf("lang" to "ch")) ?: return commingDDate
+            getJsoupDoc(TAG_FIXTURES, mapOf("lang" to "ch")) ?.let { doc->
             val regex =
                 Regex("\\s*var\\s*dataJson\\s*=\\s*(.*)\\s*;", RegexOption.DOT_MATCHES_ALL)
             doc.getElementsByTag("script").forEach { element ->
@@ -261,6 +263,7 @@ object ConnectionObject {
                         return getLatestDDate(schuPref) // get comming drawdate from the bet.hkjc.com again which is the latest!!
                     }
                 }
+            }
             }
         }
         return commingDDate
@@ -328,7 +331,7 @@ object ConnectionObject {
             getIndex(context, drawResultDao.getLatest())?.also {
                 // load schedule , today not found ==> fixtures => draw schedule
                 // latest date < today => error
-                val (_, _) = getLatestSchecule(context)
+//                val (_, _) = getLatestSchecule(context)
                 val latestResult = getLatestResult(drawResultDao, context)
 
                 if (latestResult.isNotEmpty())
