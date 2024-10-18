@@ -248,7 +248,7 @@ object ConnectionObject {
         val schuPref = context.getSharedPreferences(TAG_FIXTURES, MODE_PRIVATE)
         val commingDDate = getLatestDDate(schuPref)
         if(commingDDate.first.isEmpty() ||
-            commingDDate.first.count {(it.second.draw==checked_value||it.second.preSell==checked_value)&& it.first>today } < 5) {
+            commingDDate.first.count {(it.second.draw==checked_value||it.second.preSell==checked_value)&& it.first>today } < 7) {
             getJsoupDoc(TAG_FIXTURES, mapOf("lang" to "ch")) ?.let { doc->
             val regex =
                 Regex("\\s*var\\s*dataJson\\s*=\\s*(.*)\\s*;", RegexOption.DOT_MATCHES_ALL)

@@ -15,6 +15,7 @@ import android.widget.GridLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.ContextCompat
 import androidx.core.view.isEmpty
 import androidx.core.view.isVisible
@@ -67,6 +68,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
         val spec7 = GridLayout.spec(0, 7)
         val (allddates, jackpots) = ConnectionObject.getLatestSchecule(requireContext())
         val today = Calendar.getInstance()
+        val jp = mutableListOf<String>()
         today.clearTimePart()
 //        today.add(Calendar.DATE, -4)
 //        val db = M6Db.getDatabase(requireContext()).DrawResultDao()
@@ -86,7 +88,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
             }
         }
         val commontv = block@{ txt: String, r: GridLayout.Spec, c: GridLayout.Spec, w: Int ->
-            with(TextView(requireContext())) {
+            with(AppCompatTextView(requireContext())) {
                 layoutParams = GridLayout.LayoutParams(r, c)
                 layoutParams.width = w
                 layoutParams.height = WRAP_CONTENT
@@ -122,7 +124,8 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
             lastdayofmonth.set(Calendar.DATE,pairs.first().first.getActualMaximum(Calendar.DAY_OF_MONTH))
 
             val step = pairs.first().first.clone() as Calendar
-
+            step.set(Calendar.DAY_OF_MONTH, 1)
+            step.add(Calendar.DATE,-1)
             step.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
             while (step <= lastdayofmonth) {
                 val layoutParams = GridLayout.LayoutParams(spec, spec)
@@ -130,7 +133,6 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                 layoutParams.height = WRAP_CONTENT
                 val tv = TextView(requireContext())// rt.findViewById<TextView>(android.R.id.text1)
                 tv.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_END
-//                val aaa = if(results.find { it.date == step.time }==null) "a" else "b"
                 val sptext = SpannableString("${step.get(Calendar.DATE)}${ensp}")
                 tv.isEnabled = false
                 allddates.find { it.first == step }?.let {
@@ -143,6 +145,8 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                             //todo
                         }
                         checked_value==it.second.jackpot -> {
+
+                            jackpots.find { target->target.first == step.time }?.let { (_,f)-> jp.add(f) }
                             tv.background = AppCompatResources.getDrawable(
                                 requireContext(),
                                 R.drawable.dayborder
@@ -152,6 +156,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                             tv.isSelected = true
                         }
                         checked_value!=it.second.draw -> {
+                            tv.isEnabled=false
                             sptext.setSpan(StrikethroughSpan(), 0, sptext.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
                     }
@@ -166,8 +171,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
         if(binding.idDates.isEmpty()){
             binding.idDates.background = AppCompatResources.getDrawable(requireContext(), android.R.drawable.ic_notification_overlay)
         }
-        jackpots.filter { d -> ddates.find { d.first == it.first.time } != null }
-            .joinToString(System.lineSeparator()) { it.second }
+        jp.joinToString(System.lineSeparator())
             .also { binding.idjackpotstxt.text = it }
         return binding.root
     }
