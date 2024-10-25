@@ -3,6 +3,7 @@ package com.cmlee.executiful.letswinmarksix
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
+import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -27,11 +28,13 @@ import android.text.style.UnderlineSpan
 import android.view.KeyEvent
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.children
 import androidx.core.view.indices
 import androidx.core.view.isVisible
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.TAG_BALL_DIALOG
@@ -73,7 +76,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private lateinit var m6bViews: List<BallBinding>
     private lateinit var pauseDlg : AlertDialog
     private var alertDialog:AlertDialog? = null
-
+    private val dislikeNumbers = mutableListOf<Int>()
     private val ht = HandlerThread("m6thread")
     private lateinit var hr :Handler
 
@@ -179,6 +182,21 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //            menu.findItem(R.id.action_info)?.isVisible= BuildConfig.DEBUG //visible if is debug
 //        }
 
+        if (savedInstanceState == null) {
+            binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
+                it.isVisible = blind
+            }
+//        } else {
+//            savedInstanceState.getIntArray(KEY_ORDER)?.let { ord ->
+//                numberordering = ord.map { originalballs[it] }
+//            }
+//            savedInstanceState.getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
+//                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
+//            }
+//            updateStatus()
+        } else {
+            binding.toolbar.menu.findItem(R.id.action_view_all)?.let { it.isVisible = !blind }
+        }
         populate_toobar()
         populate_menu()
         binding.ticketlayout.idTicket.setOnClickListener(evtShowTicket)
@@ -210,21 +228,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
 //        genBall(numberordering)
 
-        if (savedInstanceState == null) {
-            binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
-                it.isVisible = blind
-            }
-//        } else {
-//            savedInstanceState.getIntArray(KEY_ORDER)?.let { ord ->
-//                numberordering = ord.map { originalballs[it] }
-//            }
-//            savedInstanceState.getStringArray(KEY_STATUS)?.forEachIndexed { index, s ->
-//                originalballs[index].status = NumStat.NUMSTATUS.valueOf(s)
-//            }
-//            updateStatus()
-        } else {
-            binding.toolbar.menu.findItem(R.id.action_view_all)?.let { it.isVisible = !blind }
-        }
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         m6bViews.forEachIndexed { index, it ->
             val layoutParams = GridLayout.LayoutParams(spec, spec)
@@ -350,12 +353,44 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
                 R.id.action_generate -> {
                     val dialogBinding = RefreshDialogBinding.inflate(layoutInflater)
-
+//                    val slc = fun(v: View): Boolean {
+//                        return true
+//                    }
+//                    dialogBinding.idselection.children.map{it as Button }.forEach { v->
+//                        v.setOnLongClickListener { _ ->
+//                            // Create a new ClipData.Item from the ImageView object's tag.
+//                            val item = ClipData.Item(v.tag as? CharSequence)
+//
+//                            // Create a new ClipData using the tag as a label, the plain text
+//                            // MIME type, and the already-created item. This creates a new
+//                            // ClipDescription object within the ClipData and sets its MIME type
+//                            // to "text/plain".
+//                            val dragData = ClipData(
+//                                v.text as? CharSequence,
+//                                arrayOf(ClipDescription.MIMETYPE_TEXT_PLAIN),
+//                                item)
+//
+//                            // Instantiate the drag shadow builder. We use this imageView object
+//                            // to create the default builder.
+//                            val myShadow = View.DragShadowBuilder( v)
+//
+//                            // Start the drag.
+//                            v.startDragAndDrop(dragData,  // The data to be dragged.
+//                                myShadow,  // The drag shadow builder.
+//                                null,      // No need to use local data.
+//                                0          // Flags. Not currently used, set to 0.
+//                            )
+//                            true
+//                        }
+//                    }
                     alertDialog = AlertDialog.Builder(this)
                         .setIcon(R.drawable.baseline_refresh_24).setTitle(item.title)//.setView(R.layout.pause_dialog_layout)
                         .setNegativeButton(android.R.string.cancel) { _, _ -> }
                         .setView(dialogBinding.root)
                         .setPositiveButton(android.R.string.ok){ d, _ ->
+                            dislikeNumbers.clear()
+//                            dislikeNumbers.addAll(dialogBinding.dislikenumber.text.toString().replace(" ", "").split('+').map{Integer.parseInt(it.trim())})
+//                            val likeIt = dialogBinding.likenumber.text.toString().replace(" ", "").split('+').map{Integer.parseInt(it.trim())}
                             blind = !dialogBinding.opInorder.isChecked
                             binding.root.setWillNotDraw(true)
                             refresh(dialogBinding.opInorder.isChecked)
@@ -517,7 +552,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     }
     private fun balldata(view: BallBinding, item: NumStat) {
         with(view){
-            "${item.since}\n${item.times}".also { idStatistics.text = it }
+            "${item.since}${System.lineSeparator()}${item.times}".also { idStatistics.text = it }
+//            "${if(item.num in dislikeNumbers) dislikei else likei}${System.lineSeparator()}${item.since}${System.lineSeparator()}${item.times}".also { idStatistics.text = it }
             idNumber.text = item.numString
             idNumber.backgroundTintList = ColorStateList.valueOf(item.num.BallColor())
             imageView.text =
@@ -895,8 +931,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
     private fun initball(){
         if(System.currentTimeMillis() > lastInitMilliSec+ minInitMillSec) {
-            genBall(numberordering)
             hr.post {
+                genBall(numberordering)
                 waitDlg {d->
                     numberordering.indices.toList().parallelStream().forEach {
                         runOnUiThread {
@@ -1073,12 +1109,15 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         const val dollar = '\uFE69'
         const val emdash = '\u2014'
         const val dotdotdot = '\u2026'
+        const val otherhints = '\u263A'
 //        const val banker_symbol = "&#x1F170;"
 //        const val tick_sym = '\u2611'
 //        const val whiteheavycheckmark = '\u2714'
 //        const val heavycheckmark = "☑"
         const val numberseperator = "$thinsp+"
         const val m6_49StartDate = "2002/07/04"
+        const val likei = "\uD83C\uDE34"
+        const val dislikei = "\uD83C\uDE32"
         private const val NAME_ORDER = "ORDER"
         private const val KEY_ORDER = "NUMBER_ORDER"
         private const val KEY_STATUS = "status"

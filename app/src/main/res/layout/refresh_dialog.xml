@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -12,5 +14,89 @@
         android:layout_height="wrap_content"
         android:text="@string/sortby_number" />
 
+<!--
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <RadioButton
+            android:id="@+id/radioButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/sortby_number" />
+
+        <RadioButton
+            android:id="@+id/radioButton2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="不規則排序" />
+
+        <LinearLayout
+            android:paddingStart="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/id_radomsetting"
+            android:orientation="vertical"/>
+
+
+    </RadioGroup>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <GridLayout
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/idselection"
+            android:columnCount="7">
+            <Button style="@style/styleselectnum" android:text=" 1" />
+            <Button style="@style/styleselectnum" android:text=" 2" />
+            <Button style="@style/styleselectnum" android:text=" 3" />
+            <Button style="@style/styleselectnum" android:text=" 4" />
+            <Button style="@style/styleselectnum" android:text=" 5" />
+            <Button style="@style/styleselectnum" android:text=" 6" />
+            <Button style="@style/styleselectnum" android:text=" 7" />
+            <Button style="@style/styleselectnum" android:text=" 8" />
+            <Button style="@style/styleselectnum" android:text=" 9" />
+            <Button style="@style/styleselectnum" android:text="10" />
+
+            <Button style="@style/styleselectnum" android:text="21" />
+            <Button style="@style/styleselectnum" android:text="22" />
+            <Button style="@style/styleselectnum" android:text="23" />
+            <Button style="@style/styleselectnum" android:text="24" />
+            <Button style="@style/styleselectnum" android:text="25" />
+            <Button style="@style/styleselectnum" android:text="26" />
+            <Button style="@style/styleselectnum" android:text="27" />
+            <Button style="@style/styleselectnum" android:text="28" />
+            <Button style="@style/styleselectnum" android:text="29" />
+            <Button style="@style/styleselectnum" android:text="20" />
+
+            <Button style="@style/styleselectnum" android:text="31" />
+            <Button style="@style/styleselectnum" android:text="32" />
+            <Button style="@style/styleselectnum" android:text="33" />
+            <Button style="@style/styleselectnum" android:text="34" />
+            <Button style="@style/styleselectnum" android:text="35" />
+            <Button style="@style/styleselectnum" android:text="36" />
+            <Button style="@style/styleselectnum" android:text="37" />
+            <Button style="@style/styleselectnum" android:text="38" />
+            <Button style="@style/styleselectnum" android:text="39" />
+            <Button style="@style/styleselectnum" android:text="30" />
+
+            <Button style="@style/styleselectnum" android:text="41" />
+            <Button style="@style/styleselectnum" android:text="42" />
+            <Button style="@style/styleselectnum" android:text="43" />
+            <Button style="@style/styleselectnum" android:text="44" />
+            <Button style="@style/styleselectnum" android:text="45" />
+            <Button style="@style/styleselectnum" android:text="46" />
+            <Button style="@style/styleselectnum" android:text="47" />
+            <Button style="@style/styleselectnum" android:text="48" />
+            <Button style="@style/styleselectnum" android:text="49" />
+&lt;!&ndash;            <Button style="@style/styleselectnum" android:text="10" />&ndash;&gt;
+
+        </GridLayout>
+    </ScrollView>
+-->
 
 </LinearLayout>

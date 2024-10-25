@@ -1,6 +1,7 @@
 package com.cmlee.executiful.letswinmarksix
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -68,6 +69,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
         val spec7 = GridLayout.spec(0, 7)
         val (allddates, jackpots) = ConnectionObject.getLatestSchecule(requireContext())
         val today = Calendar.getInstance()
+
         val jp = mutableListOf<String>()
         today.clearTimePart()
 //        today.add(Calendar.DATE, -4)
@@ -116,6 +118,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                 week.layoutParams.width = 0
                 week.layoutParams.height = WRAP_CONTENT
                 week.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_END
+                week.setShadowLayer(.2f,.1f,.1f, Color.LTGRAY)
                 week.text = s
                 binding.idDates.addView(week)
             }
@@ -135,35 +138,43 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
                 tv.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_END
                 val sptext = SpannableString("${step.get(Calendar.DATE)}${ensp}")
                 tv.isEnabled = false
-                allddates.find { it.first == step }?.let {
-                    tv.isEnabled = true
-                    when {
-                        checked_value==it.second.draw && checked_value ==it.second.preSell -> {
-                            //todo
-                        }
-                        checked_value==it.second.preSell -> {
-                            //todo
-                        }
-                        checked_value==it.second.jackpot -> {
-
-                            jackpots.find { target->target.first == step.time }?.let { (_,f)-> jp.add(f) }
-                            tv.background = AppCompatResources.getDrawable(
-                                requireContext(),
-                                R.drawable.dayborder
-                            )
-                        }
-                        checked_value==it.second.draw -> {
-                            tv.isSelected = true
-                        }
-                        checked_value!=it.second.draw -> {
-                            tv.isEnabled=false
-                            sptext.setSpan(StrikethroughSpan(), 0, sptext.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                        }
-                    }
-                }
                 tv.text = sptext
                 binding.idDates.addView(tv, layoutParams)
-                tv.isVisible = monthFmt.format(step.time) == i
+                if (i == monthFmt.format(step.time)) {
+                    allddates.find { it.first == step }?.let {
+                        tv.isEnabled = true
+                        when {
+                            checked_value==it.second.draw && checked_value ==it.second.preSell -> {
+                                //todo
+                            }
+
+                            checked_value==it.second.preSell -> {
+                                //todo
+                            }
+
+                            checked_value==it.second.jackpot -> {
+
+                                jackpots.find { target->target.first == step.time }?.let { (_,f)-> jp.add(f) }
+                                tv.background = AppCompatResources.getDrawable(
+                                    requireContext(),
+                                    R.drawable.dayborder
+                                )
+                            }
+
+                            checked_value==it.second.draw -> {
+                                tv.isSelected = true
+                            }
+
+                            checked_value!=it.second.draw -> {
+                                tv.isEnabled=false
+                                sptext.setSpan(StrikethroughSpan(), 0, sptext.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                            }
+                        }
+                    }
+                } else {
+                    tv.isVisible = false
+                }
+
                 step.add(Calendar.DATE, 1)
             }
             divider(2)
@@ -171,7 +182,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
         if(binding.idDates.isEmpty()){
             binding.idDates.background = AppCompatResources.getDrawable(requireContext(), android.R.drawable.ic_notification_overlay)
         }
-        jp.joinToString(System.lineSeparator())
+        jp.distinct().joinToString(System.lineSeparator())
             .also { binding.idjackpotstxt.text = it }
         return binding.root
     }
