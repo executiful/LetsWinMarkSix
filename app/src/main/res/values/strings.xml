@@ -91,8 +91,20 @@
     <string name="title_view_all">顯示所有號碼</string>
     <string name="previous_sym">㊤</string>
     <string name="next_sym">㊦</string>
-    <string name="banker_indicator">&#x2714;</string>
+    <string name="banker_indicator" translatable="false">&#x2714;</string>
     <string name="leg_indicator"></string>
     <string name="action_marksix">六合彩資訊</string>
     <string name="sortby_number">順序並顯示號碼</string>
+    <string name="like_option">&#x1f234;組</string>
+    <string name="dislike_option">&#x1f232;組</string>
+    <string name="title_option_special_group">標示 %1$s\n每組加入最少3個至最多%2$d個號碼。</string>
+    <string name="chr_like" translatable="false">&#x1F234;</string>
+    <string name="chr_dislike" translatable="false">&#x1F232;</string>
+    <string name="chr_like1">&#x1f31f;</string>
+    <string name="chr_dislike1"></string>
+    <string name="group_indicator_like">合</string>
+    <string name="group_indicator_dislike">禁</string>
+    <string name="frowning_face">☹</string>
+    <string name="smiling_face">☺</string>
+    <string name="txt_initial_message">TextView</string>
 </resources>

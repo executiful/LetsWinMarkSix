@@ -2,101 +2,298 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:layout_gravity="center"
     android:padding="@dimen/fab_margin">
-
+    <View
+        android:id="@+id/divider3"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
     <androidx.appcompat.widget.AppCompatCheckBox
         android:id="@+id/op_inorder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/sortby_number" />
 
-<!--
-    <RadioGroup
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/op_like"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:gravity="start|top"
+        android:text="@string/title_option_special_group"
+        android:textAlignment="gravity" />
 
-        <RadioButton
-            android:id="@+id/radioButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/sortby_number" />
-
-        <RadioButton
-            android:id="@+id/radioButton2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="不規則排序" />
-
-        <LinearLayout
-            android:paddingStart="20dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/id_radomsetting"
-            android:orientation="vertical"/>
-
-
-    </RadioGroup>
-
-    <ScrollView
+    <LinearLayout
+        android:id="@+id/viscon"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginBottom="1dp"
+        android:padding="@dimen/fab_margin">
 
-        <GridLayout
-
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/selectednumbers"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/idselection"
-            android:columnCount="7">
-            <Button style="@style/styleselectnum" android:text=" 1" />
-            <Button style="@style/styleselectnum" android:text=" 2" />
-            <Button style="@style/styleselectnum" android:text=" 3" />
-            <Button style="@style/styleselectnum" android:text=" 4" />
-            <Button style="@style/styleselectnum" android:text=" 5" />
-            <Button style="@style/styleselectnum" android:text=" 6" />
-            <Button style="@style/styleselectnum" android:text=" 7" />
-            <Button style="@style/styleselectnum" android:text=" 8" />
-            <Button style="@style/styleselectnum" android:text=" 9" />
-            <Button style="@style/styleselectnum" android:text="10" />
+            android:fontFamily="serif-monospace"
+            android:paddingBottom="@dimen/fab_margin"
+            android:typeface="monospace" />
 
-            <Button style="@style/styleselectnum" android:text="21" />
-            <Button style="@style/styleselectnum" android:text="22" />
-            <Button style="@style/styleselectnum" android:text="23" />
-            <Button style="@style/styleselectnum" android:text="24" />
-            <Button style="@style/styleselectnum" android:text="25" />
-            <Button style="@style/styleselectnum" android:text="26" />
-            <Button style="@style/styleselectnum" android:text="27" />
-            <Button style="@style/styleselectnum" android:text="28" />
-            <Button style="@style/styleselectnum" android:text="29" />
-            <Button style="@style/styleselectnum" android:text="20" />
+        <RadioGroup
+            android:id="@+id/opmornm"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
 
-            <Button style="@style/styleselectnum" android:text="31" />
-            <Button style="@style/styleselectnum" android:text="32" />
-            <Button style="@style/styleselectnum" android:text="33" />
-            <Button style="@style/styleselectnum" android:text="34" />
-            <Button style="@style/styleselectnum" android:text="35" />
-            <Button style="@style/styleselectnum" android:text="36" />
-            <Button style="@style/styleselectnum" android:text="37" />
-            <Button style="@style/styleselectnum" android:text="38" />
-            <Button style="@style/styleselectnum" android:text="39" />
-            <Button style="@style/styleselectnum" android:text="30" />
+            <RadioButton
+                android:id="@+id/likenumber"
+                style="@style/styleselectiontype"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight=".8"
+                android:checked="true"
+                android:tag="@string/group_indicator_like"
+                android:text="@string/like_option" />
 
-            <Button style="@style/styleselectnum" android:text="41" />
-            <Button style="@style/styleselectnum" android:text="42" />
-            <Button style="@style/styleselectnum" android:text="43" />
-            <Button style="@style/styleselectnum" android:text="44" />
-            <Button style="@style/styleselectnum" android:text="45" />
-            <Button style="@style/styleselectnum" android:text="46" />
-            <Button style="@style/styleselectnum" android:text="47" />
-            <Button style="@style/styleselectnum" android:text="48" />
-            <Button style="@style/styleselectnum" android:text="49" />
-&lt;!&ndash;            <Button style="@style/styleselectnum" android:text="10" />&ndash;&gt;
+            <RadioButton
+                android:id="@+id/dislikenumber"
+                style="@style/styleselectiontype"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight=".8"
+                android:tag="@string/group_indicator_dislike"
+                android:text="@string/dislike_option" />
 
-        </GridLayout>
-    </ScrollView>
--->
+        </RadioGroup>
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <GridLayout
+
+                android:id="@+id/idselection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="1dp"
+                android:layout_marginVertical="0dp"
+                android:alignmentMode="alignMargins"
+                android:columnCount="5"
+                android:useDefaultMargins="true">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text=" 1" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text=" 2" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text=" 3" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text=" 4" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text=" 5" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text=" 6" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text=" 7" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text=" 8" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text=" 9" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="10" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="11" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="12" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="13" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="14" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="15" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="16" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="17" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="18" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="19" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="20" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="21" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="22" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="23" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="24" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="25" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="26" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="27" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="28" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="29" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="30" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="31" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="32" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="33" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="34" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="35" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="36" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="37" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="38" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="39" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="40" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="41" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="42" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="43" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="44" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="45" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="46" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="47" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="48" />
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    style="@style/styleselectnum"
+                    android:text="49" />
+                <!--            <Button style="@style/styleselectnum" android:text="10" />-->
+
+            </GridLayout>
+        </ScrollView>
+
+<!--        <View-->
+<!--            android:id="@+id/divider"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="1dp"-->
+<!--            android:background="?android:attr/listDivider" />-->
+    </LinearLayout>
+    <View
+        android:id="@+id/divider2"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider" />
 </LinearLayout>

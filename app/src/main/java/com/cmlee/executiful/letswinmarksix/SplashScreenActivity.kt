@@ -8,8 +8,10 @@ import androidx.appcompat.app.AppCompatActivity
 
 @SuppressLint("CustomSplashScreen")
 class SplashScreenActivity : AppCompatActivity() {
+    var delay = 100L
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if(savedInstanceState==null) delay=500
         setContentView(R.layout.activity_splash_screen)
     }
 
@@ -21,7 +23,7 @@ class SplashScreenActivity : AppCompatActivity() {
         } else {
             Handler(mainLooper).also {
                 it.postDelayed({
-                    it.postDelayed({ finish() }, 500)
+                    it.postDelayed({ finish() }, delay)
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 }, 100)

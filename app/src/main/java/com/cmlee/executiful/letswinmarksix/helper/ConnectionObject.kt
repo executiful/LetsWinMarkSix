@@ -38,8 +38,8 @@ import java.util.concurrent.TimeoutException
 object ConnectionObject {
     private const val TAG_DEBUG= "DEBUG :123:"
     private const val connectTO = 8
-    private const val incTO = 5
-    private const val readTO = 10
+    private const val incTO = 1
+    private const val readTO = 5
     private const val Scheme = "https"
     private const val Auth = "bet2.hkjc.com"
     private const val M6Path = "marksix"
@@ -108,6 +108,7 @@ object ConnectionObject {
                     }
                 }
             } catch (e: Exception) {
+                println("what ex ${e.message} ${e.javaClass.simpleName}")
                 when(e){
                     is UnknownHostException->break
                     is TimeoutException->continue
@@ -334,14 +335,20 @@ object ConnectionObject {
 //                val (_, _) = getLatestSchecule(context)
                 val latestResult = getLatestResult(drawResultDao, context)
 
-                if (latestResult.isNotEmpty())
+                if (latestResult.isNotEmpty()) {
                     exec("OK")
-                else exec("what")
+                    println("what is this ??<< OK")
+                }
+                else {
+                    exec("what")
+                    println("what is this ??<< what")
+                }
                 return
             }
             exec("nook")
+            println("what is this ??<< nook")
 
-        }
+        } else
          exec("db not open??")
     }
 }

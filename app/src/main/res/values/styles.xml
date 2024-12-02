@@ -24,14 +24,28 @@
         <!--        <item name="android:interminateOnly">false</item>-->
     </style>
 
-    <style name="styleselectnum" parent="android:Widget.Button" >
+    <style name="styleselectnum" parent="Widget.AppCompat.TextView" >
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_columnWeight">1</item>
-        <item name="android:layout_margin">1dp</item>
-        <item name="android:textAppearance">?android:attr/buttonStyleSmall</item>
+        <item name="android:layout_marginEnd">2dp</item>
+        <item name="android:padding">3dp</item>
+<!--        <item name="android:background">@drawable/ic_prizing_fill</item>-->
+        <item name="android:layout_weight">1</item>
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="android:ellipsize">marquee</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textAlignment">center</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:scaleType">fitXY</item>
+        <item name="android:gravity">center</item>
+        <item name="chipCornerRadius">1dp</item>
+        <item name="android:fillAlpha">20</item>
+        <item name="background">@android:color/holo_green_dark</item>
     </style>
+    <style name="styleselectiontype" parent="android:Widget.ImageButton">
 
+    </style>
     <style name="Ticket">
         <item name="android:orientation">vertical</item>
         <item name="android:layout_width">wrap_content</item>
@@ -77,7 +91,7 @@
     </style>
 
     <style name="Theme_Wait_Dialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowBackground">@android:color/holo_purple</item>
     </style>
     <style name="Theme_Monthly_Dialog" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
         <item name="android:actionBarDivider">@android:drawable/divider_horizontal_dim_dark</item>
