@@ -13,11 +13,14 @@
     <color name="light_blue_400">#FF29B6F6</color>
     <color name="gray_400">#FFBDBDBD</color>
     <color name="gray_600">#FF757575</color>
-    <color name="gold">#D4AF37</color>
+    <color name="gold">@color/golden</color>
     <color name="ballcircle4part">#0a0a0a</color>
     <color name="color_date">#8fFAE6E5</color>
-    <color name="golden">#FFD700</color>
-    <color name="hkjc_red">#d9716d</color>
-    <color name="hkjc_blue">#4b7185</color>
-    <color name="hkjc_green">#8bb16f</color>
+    <color name="golden">#edea60</color>
+    <color name="hkjc_red">#ee0000</color>
+    <color name="hkjc_blue">#0000ee</color>
+    <color name="hkjc_green">#00ee00</color>
+<!--    <color name="hkjc_red">#d9716d</color>-->
+<!--    <color name="hkjc_blue">#4b7185</color>-->
+<!--    <color name="hkjc_green">#8bb16f</color>-->
 </resources>

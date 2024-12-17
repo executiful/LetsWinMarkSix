@@ -1,6 +1,6 @@
 package com.cmlee.executiful.letswinmarksix
 
-import android.annotation.SuppressLint
+import android.content.Context.MODE_PRIVATE
 import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
@@ -11,20 +11,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.view.WindowManager
 import android.widget.GridLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatTextView
-import androidx.core.content.ContextCompat
 import androidx.core.view.isEmpty
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.ensp
 import com.cmlee.executiful.letswinmarksix.databinding.FragmentMonthlyDrawScheduleBinding
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_FIXTURES_UPDATE
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_FIXTURES
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.clearTimePart
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISOFormat
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.monthFmt
 import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawDate.Companion.checked_value
 import java.util.Calendar
@@ -49,54 +50,52 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
     override fun onStart() {
         super.onStart()
         dialog?.let {
-            val layoutParams1 = WindowManager.LayoutParams()
-            layoutParams1.copyFrom(it.window?.attributes)
-            layoutParams1.width = resources.configuration.screenWidthDp
-            layoutParams1.height = WRAP_CONTENT
-            it.window?.setLayout((resources.displayMetrics.widthPixels *.9f).toInt(), WRAP_CONTENT)
+//            val layoutParams1 = WindowManager.LayoutParams()
+//            layoutParams1.copyFrom(it.window?.attributes)
+//            layoutParams1.width = resources.configuration.screenWidthDp
+//            layoutParams1.height = WRAP_CONTENT
+//            it.window?.setLayout((resources.displayMetrics.widthPixels *.9f).toInt(), WRAP_CONTENT)
             it.setTitle(R.string.draw_schedule_title)
         }
     }
 
-    @SuppressLint("SimpleDateFormat", "SuspiciousIndentation")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
         // Inflate the layout for this fragment
-        _binding = FragmentMonthlyDrawScheduleBinding.inflate(inflater)
-        val spec = GridLayout.spec(GridLayout.UNDEFINED, 1, 1f)
-        val spec7 = GridLayout.spec(0, 7)
+        _binding = FragmentMonthlyDrawScheduleBinding.inflate(inflater, container, false)
+        val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+        val spec7 = GridLayout.spec(GridLayout.UNDEFINED, 7,1f)
         val (allddates, jackpots) = ConnectionObject.getLatestSchecule(requireContext())
         val today = Calendar.getInstance()
 
         val jp = mutableListOf<String>()
         today.clearTimePart()
+
 //        today.add(Calendar.DATE, -4)
 //        val db = M6Db.getDatabase(requireContext()).DrawResultDao()
 //        val results = db.getAll()
         val divider = fun(w: Int): View {
             return View(requireContext()).also {
                 val lp = GridLayout.LayoutParams(spec, spec7)
-                lp.width = MATCH_PARENT
+                val typedArray = requireContext().obtainStyledAttributes(intArrayOf(android.R.attr.listDivider))
+                val divider = typedArray.getDrawable(0)
+                typedArray.recycle()
+
+                lp.width = 0
                 lp.height = w
-                it.setBackgroundColor(
-                    ContextCompat.getColor(
-                        requireContext(),
-                        com.google.android.material.R.color.design_default_color_primary
-                    )
-                )
+                it.background = divider
                 binding.idDates.addView(it, lp)
             }
         }
         val commontv = block@{ txt: String, r: GridLayout.Spec, c: GridLayout.Spec, w: Int ->
             with(AppCompatTextView(requireContext())) {
-                layoutParams = GridLayout.LayoutParams(r, c)
-                layoutParams.width = w
-                layoutParams.height = WRAP_CONTENT
+                val layoutPa = GridLayout.LayoutParams(r, c)
+
                 textAlignment = TextView.TEXT_ALIGNMENT_CENTER
                 text = txt
-                binding.idDates.addView(this)
+                binding.idDates.addView(this, layoutPa)
                 return@block this
             }
         }
@@ -104,23 +103,22 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
             today.add(Calendar.DATE, -7)
 //        else
             today.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY)
-        val ddates = allddates.filter { it.first >= today /*&& it.first <= allddates.last{ that-> that.second.draw == checked_value}.first*/ }
+        val ddates = allddates.filter { it.first >= today && it.first <= allddates.last{ that-> that.second.draw == checked_value}.first }
         divider(2)
         if (ddates.isEmpty()) {
-            commontv(getString(R.string.nothing_to_show), spec, spec7, MATCH_PARENT)
+            commontv(getString(R.string.nothing_to_show), spec, spec, MATCH_PARENT)
             divider(2)
         }
         ddates.groupBy { monthFmt.format(it.first.time) }.forEach { (i, pairs) ->
             commontv("${i}${ensp}", spec, spec7, MATCH_PARENT)
             "日,一,二,三,四,五,六".split(",").map { "$it$ensp" }.forEach { s ->
                 val week = TextView(requireContext())
-                week.layoutParams = GridLayout.LayoutParams(spec, spec)
-                week.layoutParams.width = 0
-                week.layoutParams.height = WRAP_CONTENT
+                val wlp = GridLayout.LayoutParams(spec, spec)
+
                 week.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_END
                 week.setShadowLayer(.2f,.1f,.1f, Color.LTGRAY)
                 week.text = s
-                binding.idDates.addView(week)
+                binding.idDates.addView(week, wlp)
             }
             divider(5)
             val lastdayofmonth = pairs.first().first.clone() as Calendar
@@ -181,6 +179,10 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
         }
         if(binding.idDates.isEmpty()){
             binding.idDates.background = AppCompatResources.getDrawable(requireContext(), android.R.drawable.ic_notification_overlay)
+        }
+        requireContext().getSharedPreferences(TAG_FIXTURES, MODE_PRIVATE).getDateTimeISOFormat(
+            KEY_FIXTURES_UPDATE)?.let {
+                jp.add(getString(R.string.last_update_at, it))
         }
         jp.distinct().joinToString(System.lineSeparator())
             .also { binding.idjackpotstxt.text = it }

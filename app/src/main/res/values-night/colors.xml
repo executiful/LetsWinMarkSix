@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ballcircle4part">#f0f0f0</color>
+    <color name="golden">#FaF5bb</color>
+    <color name="hkjc_red">#ffa88c</color>
+    <color name="hkjc_blue">#b694fb</color>
+    <color name="hkjc_green">#b7faa4</color>
 </resources>

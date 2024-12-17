@@ -5,13 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:layout_gravity="center"
-    android:padding="@dimen/fab_margin">
-    <View
-        android:id="@+id/divider3"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?android:attr/listDivider" />
+    android:paddingStart="@dimen/fab_margin"
+    android:paddingEnd="@dimen/fab_margin"
+    android:layout_gravity="center">
+<!--    <View-->
+<!--        android:id="@+id/divider3"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1dp"-->
+<!--        android:layout_marginBottom="@dimen/fab_margin"-->
+<!--        android:background="?android:attr/listDivider" />-->
     <androidx.appcompat.widget.AppCompatCheckBox
         android:id="@+id/op_inorder"
         android:layout_width="match_parent"
@@ -33,7 +35,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_marginBottom="1dp"
-        android:padding="@dimen/fab_margin">
+        android:paddingStart="@dimen/fab_margin">
 
         <TextView
             android:id="@+id/selectednumbers"
@@ -291,9 +293,10 @@
 <!--            android:layout_height="1dp"-->
 <!--            android:background="?android:attr/listDivider" />-->
     </LinearLayout>
-    <View
-        android:id="@+id/divider2"
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?android:attr/listDivider" />
+<!--    <View-->
+<!--        android:id="@+id/divider2"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="1dp"-->
+<!--        android:layout_marginTop="@dimen/fab_margin"-->
+<!--        android:background="?android:attr/listDivider" />-->
 </LinearLayout>

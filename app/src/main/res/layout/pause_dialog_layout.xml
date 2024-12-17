@@ -9,11 +9,11 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/textView4"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/txt_initial_message" />
+<!--        <TextView-->
+<!--            android:id="@+id/textView4"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="0dp"-->
+<!--            android:text="@string/txt_initial_message" />-->
 
         <ProgressBar
             android:id="@+id/progressBar2"
@@ -22,6 +22,7 @@
             android:layout_height="match_parent"
             android:layout_margin="@android:dimen/notification_large_icon_height"
             android:indeterminateBehavior="cycle" />
+
     </LinearLayout>
 
 </FrameLayout>

@@ -22,7 +22,6 @@ import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.bankers
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.dateStart
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.legs
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgCalc
-import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgMatch
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.msgNumbers
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.thinsp
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityDrawnNumberCheckingBinding
@@ -33,7 +32,6 @@ import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
 import com.google.android.material.tabs.TabLayout
-import kotlin.streams.toList
 
 class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
     TabLayout.OnTabSelectedListener/*, OnBackPressedCallback*/ {
@@ -153,7 +151,10 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         binding.toolbar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.action_entry -> {
-                    AlertDialog.Builder(this).setTitle(msgCalc).setMessage(msgNumbers/*+"\n"+ msgMatch*/).show()
+                    AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog).setTitle(msgCalc).setMessage(msgNumbers/*+"\n"+ msgMatch*/).setPositiveButton(android.R.string.ok) {_,_->
+
+                    }.
+                    show()
                     true
                 }
 
@@ -161,8 +162,8 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
                     val temp =
                         "頭獎 選中6個「攪出號碼」 獎金會因應該期獲中頭獎注數而有所不同，每期頭獎獎金基金\n" +
                                 "訂為不少於港幣800萬元。 二獎 選中5個「攪出號碼」+「特別號碼」 獎金會因應該期獲中二獎注數而有所不同 三獎 選中5個「攪出號碼」 獎金會因應該期獲中三獎注數而有所不同 四獎 選中4個「攪出號碼」+「特別號碼」 固定獎金港幣9,600元 五獎 選中4個「攪出號碼」 固定獎金港幣640元 六獎 選中3個「攪出號碼」+「特別號碼」 固定獎金港幣320元 七獎 選中3個「攪出號碼」 固定獎金港幣40元"
-                    AlertDialog.Builder(this).setMessage(
-                        temp.replace(" ", "\n")
+                    AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog).setMessage(
+                        temp.replace(" ", System.lineSeparator())
                     ).show()
                     true
                 }

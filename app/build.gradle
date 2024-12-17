@@ -88,5 +88,5 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 }
 base{
-    archivesName = "${project.name}-${buildTime}${String.format('-v%04d', android.defaultConfig.versionCode)}(${android.defaultConfig.versionName})"
+    archivesName = "${appName}-${buildTime}${String.format('-v%04d', android.defaultConfig.versionCode)}(${android.defaultConfig.versionName})"
 }

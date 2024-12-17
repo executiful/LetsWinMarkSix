@@ -7,6 +7,7 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Color.RED
 import android.graphics.Typeface
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.AnimatedVectorDrawable
@@ -25,7 +26,6 @@ import android.text.style.StyleSpan
 import android.text.style.TabStopSpan
 import android.text.style.TextAppearanceSpan
 import android.text.style.UnderlineSpan
-import android.view.Display.Mode
 import android.view.KeyEvent
 import android.view.View
 import android.widget.ArrayAdapter
@@ -54,6 +54,7 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT_UPDATE
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.UpdateLatestDraw
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISOFormat
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getLatestSchecule
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getScheduleAll
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTD
@@ -80,6 +81,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private lateinit var m6bViews: List<BallBinding>
     private lateinit var pauseDlg : AlertDialog
     private var alertDialog:AlertDialog? = null
+//     var ballColors = mutableListOf<Int>()
 //    private val dislikeNumbers = mutableListOf<Int>()
 //    private val likeNumbers = mutableListOf<Int>()
 //    private val groupNumberMappings = mutableMapOf<String,MutableList<Int>>()
@@ -92,7 +94,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             if (it.isShowing)
                 return@OnClickListener
         }
-        val dlg = AlertDialog.Builder(this)
+        val dlg = AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog)
             .setTitle(msgCalc).setMessage(msgNumbers)
         if (!(currentStatus == DrawStatus.UnClassify || getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE).contains(msgNumbers)))
             dlg.setPositiveButton(android.R.string.copy) { d, _ ->
@@ -111,12 +113,19 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         setContentView(binding.root)
         ht.start()
         hr = Handler(ht.looper)
-
         adContainerView = binding.adViewContainer
         binding.idBallselect.removeAllViews()
         binding.ticketlayout.idLegs.removeAllViews()
         binding.ticketlayout.idBankers.removeAllViews()
 
+        val tmpColorArray = resources.obtainTypedArray(R.array.ball_color_array)
+        tmpColorArray.getColor(0, RED)
+        ballcolor.addAll(
+            originalballs.indices.map {
+                tmpColorArray.getColor(it, Color.TRANSPARENT)
+            }
+        )
+        tmpColorArray.recycle()
         /*
                 Handler(mainLooper).post {
                     cacheDir.listFiles()?.forEach {
@@ -142,7 +151,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                             it.value.sortedByDescending { it.lastModified() }
                                 .subList(1, it.value.lastIndex).parallelStream()
                                 .forEach {
-                                    println(it.name)
+//                                    println(it.name)
                                     it.delete()
                                 }
                         }
@@ -154,26 +163,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
         if (savedInstanceState == null) {
 
-            getSharedPreferences(NAME_ORDER, MODE_PRIVATE).also { sr ->
-                blind = sr.getBoolean(KEY_BLIND, blind)
-                useGroup = sr.getBoolean(KEY_GROUP, useGroup)
-
-                sr.getString(KEY_SELECTED, null)?.let {
-                    it.toCharArray().forEachIndexed { index, c ->
-                        when (c) {
-                            'B' -> originalballs[index].status = NumStat.NUMSTATUS.BANKER
-                            'L' -> originalballs[index].status = NumStat.NUMSTATUS.LEG
-                        }
-                    }
-                }
-                sr.getString(KEY_ORDER, null)
-                    ?.let { ordering ->
-                        val order = ordering.stringIdx()
-                        if (order.count() == numberordering.count()) {
-                            numberordering = order.map { originalballs[it] }
-                        }
-                    }
-            }
             binding.toolbar.menu.findItem(R.id.action_view_all)?.let {
                 it.isVisible = blind
             }
@@ -181,7 +170,32 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         } else {
             binding.toolbar.menu.findItem(R.id.action_view_all)?.let { it.isVisible = !blind }
         }
-updateStatus()
+
+        getSharedPreferences(NAME_ORDER, MODE_PRIVATE).also { sr ->
+            blind = sr.getBoolean(KEY_BLIND, blind)
+            useGroup = sr.getBoolean(KEY_GROUP, useGroup)
+
+            sr.getString(KEY_SELECTED, null)?.let {
+                it.toCharArray().forEachIndexed { index, c ->
+                    when (c) {
+                        'B' -> originalballs[index].status = NumStat.NUMSTATUS.BANKER
+                        'L' -> originalballs[index].status = NumStat.NUMSTATUS.LEG
+                    }
+                }
+            }
+            sr.getString(KEY_ORDER, null)
+                ?.let { ordering ->
+                    val order = ordering.stringIdx()
+                    if (order.count() == numberordering.count()) {
+                        numberordering = order.map { originalballs[it] }
+                    }
+                }
+        }
+        if(savedInstanceState==null) {
+            ResetNumberDialog()
+        }
+
+        updateStatus()
         originalballs.also {
             legViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
             bankerViews = it.map { NumberTextviewBinding.inflate(layoutInflater) }
@@ -383,12 +397,25 @@ updateStatus()
             }
             when (item.itemId) {
                 R.id.action_view_all -> {
-                    alertDialog = AlertDialog.Builder(this).setIcon(R.drawable.baseline_remove_red_eye_24)
+                    alertDialog = AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog).setIcon(R.drawable.baseline_remove_red_eye_24)
                         .setTitle(item.title).setPositiveButton(android.R.string.ok) { _, _ ->
                             item.isVisible = false
                             blind = false
-                            numberordering.forEachIndexed { index, numStat ->
-                                m6bViews[index].idNumber.text = numStat.numString
+                            getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit().putBoolean(
+                                KEY_BLIND, blind).apply()
+//                            val gpn = if(useGroup) getSharedPreferences(NAME_NUM_GRP, MODE_PRIVATE).all
+//                            if (useGroup && item.status == NumStat.NUMSTATUS.UNSEL) getSharedPreferences(
+//                                NAME_NUM_GRP,
+//                                MODE_PRIVATE
+//                            )
+//                                .getString(item.num.toString(), item.numString) else item.numString
+                            numberordering.forEachIndexed { index, item ->
+                                m6bViews[index].idNumber.text = item.numString
+                                if (useGroup && item.status == NumStat.NUMSTATUS.UNSEL) getSharedPreferences(
+                                    NAME_NUM_GRP,
+                                    MODE_PRIVATE
+                                )
+                                    .getString(item.num.toString(), item.numString) else item.numString
                             }
                         }.setNegativeButton(android.R.string.cancel) { _, _ ->
                         }.show()
@@ -398,8 +425,8 @@ updateStatus()
                     val dialogBinding = RefreshDialogBinding.inflate(layoutInflater)
                     val maxItem = 8
                     dialogBinding.opLike.text = getString(R.string.title_option_special_group, listOf(dialogBinding.likenumber.tag, dialogBinding.dislikenumber.tag).joinToString("/"), maxItem)
-                    val spf = getSharedPreferences(KEY_NUM_GRP, MODE_PRIVATE).all
-                        .map{it.value as String to it.key}.toList().groupBy ( { it.first }, { it.second } )
+                    val spf = getSharedPreferences(NAME_NUM_GRP, MODE_PRIVATE).all
+                        .map{it.value as String to it.key.trimStart('0')}.toList().groupBy ( { it.first }, { it.second } )
                     val grpNums = mapOf(dialogBinding.likenumber.tag as String to mutableListOf(), dialogBinding.dislikenumber.tag as String to mutableListOf<String>())
                     grpNums.filterKeys { it in spf.keys }.forEach { (s, strings) ->
                         spf[s]?.let { strings.addAll(it) }
@@ -425,8 +452,14 @@ updateStatus()
                         }
                     }
                     dialogBinding.idselection.children.map { it as AppCompatTextView }
-                        .forEach { actv ->
+                        .forEachIndexed { idx, actv ->
                             actv.tag = actv.text.trim() //張原本的數字掛在tag
+                             actv.setBackgroundColor(ballcolor[idx])
+                            resources.obtainTypedArray(R.array.grp_border_array).apply{
+                                getDrawable(idx)
+                                actv.setBackgroundDrawable(getDrawable(idx)!!)
+                                recycle()
+                            }
 
                             actv.text = if (flatgrp.containsKey(actv.tag as String)) {
                                 "${flatgrp[actv.tag]}"
@@ -435,7 +468,6 @@ updateStatus()
                                 dialogBinding.opmornm.findViewById<RadioButton>(dialogBinding.opmornm.checkedRadioButtonId)
                                     ?.let { rBtn ->
                                         if (actv.text.startsWith(rBtn.tag as String) && actv.tag != null && actv.tag is String) {
-//                                            Toast.makeText(this, "取消${actv.tag}轉為什麼${rBtn.tag}", Toast.LENGTH_LONG).show()
                                             grpNums[rBtn.tag as String]?.remove(actv.tag)
                                             "☐　${(actv.tag as String).padStart(2)}".apply {
                                                 actv.text = this
@@ -472,23 +504,31 @@ updateStatus()
                         .setNegativeButton(android.R.string.cancel) { _, _ -> }
                         .setView(dialogBinding.root)
                         .setPositiveButton(android.R.string.ok) { d, _ ->
-                            if(dialogBinding.opLike.isChecked) {
-                                getSharedPreferences(KEY_NUM_GRP, MODE_PRIVATE).edit {
+                            if (dialogBinding.opLike.isChecked) {
+                                getSharedPreferences(NAME_NUM_GRP, MODE_PRIVATE).edit {
                                     clear()
-                                    grpNums.forEach { (k, ints) ->
-                                        ints.sortedBy { it.trim().padStart(2,'0') }.forEach {
-                                            putString(it, k)
-                                        }
+                                    grpNums.flatMap { it.value.map { item-> item.trim() to it.key } }.sortedBy { it.first }
+                                       .forEach {
+                                           putString(it.first, it.second)
+//                                            println("output grp ${it.first} ${it.second}")
                                     }
                                     apply()
                                 }
                             }
                             blind = !dialogBinding.opInorder.isChecked
-                                useGroup = dialogBinding.opLike.isChecked
-                                numberordering = if (dialogBinding.opInorder.isChecked) originalballs else originalballs.sortedBy { random() }
-                                numberordering.parallelStream().forEach { it.status = NumStat.NUMSTATUS.UNSEL }
+                            useGroup = dialogBinding.opLike.isChecked
+                            numberordering =
+                                if (dialogBinding.opInorder.isChecked) originalballs else originalballs.sortedBy { random() }
+                            getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit()
+                                .clear()
+                                .putString(KEY_ORDER, numberordering.idxString())
+                                .putBoolean(KEY_BLIND, blind)
+                                .putBoolean(KEY_GROUP, useGroup)
+                                .apply()
+                            numberordering.parallelStream()
+                                .forEach { it.status = NumStat.NUMSTATUS.UNSEL }
                             ResetNumberDialog()
-                                                    }.create()
+                        }.create()
                     dialogBinding.opLike.setOnCheckedChangeListener { compoundButton, b ->
                         (compoundButton.isChecked).also {
                             with(if (b) View.VISIBLE else View.GONE) {
@@ -528,7 +568,7 @@ updateStatus()
                     show_checking()
                 }
                 R.id.action_disclaimer ->{
-                    alertDialog = AlertDialog.Builder(this).setMessage(R.string.disclaimer).setTitle(R.string.action_disclaimer).show()
+                    alertDialog = AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog).setMessage(R.string.disclaimer).setTitle(R.string.action_disclaimer).show()
                     alertDialog!=null
                 }
                 R.id.action_draw_schedule -> {
@@ -537,11 +577,11 @@ updateStatus()
 //                    } catch (e: Exception) {
 //                        AlertDialog.Builder(this).setMessage(e.message).show()
 //                    }
-                    hr.post {
-                    getLatestSchecule(this)
+//                    hr.post {
+//                    getLatestSchecule(this)
                     show_draw_schedule()
 
-                    }
+//                    }
                 }
                 R.id.action_previous_next_draw->{
                     val ssb = SpannableString(getString(R.string.action_previous_next_draw))
@@ -661,13 +701,14 @@ updateStatus()
             with(view) {
                 arrayOf(item.since, item.times).joinToString(System.lineSeparator())
                     .also { idStatistics.text = it }
-                getSharedPreferences(KEY_NUM_GRP, MODE_PRIVATE).getString(item.num.toString(), null)
-                    .let {
-                        if (item.status != NumStat.NUMSTATUS.UNSEL || !useGroup || it == null)
-                            idNumber.text = item.numString
-                        else
-                            idNumber.text = it
-                    }
+
+                idNumber.text =
+                    if (blind && useGroup && item.status == NumStat.NUMSTATUS.UNSEL) getSharedPreferences(
+                        NAME_NUM_GRP,
+                        MODE_PRIVATE
+                    )
+                        .getString(item.num.toString(), item.numString) else item.numString
+
                 idNumber.backgroundTintList = ColorStateList.valueOf(item.num.BallColor())
                 imageView.text =
                     when (item.status) {
@@ -727,7 +768,7 @@ updateStatus()
         if(name.contains('金') || name.contains('奬')) {
             val end = if(value.contains('\t')) value.indexOfFirst { it == '\t' }+start else ssb.length
             ssb.setSpan(
-                ForegroundColorSpan(Color.RED),
+                ForegroundColorSpan(RED),
                 start,
                 end,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -810,8 +851,8 @@ updateStatus()
         }
         ssb.appendLine().appendLine()
         start = ssb.length
-        val updateat = sf.getString(KEY_NEXT_UPDATE, "--") ?: "--"
-        ssb.append("更新時間　：　$updateat").setSpan(
+        val updateat = sf.getDateTimeISOFormat(KEY_NEXT_UPDATE) ?: "--"
+        ssb.append(getString(R.string.last_update_at, updateat)).setSpan(
             AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
             start,
             ssb.length,
@@ -827,12 +868,19 @@ updateStatus()
         return ssb
     }
     private fun show_draw_schedule(): Boolean {
+
         if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
 //            hr.post {
 //                getLatestSchecule(this)
 //            }
-            val monthlyDrawScheduleFragment = MonthlyDrawScheduleFragment.newInstance()
-            monthlyDrawScheduleFragment.show(supportFragmentManager.beginTransaction(), TAG_BALL_DIALOG)
+            hr.post {
+                getLatestSchecule(this)
+                val monthlyDrawScheduleFragment = MonthlyDrawScheduleFragment.newInstance()
+                monthlyDrawScheduleFragment.show(
+                    supportFragmentManager.beginTransaction(),
+                    TAG_BALL_DIALOG
+                )
+            }
         }
         return true
     }
@@ -1012,31 +1060,28 @@ updateStatus()
     }
 
     private fun ResetNumberDialog() {
-        Dialog(this).apply{
+        Dialog(this, R.style.Theme_Wait_Dialog).apply{
+
             setContentView(R.layout.pause_dialog_layout)
+
             setCancelable(false)
             setOnShowListener {
+
                 hr.postDelayed({
-                    var db = M6Db.getDatabase(this@MainActivity)
+
+                    val db = M6Db.getDatabase(this@MainActivity)
                     UpdateLatestDraw(this@MainActivity) {ok->
                         runOnUiThread {
                             binding.toolbar.menu.findItem(R.id.action_view_all).run {
                                 isVisible = blind
                             }
-                            getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit()
-                                .clear()
-                                .putString(KEY_ORDER, numberordering.idxString())
-                                .putBoolean(KEY_BLIND, blind)
-                                .putBoolean(KEY_GROUP, useGroup)
-                                .apply()
-                            println("test order ${numberordering.joinToString { it.idx.toString() }}")
                             if(ok=="OK") {
                                 genBall(db.DrawResultDao())
                             }
+                            dismiss()
                             binding.root.setWillNotDraw(true)
                             initball()
                             binding.root.setWillNotDraw(false)
-                            dismiss()
                         }
                     }
                 },1000)
@@ -1137,7 +1182,7 @@ updateStatus()
 //        val db = M6Db.getDatabase(this)
 //        val drawResultDao = db.DrawResultDao()
         latestDrawResult = drawResultDao.getLatest()
-        println("eee....rrrrrrrrrrrrr"+latestDrawResult!!.no.nos.joinToString(","))
+//        println("eee....rrrrrrrrrrrrr"+latestDrawResult!!.no.nos.joinToString(","))
         val dr = drawResultDao.getAll()
         val temp = dr.sortedByDescending { it.date }
             .filter { it.date >= dateStart }
@@ -1185,7 +1230,7 @@ updateStatus()
         for (i in 0 until 64) {
             val binaryString = Integer.toBinaryString(i).padStart(6, '0')
             val guaName = guaNames[i % 8]
-            println("$binaryString $guaName")
+//            println("$binaryString $guaName")
         }
     }
     fun allCombination(): MutableList<List<Int>> {
@@ -1212,7 +1257,6 @@ updateStatus()
     companion object {
         private var lastInitMilliSec = 0L
         private val minInitMillSec = 1000
-        const val KEY_NUM_GRP = "KEY_NUM_GRP"
         const val nbsp = '\u00A0'
         const val emsp = '\u2003'
         const val ensp = '\u2002'
@@ -1220,82 +1264,20 @@ updateStatus()
         const val dollar = '\uFE69'
         const val emdash = '\u2014'
         const val dotdotdot = '\u2026'
-        const val otherhints = '\u263A'
-//        const val banker_symbol = "&#x1F170;"
-//        const val tick_sym = '\u2611'
-//        const val whiteheavycheckmark = '\u2714'
-//        const val heavycheckmark = "☑"
-        const val yellow_thumpup = "\uD83D\uDC4D"
-        const val yellow_thumdown = "\uD83D\uDC4E"
+
 
         const val numberseperator = "$thinsp+"
         const val m6_49StartDate = "2002/07/04"
-        const val likei = "\uD83C\uDE34"
 
-        const val noneofthem = "㊥"
-        const val upc = "㊤"
-        const val downc = "㊦"
-        const val dislikei = "\uD83C\uDE32"
+        private const val NAME_NUM_GRP = "NUM_GRP"
         private const val NAME_ORDER = "ORDER"
-        private const val KEY_SELECTED = "LEG_AND_BANKER"
+        private const val KEY_SELECTED = "LEG_BANKER_IDX"
         private const val KEY_ORDER = "NUMBER_ORDER"
         private const val KEY_BLIND = "BLIND_BOOL"
         private const val KEY_GROUP = "GROUP_BOOL"
-        private const val KEY_BANKER = "BANKER_IDX"
-        private const val KEY_LEG = "LEG_IDX"
-        private const val KEY_STATUS = "status"
         private const val NAME_ENTRIES = "ENTRIES"
-        val ballcolor = mapOf(
-            1	to Color.RED,
-            2	to Color.RED,
-            3	to Color.BLUE,
-            4	to Color.BLUE,
-            5	to Color.GREEN,
-            6	to Color.GREEN,
-            7	to Color.RED,
-            8	to Color.RED,
-            9	to Color.BLUE,
-            10	to Color.BLUE,
-            11	to Color.GREEN,
-            12	to Color.RED,
-            13	to Color.RED,
-            14	to Color.BLUE,
-            15	to Color.BLUE,
-            16	to Color.GREEN,
-            17	to Color.GREEN,
-            18	to Color.RED,
-            19	to Color.RED,
-            20	to Color.BLUE,
-            21	to Color.GREEN,
-            22	to Color.GREEN,
-            23	to Color.RED,
-            24	to Color.RED,
-            25	to Color.BLUE,
-            26	to Color.BLUE,
-            27	to Color.GREEN,
-            28	to Color.GREEN,
-            29	to Color.RED,
-            30	to Color.RED,
-            31	to Color.BLUE,
-            32	to Color.GREEN,
-            33	to Color.GREEN,
-            34	to Color.RED,
-            35	to Color.RED,
-            36	to Color.BLUE,
-            37	to Color.BLUE,
-            38	to Color.GREEN,
-            39	to Color.GREEN,
-            40	to Color.RED,
-            41	to Color.BLUE,
-            42	to Color.BLUE,
-            43	to Color.GREEN,
-            44	to Color.GREEN,
-            45	to Color.RED,
-            46	to Color.RED,
-            47	to Color.BLUE,
-            48	to Color.BLUE,
-            49	to Color.GREEN,
-        )
+        val ballcolor = mutableListOf<Int>()
+
         val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }.toSet()
         val legs get() = originalballs.filter { it.status== NumStat.NUMSTATUS.LEG }.map{it.num}.toSet()
         var msgNumbers:String = "+"

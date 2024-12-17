@@ -27,7 +27,7 @@ data class NumStat(val num: Int, val idx: Int, var times: Int = 0, var since: In
     }
 
     companion object {
-        fun Int.BallColor() = ballcolor[this]!!
+        fun Int.BallColor() = ballcolor[this-1]
 /*            when ((this % 2 + this) % 3) {
                 0 -> Color.GREEN
                 1 -> Color.BLUE

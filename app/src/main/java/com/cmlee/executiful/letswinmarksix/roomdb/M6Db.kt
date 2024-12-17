@@ -30,7 +30,7 @@ abstract class M6Db : RoomDatabase() {
                             M6Db::class.java,
                             "m6.db3"
                         )
-                            .createFromAsset("databases/m6.v2.db3")
+                            .createFromAsset("databases/m6.v3.db3")
                             .addTypeConverter(DayYearConverter())
                             //.addTypeConverter(LocalDateConverter())
                             .addTypeConverter(UnitPriceConverter())

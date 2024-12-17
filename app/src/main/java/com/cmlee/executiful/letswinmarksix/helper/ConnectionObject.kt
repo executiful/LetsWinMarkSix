@@ -43,10 +43,11 @@ object ConnectionObject {
     private const val Scheme = "https"
     private const val Auth = "bet2.hkjc.com"
     private const val M6Path = "marksix"
-    private const val TAG_FIXTURES = "Fixtures"
+    const val TAG_FIXTURES = "Fixtures"
     private const val TAG_STATISTICS = "Statistics"
     private const val TAG_JSON = "getJson"
     private const val KEY_FIXTURES = "DrawDateList"
+    const val KEY_FIXTURES_UPDATE = "fixtures_save_datetime"
     const val indexTD = "|"
     const val indexTR = "#"
     fun Map<String, String>.toQuery():String{
@@ -61,7 +62,41 @@ object ConnectionObject {
     @SuppressLint("SimpleDateFormat")
     val sdf_now = SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
     val monthFmt = SimpleDateFormat("MMMM", Locale.CHINA)
+    private const val iso_date_time_format = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    fun SharedPreferences.Editor.putDateTimeISO(keyName: String, instance: Calendar):SharedPreferences.Editor{
+        val isoFormat = SimpleDateFormat(iso_date_time_format, Locale.getDefault())
+        putString(keyName ,isoFormat.format(instance.time))
+        return this
+    }
+    fun SharedPreferences.getDateTimeISO(keyName:String) : Calendar? {
+        val isoFormat = SimpleDateFormat(iso_date_time_format, Locale.getDefault())
+        getString(keyName, null)?.let {
+            return try {
+                isoFormat.parse(it).toCalendar()
+            } catch (e: Exception) {
+                return try {
+                    sdf_now.parse(it).toCalendar()
+                } catch (e: Exception) {
+                    null
+                }
+            }
+        }
+        return null
+    }
 
+    fun SharedPreferences.getDateTimeISOFormat(keyName:String, def:String?=null) : String? {
+        return try {
+            getDateTimeISO(keyName)?.let {
+                try {
+                    sdf_now.format(it.time)
+                } catch (e: Exception) {
+                    def+1
+                }
+            }
+        } catch (e: Exception) {
+            def+2
+        }
+    }
     fun Calendar.clearTimePart(): Calendar {
         val y = get(Calendar.YEAR)
         val d = get(Calendar.DAY_OF_YEAR)
@@ -84,6 +119,13 @@ object ConnectionObject {
                 return c2.after(cp)
             }
             else -> throw IllegalArgumentException("Invalid field")
+        }
+    }
+    fun Date?.toCalendar() :Calendar? {
+        return this?.let {
+            val c = Calendar.getInstance()
+            c.time = it
+            c
         }
     }
     private fun getJsonData(p:String, lang:Map<String, String>) : String? {
@@ -149,7 +191,7 @@ object ConnectionObject {
         ref.clear()
         val lat = drawResultDao.getLatestNotNull()
         ref.time = lat.date
-        println(lat.id)
+//        println(lat.id)
         ref.add(Calendar.DATE, 1)
         var sd = sdf.format(ref.time)
         val arrResult = mutableListOf<DrawResult>()
@@ -248,6 +290,12 @@ object ConnectionObject {
         val today = Calendar.getInstance()
         val schuPref = context.getSharedPreferences(TAG_FIXTURES, MODE_PRIVATE)
         val commingDDate = getLatestDDate(schuPref)
+        schuPref.getDateTimeISO(KEY_FIXTURES_UPDATE)?.let {
+//            val lastupdate = sdf_now.parse(it).toCalendar()
+            it.add(Calendar.DATE,1)
+            if(it.before(today))
+            return commingDDate
+        }
         if(commingDDate.first.isEmpty() ||
             commingDDate.first.count {(it.second.draw==checked_value||it.second.preSell==checked_value)&& it.first>today } < 7) {
             getJsoupDoc(TAG_FIXTURES, mapOf("lang" to "ch")) ?.let { doc->
@@ -260,6 +308,8 @@ object ConnectionObject {
                         val objDates = jsonObject.getJSONObject("drawDates")
                         val same = objDates.getString("drawYear")
                         schuPref.edit()
+                            .putDateTimeISO(KEY_FIXTURES_UPDATE, Calendar.getInstance())
+
                             .putString(KEY_FIXTURES, same).apply()
                         return getLatestDDate(schuPref) // get comming drawdate from the bet.hkjc.com again which is the latest!!
                     }
@@ -289,7 +339,7 @@ object ConnectionObject {
                     if(this.isNotEmpty()) {
                         sharedPreferences.edit()
                             .putString(KEY_NEXT, this)
-                            .putString(KEY_NEXT_UPDATE, sdf_now.format(Calendar.getInstance().time))
+                            .putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
                             .apply()
                         return this
                     }
@@ -303,13 +353,11 @@ object ConnectionObject {
     fun getIndex(context: Context, latest: DrawResult) :String?{
         val indexsharedPreferences = context.getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
         val now = Calendar.getInstance()
-        indexsharedPreferences.getString(KEY_NEXT_UPDATE, null)?.let{
+        indexsharedPreferences.getDateTimeISO(KEY_NEXT_UPDATE)?.let{
             try {
-                val date = Calendar.getInstance()
-                date.clear()
-                date.time = sdf_now.parse(it)
+//                val date = sdf_now.parse(it).toCalendar()
 
-                if(date.isEarlyBy(now, Calendar.MINUTE,
+                if(it.isEarlyBy(now, Calendar.MINUTE,
                         when {
                             latest.p1==null || (indexsharedPreferences.getString(KEY_NEXT, "")?:"").contains(latest.id) -> 2
                             (indexsharedPreferences.getString(KEY_NEXT_UPDATE, "")?:"").contains("估計頭獎基金${indexTD}-")->3

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="?android:attr/colorBackgroundFloating"/>
+    <stroke android:color="?android:attr/colorEdgeEffect" android:width="1.5dp" android:dashGap="51dp"/>
+    <corners android:topRightRadius="@android:dimen/app_icon_size"/>
+<!--    <padding android:left="5dp" android:top="5dp" android:right="5dp" android:bottom="5dp"/>-->
+ </shape>
+
+

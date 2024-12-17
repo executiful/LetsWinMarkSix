@@ -43,7 +43,7 @@
         <item name="android:fillAlpha">20</item>
         <item name="background">@android:color/holo_green_dark</item>
     </style>
-    <style name="styleselectiontype" parent="android:Widget.ImageButton">
+    <style name="styleselectiontype" parent="android:Widget.Material.Light.SegmentedButton">
 
     </style>
     <style name="Ticket">
@@ -91,10 +91,15 @@
     </style>
 
     <style name="Theme_Wait_Dialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <item name="android:windowBackground">@android:color/holo_purple</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
     </style>
-    <style name="Theme_Monthly_Dialog" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
-        <item name="android:actionBarDivider">@android:drawable/divider_horizontal_dim_dark</item>
+    <style name="Theme_Monthly_Dialog" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/border3d</item>
+        <item name="windowNoTitle">false</item>
+        <item name="android:windowMinWidthMinor">89%</item>
+<!--        <item name="android:titleMargin">0dp</item>-->
+
+<!--        <item name="android:actionBarDivider">@android:drawable/divider_horizontal_dim_dark</item>-->
     </style>
     <style name="bankorleg" parent="android:Widget.Material.Button.Toggle">
 
