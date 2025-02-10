@@ -26,6 +26,7 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_FIXTURES_
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_FIXTURES
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.clearTimePart
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISOFormat
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getLatestDDate
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.monthFmt
 import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawDate.Companion.checked_value
 import java.util.Calendar
@@ -49,14 +50,7 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
 
     override fun onStart() {
         super.onStart()
-        dialog?.let {
-//            val layoutParams1 = WindowManager.LayoutParams()
-//            layoutParams1.copyFrom(it.window?.attributes)
-//            layoutParams1.width = resources.configuration.screenWidthDp
-//            layoutParams1.height = WRAP_CONTENT
-//            it.window?.setLayout((resources.displayMetrics.widthPixels *.9f).toInt(), WRAP_CONTENT)
-            it.setTitle(R.string.draw_schedule_title)
-        }
+        dialog?.setTitle(R.string.draw_schedule_title)
     }
 
     override fun onCreateView(
@@ -67,7 +61,9 @@ class MonthlyDrawScheduleFragment : AppCompatDialogFragment() {
         _binding = FragmentMonthlyDrawScheduleBinding.inflate(inflater, container, false)
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
         val spec7 = GridLayout.spec(GridLayout.UNDEFINED, 7,1f)
-        val (allddates, jackpots) = ConnectionObject.getLatestSchecule(requireContext())
+        val schuPref = requireContext().getSharedPreferences(TAG_FIXTURES, MODE_PRIVATE)
+        val (allddates, jackpots) = getLatestDDate(schuPref)
+        //val (allddates, jackpots) = ConnectionObject.getLatestSchecule(requireContext())
         val today = Calendar.getInstance()
 
         val jp = mutableListOf<String>()

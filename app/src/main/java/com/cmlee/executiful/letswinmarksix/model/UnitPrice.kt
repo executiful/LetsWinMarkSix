@@ -6,6 +6,7 @@ import com.cmlee.executiful.letswinmarksix.helper.UnitPriceConverter.Companion.n
 
 data class UnitPrice(val lvalue:Long){
     override fun toString(): String {
-        return if(lvalue==0L) "$emdash" else "$dollar${nbf.format(lvalue)}"
+        return (if(lvalue==0L) "$emdash" else "$dollar${nbf.format(lvalue)}").padStart(13,' ')
     }
+    val winner get() = lvalue!=0L
 }

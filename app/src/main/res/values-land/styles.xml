@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="style1" >
+<!--    <style name="style1" >
         <item name="layout_constraintTop_toTopOf">parent</item>
         <item name="layout_constraintBottom_toTopOf">@id/ad_view_container</item>
 
@@ -13,5 +13,5 @@
 
         <item name="layout_constraintStart_toEndOf">@+id/ticketlayout</item>
         <item name="layout_constraintEnd_toEndOf">parent</item>
-    </style>
+    </style>-->
 </resources>

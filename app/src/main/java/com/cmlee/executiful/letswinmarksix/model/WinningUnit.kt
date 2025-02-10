@@ -4,6 +4,6 @@ import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.emdash
 
 data class WinningUnit(val fvalue:Float?){
     override fun toString(): String {
-        return if(fvalue==0F) "$emdash" else "$fvalue"
+        return (if(fvalue==0F) "$emdash" else "$fvalue").padStart(6, ' ')
     }
 }

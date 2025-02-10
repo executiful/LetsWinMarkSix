@@ -2,15 +2,15 @@ buildscript {
     ext{
         buildTime = new Date().format("yyyyMMddHHmmss")
         appName = project.name
-        verCo = 8
+        verCo = 10
         verMajor = 1
-        verMinor = 0
-        verPatch = 5
+        verMinor = 1
+        verPatch = 0
     }
 }
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    id 'com.android.application' version '8.7.2' apply false
+    id 'com.android.application' version '8.7.3' apply false
 //    id 'com.android.library' version '8.7.2' apply false
     id 'org.jetbrains.kotlin.android' version '1.9.24' apply false
 //    id 'com.google.devtools.ksp' version '1.8.10-1.0.9' apply false

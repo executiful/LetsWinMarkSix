@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -14,7 +15,6 @@ import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.SystemClock.sleep
 import android.text.Layout
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -28,10 +28,12 @@ import android.text.style.TextAppearanceSpan
 import android.text.style.UnderlineSpan
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.RadioButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
@@ -387,7 +389,28 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             else -> super.onKeyDown(keyCode, event)
         }
     }
+    private class ResultHolder(val root:TextView)
 
+    private class PassResultAdp(context: Context, list:List<DrawResult>):ArrayAdapter<DrawResult>(context, android.R.layout.simple_list_item_2, android.R.id.text1, list) {
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = super.getView(position, convertView, parent)
+//            convertView?.let { cnv->
+                getItem(position)?.let { item->
+                    val ssp = SpannableStringBuilder(item.id)
+                    ssp.append(sdf_display.format(item.date))
+                        .appendLine(item.inv)
+                        .append(item.no.nos.joinToString(":/"))
+                view.findViewById<TextView>(android.R.id.text1).text=ssp
+                    ssp.clear()
+                    ssp.append(context.getString(R.string.chprize_1st)).append(item.p1.toString()).appendLine(item.p1u.toString())
+                    ssp.append(context.getString(R.string.chprize_2nd)).append(item.p2.toString()).appendLine(item.p2u.toString())
+                    ssp.append(context.getString(R.string.chprize_3rd)).append(item.p3.toString()).appendLine(item.p3u.toString())
+                view.findViewById<TextView>(android.R.id.text2).text=ssp
+                }
+//            }
+            return view
+        }
+    }
     private fun populate_toobar(){
         binding.toolbar.setOnMenuItemClickListener { item ->
             alertDialog?.let{
@@ -396,6 +419,16 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
             }
             when (item.itemId) {
+                R.id.id_pass20->{
+//                    val db = M6Db.getDatabase(this  ).DrawResultDao().getAll().take(20)
+//                    val adp  = PassResultAdp(this, db)
+//                    adp.addAll(db)
+//                    AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog).setAdapter(adp){a,b->
+//
+//                    }.show()
+                    startActivity(Intent(this, LatestDrawnActivity::class.java))
+                    true
+                }
                 R.id.action_view_all -> {
                     alertDialog = AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog).setIcon(R.drawable.baseline_remove_red_eye_24)
                         .setTitle(item.title).setPositiveButton(android.R.string.ok) { _, _ ->
@@ -503,7 +536,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         .setTitle(item.title)//.setView(R.layout.pause_dialog_layout)
                         .setNegativeButton(android.R.string.cancel) { _, _ -> }
                         .setView(dialogBinding.root)
-                        .setPositiveButton(android.R.string.ok) { d, _ ->
+                        .setPositiveButton(android.R.string.ok) { _, _ ->
                             if (dialogBinding.opLike.isChecked) {
                                 getSharedPreferences(NAME_NUM_GRP, MODE_PRIVATE).edit {
                                     clear()
@@ -577,8 +610,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //                    } catch (e: Exception) {
 //                        AlertDialog.Builder(this).setMessage(e.message).show()
 //                    }
-//                    hr.post {
-//                    getLatestSchecule(this)
+
                     show_draw_schedule()
 
 //                    }
@@ -788,9 +820,9 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             "攪珠日期" to sdf_display.format(pre.date),
             "攪珠結果" to "${pre.no.nos.joinToString(numberseperator)}$thinsp(${pre.sno})",
             "總投注額" to "$dollar${pre.inv}",
-            "頭奬" to if (pre.p1 == null) "$dotdotdot" else String.format("%11s\t%6s", pre.p1, pre.p1u),
-            "二奬" to if (pre.p2 == null) "$dotdotdot" else String.format("%11s\t%6s", pre.p2, pre.p2u),
-            "三奬" to if (pre.p3 == null) "$dotdotdot" else String.format("%11s\t%6s", pre.p3, pre.p3u),
+            "頭奬 " to if (pre.p1 == null) "$dotdotdot" else "${pre.p1}$emsp${pre.p1u}",
+            "二奬 " to if (pre.p2 == null) "$dotdotdot" else "${pre.p2}$emsp${pre.p2u}",
+            "三奬 " to if (pre.p3 == null) "$dotdotdot" else "${pre.p3}$emsp${pre.p3u}",
         )
         ssb.append("${emsp}上期攪珠").appendLine()
         start = ssb.length
@@ -870,9 +902,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private fun show_draw_schedule(): Boolean {
 
         if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
-//            hr.post {
-//                getLatestSchecule(this)
-//            }
+
             hr.post {
                 getLatestSchecule(this)
                 val monthlyDrawScheduleFragment = MonthlyDrawScheduleFragment.newInstance()
@@ -1079,6 +1109,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                 genBall(db.DrawResultDao())
                             }
                             dismiss()
+                            updateStatus()
                             binding.root.setWillNotDraw(true)
                             initball()
                             binding.root.setWillNotDraw(false)

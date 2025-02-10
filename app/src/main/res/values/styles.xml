@@ -137,6 +137,7 @@
         <item name="android:layout_height">0dp</item>
         <item name="android:background">@drawable/ballcircle1</item>
         <item name="android:clickable">false</item>
+        <item name="android:focusable">false</item>
         <item name="android:layout_margin">2dp</item>
 <!--        <item name="android:padding">2dp</item>-->
         <item name="layout_constraintBottom_toBottomOf">parent</item>
@@ -198,5 +199,14 @@
     </style>
     <style name="countnumber" parent="TextAppearance.Material3.LabelSmall">
         <item name="android:textColor">@color/count</item>
+    </style>
+
+    <style name="lateststyle" parent="TextAppearance.AppCompat.Display1">
+        <item name="android:textAlignment">center</item>
+        <item name="android:gravity">center</item>
+        <item name="android:fontFamily">monospace</item>
+<!--        <item name="app:layoutManager">androidx.recyclerview.widget.LinearLayoutManager</item>-->
+<!--        <item name="app:layout_behavior">@string/appbar_scrolling_view_behavior</item>-->
+<!--        <item name="tools:listitem">@layout/drawn_list_item</item>-->
     </style>
 </resources>

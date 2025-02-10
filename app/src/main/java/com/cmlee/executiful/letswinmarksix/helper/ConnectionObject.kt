@@ -249,7 +249,7 @@ object ConnectionObject {
         return flatMap
     }
     @SuppressLint("SimpleDateFormat")
-    private fun getLatestDDate(schuPref: SharedPreferences): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
+    public fun getLatestDDate(schuPref: SharedPreferences): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
         val today = Calendar.getInstance()  //TODO  : 如何更新可能出現已下載的日期表之後有所改變，而不需經常訪問網址。
         today.clearTimePart()
 //        println("first day of week ${today.time}")
@@ -288,13 +288,19 @@ object ConnectionObject {
 
     fun getLatestSchecule(context: Context): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
         val today = Calendar.getInstance()
+//        val dom = today.get(Calendar.DAY_OF_MONTH)
+//        today.set(Calendar.DAY_OF_MONTH, 17)
         val schuPref = context.getSharedPreferences(TAG_FIXTURES, MODE_PRIVATE)
         val commingDDate = getLatestDDate(schuPref)
         schuPref.getDateTimeISO(KEY_FIXTURES_UPDATE)?.let {
 //            val lastupdate = sdf_now.parse(it).toCalendar()
-            it.add(Calendar.DATE,1)
-            if(it.before(today))
-            return commingDDate
+            if(it.before(today)){
+//                it.add(Calendar.DAY_OF_YEAR,1)
+                it.add(Calendar.HOUR_OF_DAY,12)
+                if(today.before(it))
+                return commingDDate
+
+            }
         }
         if(commingDDate.first.isEmpty() ||
             commingDDate.first.count {(it.second.draw==checked_value||it.second.preSell==checked_value)&& it.first>today } < 7) {
@@ -308,7 +314,7 @@ object ConnectionObject {
                         val objDates = jsonObject.getJSONObject("drawDates")
                         val same = objDates.getString("drawYear")
                         schuPref.edit()
-                            .putDateTimeISO(KEY_FIXTURES_UPDATE, Calendar.getInstance())
+                            .putDateTimeISO(KEY_FIXTURES_UPDATE, today)
 
                             .putString(KEY_FIXTURES, same).apply()
                         return getLatestDDate(schuPref) // get comming drawdate from the bet.hkjc.com again which is the latest!!
