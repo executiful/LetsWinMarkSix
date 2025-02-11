@@ -64,7 +64,7 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
 
     private fun populateResult() {
         val drawResultDao = M6Db.getDatabase(this).DrawResultDao()
-        val allresult = drawResultDao.getAll().takeLast(Random.nextInt(20,4000))
+        val allresult = drawResultDao.getAll()//.takeLast(Random.nextInt(20,4000))
         val lostcount = allresult.takeWhile { (!it.p1!!.winner) }.size
         if (lostcount > 1) {
             "${getString(R.string.title_activity_latest_drawn)}${
