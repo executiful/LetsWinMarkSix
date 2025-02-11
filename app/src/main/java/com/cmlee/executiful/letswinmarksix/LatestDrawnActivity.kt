@@ -64,33 +64,35 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
 
     private fun populateResult() {
         val drawResultDao = M6Db.getDatabase(this).DrawResultDao()
-        val allresult = drawResultDao.getAll()//.takeLast(Random.nextInt(20,4000))
-        val lostcount = allresult.takeWhile { (!it.p1!!.winner) }.size
-        if (lostcount > 1) {
+        val allresult = drawResultDao.getAll().takeLast(Random.nextInt(20,4000))
+        val looseCount = allresult.takeWhile { (!it.p1!!.winner) }.size
+        val beforeLosse = allresult.takeLast(allresult.size-looseCount).takeWhile { it.p1!!.winner }.size
+        if (looseCount > 1) {
             "${getString(R.string.title_activity_latest_drawn)}${
                 getString(
                     R.string.string_no_winner_count,
-                    lostcount
+                    looseCount
                 )
             }".also { binding.toolbar.title = it }
-        } else if (lostcount==1){
+        } else if (looseCount==1){
             "${getString(R.string.title_activity_latest_drawn)}${
                 getString(
-                    R.string.string_this_lost)
+                    R.string.string_this_lost, beforeLosse)
             }".also { binding.toolbar.title = it }
         } else /*if(count==0)*/ {
-            val count2 = allresult.takeWhile { it.p1!!.winner }.size
-            if(count2>1) {
+            val winCount = allresult.takeWhile { it.p1!!.winner }.size
+            val beforeWin = allresult.takeLast(allresult.size-winCount).takeWhile { !it.p1!!.winner }.size
+            if(winCount>1) {
                 "${getString(R.string.title_activity_latest_drawn)}${
                     getString(
                         R.string.string_win_count,
-                        count2
+                        winCount
                     )
                 }".also { binding.toolbar.title = it }
-            } else if(count2==1){
+            } else if(winCount==1){
                 "${getString(R.string.title_activity_latest_drawn)}${
                     getString(
-                        R.string.string_this_win)
+                        R.string.string_this_win, beforeWin)
                 }".also { binding.toolbar.title = it }
             }
         }
