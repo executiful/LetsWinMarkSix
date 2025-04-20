@@ -135,16 +135,6 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         waitdlg.setOnShowListener {
             hr.post {
                 population(waitdlg)
-                /*                UpdateLatestDraw(this){
-                                    if (it == "OK") {
-                                        runOnUiThread {
-                                            waitdlg.show()
-                                            adps.clear()
-                                            binding.tabPrize.removeAllTabs()
-                                        }
-                                        population(waitdlg)
-                                    }
-                                }*/
             }
         }
         waitdlg.show()
@@ -173,12 +163,16 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         }
     }
 
+    override fun onPause() {
+        super.onPause()
+        finish()
+    }
     private fun population(waitdlg: AlertDialog) {
         db = M6Db.getDatabase(this)
         val allresult = db.DrawResultDao().getAll().filter { it.date >= dateStart }
         val max1 = 6 - bankers.size
 
-        val gb = allresult.indices.toList()./*parallelStream().*/map {
+        val gb = allresult.indices.asSequence()./*parallelStream().*/map {
             allresult[it].let{ rs->
                 val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
                 rs.no.nos.map { c -> c in m6 }.plus(rs.sno in bankers || rs.sno in legs) to rs

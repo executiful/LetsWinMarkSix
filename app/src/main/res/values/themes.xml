@@ -19,8 +19,8 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.LetsWinMarkSix.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.LetsWinMarkSix.AppBarOverlay" parent="ThemeOverlay.AppCompat.DayNight.ActionBar" />
 
-    <style name="Theme.LetsWinMarkSix.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.LetsWinMarkSix.PopupOverlay" parent="ThemeOverlay.AppCompat.DayNight" />
 
 </resources>

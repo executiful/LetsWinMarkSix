@@ -3,12 +3,16 @@ package com.cmlee.executiful.letswinmarksix
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
+import android.text.style.StyleSpan
+import android.text.style.UnderlineSpan
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
@@ -25,7 +29,6 @@ import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
-import kotlin.random.Random
 
 
 class LatestDrawnActivity : BannerAppCompatActivity() {
@@ -64,9 +67,10 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
 
     private fun populateResult() {
         val drawResultDao = M6Db.getDatabase(this).DrawResultDao()
-        val allresult = drawResultDao.getAll().takeLast(Random.nextInt(20,4000))
+        val allresult = drawResultDao.getAll().filter { it.p1!=null }.take(50)
         val looseCount = allresult.takeWhile { (!it.p1!!.winner) }.size
-        val beforeLosse = allresult.takeLast(allresult.size-looseCount).takeWhile { it.p1!!.winner }.size
+        val beforeLosse =
+            allresult.takeLast(allresult.size - looseCount).takeWhile { it.p1!!.winner }.size
         if (looseCount > 1) {
             "${getString(R.string.title_activity_latest_drawn)}${
                 getString(
@@ -74,34 +78,63 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
                     looseCount
                 )
             }".also { binding.toolbar.title = it }
-        } else if (looseCount==1){
+        } else if (looseCount == 1) {
             "${getString(R.string.title_activity_latest_drawn)}${
                 getString(
-                    R.string.string_this_lost, beforeLosse)
+                    R.string.string_this_lost, beforeLosse
+                )
             }".also { binding.toolbar.title = it }
         } else /*if(count==0)*/ {
             val winCount = allresult.takeWhile { it.p1!!.winner }.size
-            val beforeWin = allresult.takeLast(allresult.size-winCount).takeWhile { !it.p1!!.winner }.size
-            if(winCount>1) {
+            val beforeWin =
+                allresult.takeLast(allresult.size - winCount).takeWhile { !it.p1!!.winner }.size
+            if (winCount > 1) {
                 "${getString(R.string.title_activity_latest_drawn)}${
                     getString(
                         R.string.string_win_count,
                         winCount
                     )
                 }".also { binding.toolbar.title = it }
-            } else if(winCount==1){
+            } else if (winCount == 1) {
                 "${getString(R.string.title_activity_latest_drawn)}${
                     getString(
-                        R.string.string_this_win, beforeWin)
+                        R.string.string_this_win, beforeWin
+                    )
                 }".also { binding.toolbar.title = it }
             }
         }
+        val data20 = allresult.take(20)
+        val numberslist = data20.map { it.no.nos.plus(it.sno).toList() }.flatten().groupBy { it }
+            val top = numberslist.entries.sortedByDescending { it.value.size }.take(2).joinToString{it.key.toString()}
+/*        val d = data20.map{ f->
+            f.id to f.no.nos.plus(f.sno).let {
+                it.intersect(
+                    it.map { i -> i + 1 }.plus(it.map { i -> i - 1 }).distinct().toSet()
+                )
+            }
+        }.filter{ it.second.isNotEmpty() }.joinToString("\n") { "${it.first}: ${it.second.joinToString ()}" }*/
+/*        val c = data20.filter { f->
+            f.no.nos.plus(f.sno).let {
+                it.intersect(
+                    it.map { i -> i + 1 }.plus(it.map { i -> i - 1 }).distinct().toSet()
+                ).isNotEmpty()
+            }
+        }.joinToString { it.id +":"+it.no.nos.joinToString()+"+"+it.sno }*/
+/*        val xx = setOf(11,22,33,44,55)
+        val filterValues = data20.filter { it.no.nos.plus(it.sno).intersect(xx).size >= 2 }
+            .joinToString(",\n") { it.id + ":" + it.no.nos.plus(it.sno).joinToString("+") }*/
+        val s = allresult.map{it.id to it.no.nos.plus(it.sno).toSet()}.windowed(2).take(20).map{(curr,next)->
+            curr.first to curr.second.intersect(next.second)
+        }//.filter { it.second.isNotEmpty() }
+        val ss=s.map{l->"${l.first}:${l.second.joinToString()}"}.joinToString("\n")
+//        AlertDialog.Builder(this).setMessage(filterValues+"\n"+top+"\n"+d+"\n"+ss).show()
         binding.idPrizeList.adapter =
-            ResultAdapter(allresult.filter { it.p1 != null }.take(20), this)
+            ResultAdapter(data20, s, this)
     }
 
     private class ResultAdapter(
         val result: List<DrawResult>,
+        val s: List<Pair<String, Set<Int>>>,
         val context: Context
     ) : RecyclerView.Adapter<ResultAdapter.DrawnVH>() {
         private val bools = mutableListOf<Int>()
@@ -112,25 +145,28 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
         }
 
         override fun onBindViewHolder(holder: DrawnVH, position: Int) {
-            holder.bind(result[position])
+            holder.bind(result[position], s)
         }
 
         override fun getItemCount() = result.size
         inner class DrawnVH(val item: DrawnListItemBinding, var context: Context) :
             RecyclerView.ViewHolder(item.root) {
-            private fun setnum(c: AppCompatButton, i: Int) {
-                c.text = "$i"
+            private fun setnum(c: AppCompatButton, i: Int, f: Pair<String, Set<Int>>) {
+                val sp = SpannableString(i.toString())
+                sp.setSpan(if (i in f.second) UnderlineSpan() else StyleSpan(Typeface.NORMAL), 0, sp.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                c.text = sp
                 c.backgroundTintList = ColorStateList(colors, intArrayOf(i.BallColor()))
             }
 
-            fun bind(rs: DrawResult) {
-                setnum(item.chip1st, rs.no.nos[0])
-                setnum(item.chip2nd, rs.no.nos[1])
-                setnum(item.chip3rd, rs.no.nos[2])
-                setnum(item.chip4th, rs.no.nos[3])
-                setnum(item.chip5th, rs.no.nos[4])
-                setnum(item.chip6th, rs.no.nos[5])
-                setnum(item.chipsp, rs.sno)
+            fun bind(rs: DrawResult, s: List<Pair<String, Set<Int>>>) {
+                val f = s.find { it.first==rs.id }!!
+                setnum(item.chip1st, rs.no.nos[0], f)
+                setnum(item.chip2nd, rs.no.nos[1], f)
+                setnum(item.chip3rd, rs.no.nos[2], f)
+                setnum(item.chip4th, rs.no.nos[3], f)
+                setnum(item.chip5th, rs.no.nos[4], f)
+                setnum(item.chip6th, rs.no.nos[5], f)
+                setnum(item.chipsp, rs.sno, f)
                 val ssp = SpannableStringBuilder("${rs.id}, ${sdf_display.format(rs.date)}")
                 val ssp2 = SpannableStringBuilder()
                 ssp2.append(ssp)
@@ -157,7 +193,12 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
                     .append(context.getString(R.string.chprize_3rd)).append(emsp)
                     .append(rs.p3.toString()).append(emsp)
                     .append(rs.p3u.toString())
-
+                if(f.second.isNotEmpty()) {
+                    ssp2.appendLine()
+                    ssp2.appendLine()
+                    ssp2.append(context.getString(R.string.consecutive))
+                    ssp2.append(f.second.joinToString())
+                }
                 temp = ssp.length
 
                 ssp.append(emsp)
@@ -167,7 +208,7 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
                     rs.p3 to context.getString(R.string.chprize_3rd)
                 ).forEach { (r, s) ->
                     r?.let { p ->
-                        ssp.append(s)
+                        ssp.append(s).append(thinsp)
                         if (!p.winner) {
                             ssp.setSpan(
                                 ForegroundColorSpan(Color.TRANSPARENT),

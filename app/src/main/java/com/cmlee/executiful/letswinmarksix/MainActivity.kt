@@ -52,6 +52,13 @@ import com.cmlee.executiful.letswinmarksix.databinding.RefreshDialogBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.ListView
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_BLIND
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_GROUP
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_ORDER
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_SELECTED
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.NAME_ENTRIES
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.NAME_NUM_GRP
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.NAME_ORDER
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT_UPDATE
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
@@ -256,14 +263,15 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             it.idNumber.setOnClickListener {
                 updateball(index)
                 updateStatus()
-                getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit()
-                    .putString(KEY_SELECTED, originalballs.joinToString("") {
+                getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit() {
+                    putString(KEY_SELECTED, originalballs.joinToString("") {
                         when (it.status) {
                             NumStat.NUMSTATUS.LEG -> "L"
                             NumStat.NUMSTATUS.BANKER -> "B"
                             NumStat.NUMSTATUS.UNSEL -> "U"
                         }
-                    }).apply()
+                    })
+                }
             }
             when (numberordering[index].status) {
                 NumStat.NUMSTATUS.LEG -> {
@@ -434,8 +442,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         .setTitle(item.title).setPositiveButton(android.R.string.ok) { _, _ ->
                             item.isVisible = false
                             blind = false
-                            getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit().putBoolean(
-                                KEY_BLIND, blind).apply()
+                            getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit() {
+                                putBoolean(
+                                    KEY_BLIND, blind
+                                )
+                            }
 //                            val gpn = if(useGroup) getSharedPreferences(NAME_NUM_GRP, MODE_PRIVATE).all
 //                            if (useGroup && item.status == NumStat.NUMSTATUS.UNSEL) getSharedPreferences(
 //                                NAME_NUM_GRP,
@@ -552,12 +563,12 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                             useGroup = dialogBinding.opLike.isChecked
                             numberordering =
                                 if (dialogBinding.opInorder.isChecked) originalballs else originalballs.sortedBy { random() }
-                            getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit()
-                                .clear()
-                                .putString(KEY_ORDER, numberordering.idxString())
-                                .putBoolean(KEY_BLIND, blind)
-                                .putBoolean(KEY_GROUP, useGroup)
-                                .apply()
+                            getSharedPreferences(NAME_ORDER, MODE_PRIVATE).edit() {
+                                clear()
+                                    .putString(KEY_ORDER, numberordering.idxString())
+                                    .putBoolean(KEY_BLIND, blind)
+                                    .putBoolean(KEY_GROUP, useGroup)
+                                }
                             numberordering.parallelStream()
                                 .forEach { it.status = NumStat.NUMSTATUS.UNSEL }
                             ResetNumberDialog()
@@ -785,7 +796,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }
                 }
                 if(all.size>6)
-                    edit().remove(all.entries.last().key).apply()
+                    edit(){ remove(all.entries.last().key) }
                 true
             }     else false
         }
@@ -924,12 +935,12 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 val today = Calendar.getInstance()
 //            today.add(Calendar.DATE, 14)
 
-                msgMatch =if(rs.date in scheduleAll.filter { it.first <= today }.map{it.first.time}){
-                    val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
-                         rs.id+" : "+
-                    rs.no.nos.map{ if(m6.contains(it)) "<$it>" else it}.plus(if(rs.sno in bankers || rs.sno in legs) "(<${rs.sno}>)" else "(${rs.sno})").joinToString(
-                        numberseperator)
-                } else ""
+//                msgMatch =if(rs.date in scheduleAll.filter { it.first <= today }.map{it.first.time}){
+//                    val m6 = rs.no.nos.intersect(bankers).plus(rs.no.nos.intersect(legs).take(max1))
+//                         rs.id+" : "+
+//                    rs.no.nos.map{ if(m6.contains(it)) "<$it>" else it}.plus(if(rs.sno in bankers || rs.sno in legs) "(<${rs.sno}>)" else "(${rs.sno})").joinToString(
+//                        numberseperator)
+//                } else ""
             }
         }
         startActivity(Intent(this, DrawnNumberCheckingActivity::class.java))
@@ -1210,10 +1221,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
     }
     private fun genBall(drawResultDao: DrawResultDao):Boolean {
-//        val db = M6Db.getDatabase(this)
-//        val drawResultDao = db.DrawResultDao()
         latestDrawResult = drawResultDao.getLatest()
-//        println("eee....rrrrrrrrrrrrr"+latestDrawResult!!.no.nos.joinToString(","))
         val dr = drawResultDao.getAll()
         val temp = dr.sortedByDescending { it.date }
             .filter { it.date >= dateStart }
@@ -1286,8 +1294,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     }
 
     companion object {
-        private var lastInitMilliSec = 0L
-        private val minInitMillSec = 1000
         const val nbsp = '\u00A0'
         const val emsp = '\u2003'
         const val ensp = '\u2002'
@@ -1296,23 +1302,15 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         const val emdash = '\u2014'
         const val dotdotdot = '\u2026'
 
-
         const val numberseperator = "$thinsp+"
         const val m6_49StartDate = "2002/07/04"
 
-        private const val NAME_NUM_GRP = "NUM_GRP"
-        private const val NAME_ORDER = "ORDER"
-        private const val KEY_SELECTED = "LEG_BANKER_IDX"
-        private const val KEY_ORDER = "NUMBER_ORDER"
-        private const val KEY_BLIND = "BLIND_BOOL"
-        private const val KEY_GROUP = "GROUP_BOOL"
-        private const val NAME_ENTRIES = "ENTRIES"
         val ballcolor = mutableListOf<Int>()
 
         val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }.toSet()
         val legs get() = originalballs.filter { it.status== NumStat.NUMSTATUS.LEG }.map{it.num}.toSet()
         var msgNumbers:String = "+"
-        var msgMatch:String = "?"
+//        var msgMatch:String = "?"
         var msgCalc:String = "good luck!!"
 
         val userChoices get() = originalballs.filterNot { it.status == NumStat.NUMSTATUS.UNSEL }.map { it.num }

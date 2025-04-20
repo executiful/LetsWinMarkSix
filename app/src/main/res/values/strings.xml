@@ -108,5 +108,6 @@
     <string name="string_no_winner_count">(連續%d期頭奬沒人中)</string>
     <string name="string_win_count">(連續%d期頭奬都有人中)</string>
     <string name="string_this_win">(%d期後，頭奬又有人中)</string>
-    <string name="string_this_lost">(%d期後，期頭奬又落空)</string>
+    <string name="string_this_lost">(%d期後，頭奬又落空)</string>
+    <string name="consecutive">"與上期相同號碼: "</string>
 </resources>
