@@ -2,7 +2,7 @@ buildscript {
     ext{
         buildTime = new Date().format("yyyyMMddHHmmss")
         appName = project.name
-        verCo = 11
+        verCo = 12
         verMajor = 1
         verMinor = 1
         verPatch = 1

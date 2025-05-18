@@ -208,7 +208,7 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
                     rs.p3 to context.getString(R.string.chprize_3rd)
                 ).forEach { (r, s) ->
                     r?.let { p ->
-                        ssp.append(s).append(thinsp)
+                        ssp.append(s)
                         if (!p.winner) {
                             ssp.setSpan(
                                 ForegroundColorSpan(Color.TRANSPARENT),
@@ -217,6 +217,7 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
                                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
                             )
                         }
+                        ssp.append(thinsp)
                     }
                 }
                 ssp.setSpan(
