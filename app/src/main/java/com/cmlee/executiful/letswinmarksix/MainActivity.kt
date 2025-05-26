@@ -726,6 +726,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }.show()
                     true
                 }
+                R.id.id_scanticket->{
+                    startActivity(Intent(this, CameraScanActivity::class.java))
+                    true
+                }
                 else -> {
                     false
                 }
