@@ -72,6 +72,9 @@
                 android:id="@+id/id_pass20"
                 android:icon="@drawable/baseline_list_24"
                 android:title="@string/title_activity_latest_drawn" />
+            <item
+                android:id="@+id/id_scanticket"
+                android:title="--"/>
         </menu>
     </item>
 </menu>
