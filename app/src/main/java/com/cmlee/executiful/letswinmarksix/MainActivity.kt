@@ -35,6 +35,7 @@ import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatTextView
@@ -59,6 +60,8 @@ import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_SELECTED
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.NAME_ENTRIES
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.NAME_NUM_GRP
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.NAME_ORDER
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETRESULT
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETSTRING
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT_UPDATE
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
@@ -727,7 +730,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     true
                 }
                 R.id.id_scanticket->{
-                    startActivity(Intent(this, CameraScanActivity::class.java))
+                    launcherForOCR.launch(Intent(this, CameraScanActivity::class.java))
                     true
                 }
                 else -> {
@@ -738,6 +741,19 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
     }
 
+    private val launcherForOCR = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){rs->
+        if(rs.resultCode == RESULT_OK) {
+            with(TICKETRESULT) {
+                rs.data?.let {
+                    if(it.hasExtra(this)){
+                        it.getStringExtra(this)?.let { nbs->
+                            AlertDialog.Builder(this@MainActivity).setMessage(nbs+if(it.hasExtra(TICKETSTRING)) it.getStringExtra(TICKETSTRING)!! else "").show()
+                        }
+                    }
+                }
+            }
+        }
+    }
     private fun populate_menu(){
         binding.toolbar.menu.findItem(R.id.action_view_all).also { v ->
             v.isVisible = blind

@@ -2,6 +2,7 @@ package com.cmlee.executiful.letswinmarksix
 
 //import androidx.camera.lifecycle.ProcessCameraProvider
 import android.R
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
@@ -28,6 +29,9 @@ import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import androidx.core.content.edit
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETRESULT
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETSTRING
 
 
 class CameraScanActivity : AppCompatActivity() {
@@ -42,14 +46,15 @@ class CameraScanActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        viewBinding = ActivityCameraScanBinding.inflate(layoutInflater)
+        setContentView(viewBinding.root)
 //        setContentView(R.layout.activity_camera_scan)
 //        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
 //            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 //            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
 //            insets
 //        }
-        viewBinding = ActivityCameraScanBinding.inflate(layoutInflater)
-        setContentView(viewBinding.root)
+
 
         // Request camera permissions
         if (allPermissionsGranted()) {
@@ -77,13 +82,14 @@ class CameraScanActivity : AppCompatActivity() {
             // Handle Permission granted/rejected
             var permissionGranted = true
             permissions.entries.forEach {
-                if (it.key in REQUIRED_PERMISSIONS && it.value == false)
+                if (it.key in REQUIRED_PERMISSIONS && !it.value)
                     permissionGranted = false
             }
             if (!permissionGranted) {
                 Toast.makeText(baseContext,
                     "Permission request denied",
                     Toast.LENGTH_SHORT).show()
+                finish()
             } else {
                 startCamera()
             }
@@ -103,6 +109,7 @@ class CameraScanActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
+        getSharedPreferences("TESTNUM", MODE_PRIVATE).all.clear()
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
@@ -133,46 +140,63 @@ class CameraScanActivity : AppCompatActivity() {
                         // ...
                         recognizer.process(image)
                             .addOnSuccessListener {
-//                            print(it.text)
-//                                val numbers = mutableListOf<MutableList<String>>()
                                 val sb = StringBuilder()
-//                                var current = mutableListOf<String>()
-//                                numbers.add(current)
+                                val dd = StringBuilder()
+                                val ii = StringBuilder()
+                                val funs = getFuns()
                                 val sorted = it.textBlocks.sortedWith(compareBy ({it.boundingBox?.top}, {it.boundingBox?.left} ))
                                 sorted.forEach {
                                     it.lines.sortedWith(compareBy ({it.boundingBox?.top}, {it.boundingBox?.left} )).forEach{
                                         var test = it.text.replace ( "\\s".toRegex() , "")
                                         if(test.contains('+')||test.isDigitsOnly()) {
                                             sb.append(test)
-/*                                            val nl = test.startsWith('/')
-                                            val line = test.trimStart('/')
-                                            if (nl) current = mutableListOf()
-                                            val digits = line.trim('+').split('+')
-                                                    .toMutableList()
-                                            println("line of ... ${it.text}")
-                                            if (digits.isNotEmpty() && digits.all { it.isDigitsOnly() }) {
-                                                if (nl) {
-                                                    current = mutableListOf()
-                                                    numbers.add(current)
-                                                }
-                                                current.addAll(digits)
-                                                println("line of ... yes")
-                                            } else println("line of ... no")*/
+                                        } else if (test.contains("$")){
+                                            dd.append(test)
+                                        } else if (test.contains("六合彩|期數".toRegex())){
+                                            ii.append(test)
                                         }
                                     }
 
                                 }
 //                                if(numbers.all{it.isSort()})
-                                val nums = sb.toString().split('/').map{
-                                    val bl = it.split('<')
-                                     when(bl.count()){
-                                        2->bl[0] to bl[1]
-                                        1->bl[0] to null
-                                        else-> null
+                                val nums = sb.toString().getDrawNumbers().filter {(f,s)-> validateNumbers(f,s) }
+//                                if( nums.any{ (f,s)->
+//                                    !validateNumbers(f,s)
+//
+//                                    }){
+//                                    getSharedPreferences("TESTNUM", MODE_PRIVATE).edit {
+//                                        putString(
+//                                            System.currentTimeMillis().toString(),
+//                                            sb.toString()
+//                                        )
+//                                    }
+//                                } else
+//                                    getSharedPreferences("SUCCESSNUM", MODE_PRIVATE).edit{
+//                                        putString(System.currentTimeMillis().toString(), sb.toString())
+//                                    }
+
+                                if(nums.isNotEmpty()){
+                                    val res =nums.joinToString { (f, s) ->
+                                        f.joinToString("_") + if (s.isNotEmpty()) ">" + s.joinToString(
+                                            "%"
+                                        ) else ""
                                     }
+                                    val intent = Intent()
+                                    val bde = Bundle().also {
+                                        it.putString(TICKETRESULT, res)
+                                        it.putString(TICKETSTRING, "$dd # $ii")
+                                    }
+                                    intent.putExtras(bde)
+                                    setResult(RESULT_OK, intent)
+
+                                    finish() //onBackPressed()
+//                                    viewBinding.imageCaptureButton.text = dd
+//                                    viewBinding.videoCaptureButton.text = ii
+//                                    Toast.makeText(
+//                                        this,
+//                                        res, Toast.LENGTH_SHORT
+//                                    ).show()
                                 }
-                                Toast.makeText(this,
-                                    sb, Toast.LENGTH_SHORT ).show()
                         }
                             .addOnFailureListener {
 
@@ -200,15 +224,110 @@ class CameraScanActivity : AppCompatActivity() {
 
         }, ContextCompat.getMainExecutor(this))
     }
+    private fun getFuns(): MutableList<(String) -> Boolean>{
+        return mutableListOf<(String)->Boolean>(
+            {
+                if (it.contains(m6)){
+
+                    true
+                }else
+                    false
+            },{
+                if(it.contains(drawno)){
+                    drawnnn.find(it)?.let {f->
+                        return@mutableListOf true
+                    }
+//                    sbu.appendLine("??")
+                }
+                false
+            },{
+                if(it.contains(number)){
+                    true
+                } else {
+                    false
+                }
+            },{
+                if(it.contains(unitprice)){
+                    dollaru.find(it)?.let { f ->
+//                        sb.appendLine(f.groups[1]?.value)
+                        return@mutableListOf true
+                    }
+//                    sbu.appendLine("??")
+                }
+                false
+            },{
+                if(it.contains(totalprice)){
+                    dollarp.find(it)?.let {f->
+//                        sb.appendLine(f.groups[1]?.value)
+                        return@mutableListOf true
+                    }
+//                    sbu.appendLine("??")
+                }
+                false
+            },{
+                it.contains(drawdate)
+            },{
+                it.contains(jockey)
+                false
+            },{
+                it.contains(barcode)
+                false
+            })
+    }
+    private fun validateNumbers(legs:List<String>, bans:List<String>):Boolean{
+        if (bans.size > 5) {
+            println("falses ban>5,${bans.size}")
+            return false
+        }
+        if (legs.size + bans.size < 7 &&legs.size != 6) {
+            println("falses ${legs.size}, ${bans.size}")
+            return false
+        }
+        return (legs.isSort() && bans.isSort() && legs.intersect(bans.toSet()).isEmpty())
+    }
     companion object {
+        val m6 = "[六合彩]|Mark|Six".toRegex(RegexOption.IGNORE_CASE)
+        val drawno = "[期數]|Draw|No".toRegex(RegexOption.IGNORE_CASE)
+        val number = "[+/]".toRegex()
+        val unitprice = "[注]|Unit|bet".toRegex(RegexOption.IGNORE_CASE)
+        val totalprice = "[總額]|Total".toRegex(RegexOption.IGNORE_CASE)
+        val drawdate = "[年月日]".toRegex(RegexOption.IGNORE_CASE)
+        val jockey = "JOCKEY|CLUB|HONG|KONG".toRegex(RegexOption.IGNORE_CASE)
+        val barcode = "[A-F0-9]{7}\\s[A-F0-9]{17}"
+
+        val dollarp = "(\\$\\d*[.]+\\d+)".toRegex()
+        val dollaru = "[(](\\$\\d*)[)]".toRegex()
+        val drawnnn = "(\\d{3})".toRegex()
+        val regRight = Regex("JOCKEY|CLUB|HONG|KONG")
+        val sam = "香港馬會奬券有限公司".toCharArray().toSet()
+        val sam2 = "六合彩".toCharArray().toSet()
         private val N49 = (1..49).map{it.toString()}
         private fun List<String>.isSort():Boolean{
-            if(this.count()<6) return false
+            if(this.size<2) return true
             val toint = this.map{ N49.indexOf(it) }
-
-            return toint.none{it==-1}&& toint.zipWithNext().all {(a,b)-> a<b}
+//            var idx = -1
+//            for (s in this) {
+//                val idxof = N49.indexOf(s)
+//                if(idxof == -1 || idxof<idx)
+//                    return false
+//                idx=idxof
+//            }
+//            return true
+            return toint.zipWithNext().all {(a,b)-> a!=-1&& a<b}
         }
-
+        private fun String.toNumbers():List<Int>{
+            return this.split('+').map { N49.indexOf(it) }.filterNot{it==-1}
+        }
+        private fun String.getDrawNumbers():List<Pair<List<String>, List<String>>>{
+           return this.split('/').map {
+                val bl = it.split('>')
+                when (bl.count()) {
+                    2 -> bl[0] to bl[1]
+                    1 -> bl[0] to ""
+                    else -> "" to ""
+                }
+            }.map{(f,s)-> f.split('+') to s.split('+')}
+        }
         private const val TAG = "CameraXApp"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =

@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.text.Html
+import androidx.core.content.edit
 import androidx.core.text.HtmlCompat
 import com.cmlee.executiful.letswinmarksix.BuildConfig
 import com.cmlee.executiful.letswinmarksix.model.NoArray
@@ -249,7 +250,7 @@ object ConnectionObject {
         return flatMap
     }
     @SuppressLint("SimpleDateFormat")
-    public fun getLatestDDate(schuPref: SharedPreferences): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
+    fun getLatestDDate(schuPref: SharedPreferences): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
         val today = Calendar.getInstance()  //TODO  : 如何更新可能出現已下載的日期表之後有所改變，而不需經常訪問網址。
         today.clearTimePart()
 //        println("first day of week ${today.time}")
@@ -313,10 +314,11 @@ object ConnectionObject {
                         val jsonObject = JSONObject(mr.groupValues[1])
                         val objDates = jsonObject.getJSONObject("drawDates")
                         val same = objDates.getString("drawYear")
-                        schuPref.edit()
-                            .putDateTimeISO(KEY_FIXTURES_UPDATE, today)
+                        schuPref.edit() {
+                            putDateTimeISO(KEY_FIXTURES_UPDATE, today)
 
-                            .putString(KEY_FIXTURES, same).apply()
+                                .putString(KEY_FIXTURES, same)
+                        }
                         return getLatestDDate(schuPref) // get comming drawdate from the bet.hkjc.com again which is the latest!!
                     }
                 }
@@ -334,8 +336,8 @@ object ConnectionObject {
             ?: return null
         val m6_div= doc.select(".m6-index-div")
         m6_div.select("script").first()?.data()?.let { data ->
-            regex.find(data)?.run{
-                sharedPreferences.edit().putString(KEY_NEXT_DRAW_DATE, this.groupValues[1]).apply()
+            regex.find(data)?.let{mr->
+                sharedPreferences.edit() { putString(KEY_NEXT_DRAW_DATE, mr.groupValues[1]) }
             }
         }
         m6_div.select(".m6-index-div table:not(:has(table)):has(.snowball1)").first()
@@ -346,7 +348,7 @@ object ConnectionObject {
                         sharedPreferences.edit()
                             .putString(KEY_NEXT, this)
                             .putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
-                            .apply()
+                           // .apply()
                         return this
                     }
                 }
