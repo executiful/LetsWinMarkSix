@@ -74,7 +74,8 @@
                 android:title="@string/title_activity_latest_drawn" />
             <item
                 android:id="@+id/id_scanticket"
-                android:title="--"/>
+                android:icon="@drawable/outline_frame_inspect_24"
+                android:title="@string/title_scanticket" />
         </menu>
     </item>
 </menu>

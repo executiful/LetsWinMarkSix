@@ -10,6 +10,7 @@ object CommonObject {
     const val NAME_ENTRIES = "ENTRIES"
     const val TICKETRESULT = "TICKET_NUMBERS"
     const val TICKETSTRING = "TICKET_STRING"
+    const val FD_WAIT_DIALOG = "Wait_Dialog"
     fun validateNumbers(leg :Int, ban:Int):Boolean{
         if (ban > 5) {
             return false

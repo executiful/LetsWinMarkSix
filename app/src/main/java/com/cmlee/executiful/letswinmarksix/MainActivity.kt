@@ -13,6 +13,7 @@ import android.graphics.Typeface
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.HandlerThread
 import android.text.Layout
@@ -26,9 +27,12 @@ import android.text.style.StyleSpan
 import android.text.style.TabStopSpan
 import android.text.style.TextAppearanceSpan
 import android.text.style.UnderlineSpan
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.ArrayAdapter
 import android.widget.GridLayout
 import android.widget.ImageView
@@ -66,11 +70,14 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT_UPDATE
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.UpdateLatestDraw
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISO
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISOFormat
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getLatestSchecule
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getScheduleAll
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTD
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTR
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.isEarlyBy
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.putDateTimeISO
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.sqlDate
 import com.cmlee.executiful.letswinmarksix.model.DrawStatus
 import com.cmlee.executiful.letswinmarksix.model.NumStat
@@ -637,6 +644,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         .setMessage(getDrawString()).show().also { dlg ->
                             alertDialog = dlg
                             val db = M6Db.getDatabase(this)
+                            WebViewGetNextDraw(db.DrawResultDao()){ if (it!="") dlg.setMessage(getDrawString())}
                             hr.postDelayed({
                                 UpdateLatestDraw(this) {
                                     runOnUiThread {
@@ -648,7 +656,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                             dlg.setMessage(getDrawString())
                                     }
                                 }
-                            },1000)
+                            },800)
                         }
                     alertDialog!=null
                 }
@@ -730,6 +738,16 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     true
                 }
                 R.id.id_scanticket->{
+//                    with(FD_WAIT_DIALOG) {
+//                        if (supportFragmentManager.findFragmentByTag(this@with) == null) {
+//                            val m6Fragment = M6Fragment.newInstance(",", "")
+//                            m6Fragment.show(
+//                                supportFragmentManager.beginTransaction(),
+//                                this@with
+//                            )
+//                        }
+//                    }
+
                     launcherForOCR.launch(Intent(this, CameraScanActivity::class.java))
                     true
                 }
@@ -747,7 +765,13 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 rs.data?.let {
                     if(it.hasExtra(this)){
                         it.getStringExtra(this)?.let { nbs->
-                            AlertDialog.Builder(this@MainActivity).setMessage(nbs+if(it.hasExtra(TICKETSTRING)) it.getStringExtra(TICKETSTRING)!! else "").show()
+                            val other = (if(it.hasExtra(TICKETSTRING)) it.getStringExtra(TICKETSTRING)!! else "").split("#")
+
+                            val drawResultDao = M6Db.getDatabase(this@MainActivity).DrawResultDao()
+                            val rec = drawResultDao.checkDrawBy(other[0], other[1])
+                            AlertDialog.Builder(this@MainActivity)
+                                .setTitle(other[0]+other[1])
+                                .setMessage(nbs+System.lineSeparator()+rec.no.nos.joinToString("+")+",${rec.sno}").show()
                         }
                     }
                 }
@@ -1120,6 +1144,74 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         currentStatus = calcDrawStatus.first
     }
 
+    private fun WebViewGetNextDraw(drawResultDao: DrawResultDao, exec:(message:String)->Unit) {
+        val nextref = getSharedPreferences("NEXTDRAW", Context.MODE_PRIVATE)
+        nextref.getDateTimeISO(KEY_NEXT_UPDATE)?.let{
+            val now = Calendar.getInstance()
+            val latest = drawResultDao.getLatest()
+            if(!it.isEarlyBy(now, Calendar.MINUTE,
+                    when {
+                        latest.p1==null || (nextref.getString(KEY_NEXT, "")?:"").contains(latest.id) -> 2
+                        (nextref.getString(KEY_NEXT_UPDATE, "")?:"").contains("估計頭獎基金${indexTD}-")->3
+                        else -> 15
+                    }
+                )){
+//                return download_next_draw(indexsharedPreferences)
+                return
+            }
+        }
+        val wv = WebView(this)
+        with (wv.settings){
+            javaScriptEnabled=true
+            domStorageEnabled=true
+            loadsImagesAutomatically=false
+        }
+        var targetfound = ""
+        var isstart = false
+        val cntr = object:CountDownTimer(1000*5, 1000){
+            val jsCode = "(function() {" +
+                    "  var element = document.querySelector('.next-draw-table-container');" +
+                    "  return element ? element.innerText : 'Element not found';" +
+                    "})();"
+            override fun onTick(millisUntilFinished: Long) {
+                wv.evaluateJavascript( jsCode) { value ->
+                    if (targetfound=="" && value != "\"Element not found\"") {
+                        targetfound = value
+                        Log.d("WebView", "Extracted data: $value")
+//                        if(targetfound!="") {
+                            nextref.edit {
+                                clear()
+                                putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
+                                val items = targetfound.trim('"').split("\\n", "\\t")
+                                    .filterIndexed { index, _ -> index > 0 }
+                                    .zipWithNext { a, b -> "$a$indexTD" }.filterIndexed { index, _ -> index%2==0 }
+                                    .joinToString(indexTR)
+                                putString(KEY_NEXT, items)
+                            }
+//                        }
+                        exec(targetfound)
+                    }
+                }
+            }
+            override fun onFinish() {
+                Log.d("WebView", "Finished")
+
+                wv.destroy()
+            }
+        }
+        wv.webViewClient = object:WebViewClient(){
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                Log.d("WebView", "start")
+                if(!isstart) {
+                    isstart =true
+                    cntr.start()
+                }
+            }
+        }
+        wv.loadUrl("https://bet.hkjc.com/ch/marksix")
+    }
     private fun ResetNumberDialog() {
         Dialog(this, R.style.Theme_Wait_Dialog).apply{
 
@@ -1127,10 +1219,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
             setCancelable(false)
             setOnShowListener {
-
+                val db = M6Db.getDatabase(this@MainActivity)
+//                WebViewGetNextDraw(db.DrawResultDao()){}
                 hr.postDelayed({
 
-                    val db = M6Db.getDatabase(this@MainActivity)
+
                     UpdateLatestDraw(this@MainActivity) {ok->
                         runOnUiThread {
                             binding.toolbar.menu.findItem(R.id.action_view_all).run {

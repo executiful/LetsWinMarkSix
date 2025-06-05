@@ -109,7 +109,7 @@ class CameraScanActivity : AppCompatActivity() {
     }
 
     private fun startCamera() {
-        getSharedPreferences("TESTNUM", MODE_PRIVATE).all.clear()
+//        getSharedPreferences("TESTNUM", MODE_PRIVATE).all.clear()
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
         cameraProviderFuture.addListener({
@@ -141,19 +141,35 @@ class CameraScanActivity : AppCompatActivity() {
                         recognizer.process(image)
                             .addOnSuccessListener {
                                 val sb = StringBuilder()
+                                val chkfor = mutableListOf(m6, totalprice, unitprice)
                                 val dd = StringBuilder()
                                 val ii = StringBuilder()
-                                val funs = getFuns()
-                                val sorted = it.textBlocks.sortedWith(compareBy ({it.boundingBox?.top}, {it.boundingBox?.left} ))
-                                sorted.forEach {
-                                    it.lines.sortedWith(compareBy ({it.boundingBox?.top}, {it.boundingBox?.left} )).forEach{
-                                        var test = it.text.replace ( "\\s".toRegex() , "")
+                                var dyr :String? = null
+                                var dno :String? = null
+//                                val funs = getFuns()
+                                val sorted = it.textBlocks.sortedWith(compareBy ({b->b.boundingBox?.top}, {b->b.boundingBox?.left} ))
+                                sorted.forEach { firstline->
+                                    firstline.lines.sortedWith(compareBy ({b->b.boundingBox?.top}, {b->b.boundingBox?.left} )).forEach{
+                                        val test = it.text.replace ( "\\s".toRegex() , "")
                                         if(test.contains('+')||test.isDigitsOnly()) {
                                             sb.append(test)
-                                        } else if (test.contains("$")){
+                                        } else if (test.contains("$")) {
                                             dd.append(test)
-                                        } else if (test.contains("六合彩|期數".toRegex())){
-                                            ii.append(test)
+                                        } else if (dyr==null &&test.contains(drawdate)) {
+                                            "(\\d{2})年".toRegex().find(test)?.let {f->
+                                                dyr = f.groups[1]?.value
+                                            }
+                                        } else if (dno==null &&test.contains(drawno)){
+                                            "(\\d{3}|[A-Z]{3})$".toRegex().find( test)?.let{f->
+                                                dno = f.groups[1]?.value
+                                            }
+                                        } else {
+                                            for (s in chkfor) {
+                                                if (test.contains(s)&&chkfor.remove(s)) {
+                                                    ii.appendLine(test)
+                                                    break
+                                                }
+                                            }
                                         }
                                     }
 
@@ -175,16 +191,14 @@ class CameraScanActivity : AppCompatActivity() {
 //                                        putString(System.currentTimeMillis().toString(), sb.toString())
 //                                    }
 
-                                if(nums.isNotEmpty()){
+                                if(nums.isNotEmpty()&&!dyr.isNullOrBlank()&&!dno.isNullOrBlank()){
                                     val res =nums.joinToString { (f, s) ->
-                                        f.joinToString("_") + if (s.isNotEmpty()) ">" + s.joinToString(
-                                            "%"
-                                        ) else ""
+                                        f.joinToString("_") + if (s.isNotEmpty()) ">" + s.joinToString("+") else ""
                                     }
                                     val intent = Intent()
                                     val bde = Bundle().also {
                                         it.putString(TICKETRESULT, res)
-                                        it.putString(TICKETSTRING, "$dd # $ii")
+                                        it.putString(TICKETSTRING, "$dyr#$dno")
                                     }
                                     intent.putExtras(bde)
                                     setResult(RESULT_OK, intent)

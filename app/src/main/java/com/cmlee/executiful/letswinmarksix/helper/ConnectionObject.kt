@@ -54,7 +54,7 @@ object ConnectionObject {
     fun Map<String, String>.toQuery():String{
         return this.map{ "${it.key}=${it.value}"}.joinToString("&")
     }
-    const val TAG_INDEX = "index"
+    const val TAG_INDEX = "NEXTDRAW"//"index"
     private const val KEY_NEXT_DRAW_DATE = "next_draw_date"
     const val KEY_NEXT = "next_draw_data"
     const val KEY_NEXT_UPDATE = "next_date_save_datetime"
@@ -178,6 +178,23 @@ object ConnectionObject {
             } finally {
             }
         }
+        return null
+    }
+    private fun getJsoupDoc0():Document?{
+        val uristr = Uri.Builder().scheme(Scheme).authority("bet.hkjc.com").appendPath("ch").appendPath("marksix").build().toString()
+            for(i in 1..3){
+                try{
+                    return Jsoup.connect((uristr)).timeout(1000*(connectTO+ readTO+i* incTO))
+                        .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36").get()
+                } catch (e:Exception){
+                    println("what ex0 ${e.message} ${e.javaClass.simpleName}")
+                    when(e){
+                        is UnknownHostException->break
+                        is TimeoutException->continue
+                        else->continue
+                    }
+                }
+            }
         return null
     }
     fun getLatestResult(drawResultDao: DrawResultDao, context: Context):List<DrawResult> {
@@ -330,7 +347,7 @@ object ConnectionObject {
 
     fun download_next_draw(sharedPreferences:SharedPreferences) :String?{
         val default = null
-        val regex =
+/*        val regex =
             Regex("\\s*var\\s*$KEY_NEXT_DRAW_DATE\\s*=\\s*\"([^\"]*)\"\\s*;", RegexOption.DOT_MATCHES_ALL)
         val doc = getJsoupDoc(TAG_INDEX, mapOf("lang" to "ch"))
             ?: return null
@@ -352,7 +369,7 @@ object ConnectionObject {
                         return this
                     }
                 }
-            }
+            }*/
         return default
     }
     /**
@@ -382,10 +399,15 @@ object ConnectionObject {
         return download_next_draw(indexsharedPreferences)
     }
     fun UpdateLatestDraw(context : Context, exec:(message:String)->Unit){
+//         getJsoupDoc0()?.let { document ->
+//             val str = document.select(".next-draw-table-container")
+//             println("what next item ${str.text()}")
+//         }
+
         val db = M6Db.getDatabase(context)
         if(db.isOpen) {//java.lang.IllegalStateException:
             val drawResultDao = db.DrawResultDao()
-            getIndex(context, drawResultDao.getLatest())?.also {
+//            getIndex(context, drawResultDao.getLatest())?.also {
                 // load schedule , today not found ==> fixtures => draw schedule
                 // latest date < today => error
 //                val (_, _) = getLatestSchecule(context)
@@ -399,10 +421,10 @@ object ConnectionObject {
                     exec("what")
                     println("what is this ??<< what")
                 }
-                return
-            }
-            exec("nook")
-            println("what is this ??<< nook")
+//                return
+//            }
+//            exec("nook")
+//            println("what is this ??<< nook")
 
         } else
          exec("db not open??")
