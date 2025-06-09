@@ -120,4 +120,5 @@
     <string name="take_photo">影相</string>
     <string name="start_capture">Capture</string>
     <string name="title_scanticket">掃瞄彩票</string>
+    <string name="drawn_id_not_found">找不到相關攪珠期數</string>
 </resources>

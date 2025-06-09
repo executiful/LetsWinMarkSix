@@ -1,10 +1,8 @@
 package com.cmlee.executiful.letswinmarksix
 
 //import androidx.camera.lifecycle.ProcessCameraProvider
-import android.R
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -15,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.Recorder
@@ -24,14 +21,13 @@ import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityCameraScanBinding
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETRESULT
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETSTRING
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import androidx.core.content.edit
-import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETRESULT
-import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETSTRING
 
 
 class CameraScanActivity : AppCompatActivity() {
@@ -141,75 +137,81 @@ class CameraScanActivity : AppCompatActivity() {
                         recognizer.process(image)
                             .addOnSuccessListener {
                                 val sb = StringBuilder()
-                                val chkfor = mutableListOf(m6, totalprice, unitprice)
-                                val dd = StringBuilder()
-                                val ii = StringBuilder()
-                                var dyr :String? = null
-                                var dno :String? = null
-//                                val funs = getFuns()
+                                val ii = mutableListOf<String>()
+                                var (m6str, dyr, dno, pn, pv) = listOf<String?>(null, null, null, null, null)
+                                var(ttl, uni) = listOf<Float>(0f, 0f)
                                 val sorted = it.textBlocks.sortedWith(compareBy ({b->b.boundingBox?.top}, {b->b.boundingBox?.left} ))
-                                sorted.forEach { firstline->
-                                    firstline.lines.sortedWith(compareBy ({b->b.boundingBox?.top}, {b->b.boundingBox?.left} )).forEach{
-                                        val test = it.text.replace ( "\\s".toRegex() , "")
-                                        if(test.contains('+')||test.isDigitsOnly()) {
-                                            sb.append(test)
-                                        } else if (test.contains("$")) {
-                                            dd.append(test)
-                                        } else if (dyr==null &&test.contains(drawdate)) {
-                                            "(\\d{2})年".toRegex().find(test)?.let {f->
-                                                dyr = f.groups[1]?.value
-                                            }
-                                        } else if (dno==null &&test.contains(drawno)){
-                                            "(\\d{3}|[A-Z]{3})$".toRegex().find( test)?.let{f->
-                                                dno = f.groups[1]?.value
-                                            }
-                                        } else {
-                                            for (s in chkfor) {
-                                                if (test.contains(s)&&chkfor.remove(s)) {
-                                                    ii.appendLine(test)
-                                                    break
+                                sorted.forEachIndexed {idx, firstline->
+                                    if(!firstline.text.contains(anyJockey)) {
+                                        Log.d(TAG, ">${firstline.text}<")
+                                        firstline.lines.sortedWith(compareBy ({b->b.boundingBox?.top}, {b->b.boundingBox?.left} )).forEach{
+                                            val test = it.text.replace ( "\\s".toRegex() , "")
+                                            when {
+                                                test.contains('+') || test.isDigitsOnly() -> {sb.append(test)}
+
+                                                dyr==null &&test.contains(anyDrawDate) -> {
+                                                    regexDrawDate.find(test)?.let {f->
+                                                        dyr = f.groups[1]?.value
+                                                    }
+                                                }
+
+                                                dno==null &&test.contains(anyDrawNo) -> {
+                                                    regexDrawNo.find(test)?.let { f ->
+                                                        dno = f.groups[1]?.value
+                                                    }
+                                                }
+
+                                                m6str==null && test.contains(anyM6) -> {m6str=it.text}
+                                                else -> {
+                                                    if(pn==null)
+                                                        pn = getDollarType(test)
+                                                    if(pv==null&& test.contains("$"))
+                                                        pv = getDollar(test)
                                                 }
                                             }
                                         }
+                                        if(pn!=null){
+                                            pv?.let {s->
+                                                if (pn == "T") {
+                                                    ttl = s.toFloatOrNull()?:0f
+                                                } else if (pn == "@") {
+                                                    uni = s.toFloatOrNull()?:0f
+                                                }
+                                                ii.add("$pn:$pv")
+                                                pv=null
+                                                pn=null
+                                            }
+                                        }
                                     }
-
                                 }
-//                                if(numbers.all{it.isSort()})
-                                val nums = sb.toString().getDrawNumbers().filter {(f,s)-> validateNumbers(f,s) }
-//                                if( nums.any{ (f,s)->
-//                                    !validateNumbers(f,s)
-//
-//                                    }){
-//                                    getSharedPreferences("TESTNUM", MODE_PRIVATE).edit {
-//                                        putString(
-//                                            System.currentTimeMillis().toString(),
-//                                            sb.toString()
-//                                        )
-//                                    }
-//                                } else
-//                                    getSharedPreferences("SUCCESSNUM", MODE_PRIVATE).edit{
-//                                        putString(System.currentTimeMillis().toString(), sb.toString())
-//                                    }
 
-                                if(nums.isNotEmpty()&&!dyr.isNullOrBlank()&&!dno.isNullOrBlank()){
-                                    val res =nums.joinToString { (f, s) ->
-                                        f.joinToString("_") + if (s.isNotEmpty()) ">" + s.joinToString("+") else ""
-                                    }
-                                    val intent = Intent()
-                                    val bde = Bundle().also {
-                                        it.putString(TICKETRESULT, res)
-                                        it.putString(TICKETSTRING, "$dyr#$dno")
-                                    }
-                                    intent.putExtras(bde)
-                                    setResult(RESULT_OK, intent)
+                                Log.d(TAG, "$dyr $dno $ttl")
+                                if(!dyr.isNullOrBlank() && !dno.isNullOrBlank()&& ttl >= 20 ) {
+                                    val nums = sb.toString().getDrawNumbers()//
 
-                                    finish() //onBackPressed()
-//                                    viewBinding.imageCaptureButton.text = dd
-//                                    viewBinding.videoCaptureButton.text = ii
-//                                    Toast.makeText(
-//                                        this,
-//                                        res, Toast.LENGTH_SHORT
-//                                    ).show()
+                                    val valid = nums.map {(legs,bans)-> validateNumbers(legs,bans) }
+
+                                    Log.d(TAG, "$ii,$nums $uni * ${valid.sum()}==$ttl")
+                                    if (valid.all{it>0} && uni * valid.sum() == ttl) {
+                                        val res =
+                                            nums.joinToString("${System.lineSeparator()}/ ") { (legs, bans) ->
+                                                legs.joinToString("+").also{
+                                                    if(bans.isNotEmpty())
+                                                        "${bans.joinToString("+")}>$it"
+                                                }
+                                            }
+                                        val intent = Intent()
+                                        val bde = Bundle().also {
+                                            it.putString(TICKETRESULT, res)
+                                            it.putString(
+                                                TICKETSTRING,
+                                                "$dyr#$dno#${ii.joinToString("")}"
+                                            )
+                                        }
+                                        intent.putExtras(bde)
+                                        setResult(RESULT_OK, intent)
+                                        finish() //onBackPressed()
+                                    }
                                 }
                         }
                             .addOnFailureListener {
@@ -238,29 +240,25 @@ class CameraScanActivity : AppCompatActivity() {
 
         }, ContextCompat.getMainExecutor(this))
     }
-    private fun getFuns(): MutableList<(String) -> Boolean>{
-        return mutableListOf<(String)->Boolean>(
-            {
-                if (it.contains(m6)){
-
-                    true
-                }else
-                    false
+    private fun getDollar(str:String):String?{
+        Log.d(TAG, "<$str>")
+        "[$](\\d*[.]+\\d*)$".toRegex().find(str)?.let{f->
+            return f.groups[1]?.value
+        }
+        "[(][$](\\d*)[)]$".toRegex().find(str)?.let{f->
+            return f.groups[1]?.value
+        }
+        return null
+    }
+    private fun getDollarType(str:String):String?{
+        return if(str.contains(anyTotalPrice)) "T" else if (str.contains(anyUnitPrice)) "@" else null
+    }
+    private fun getFuns(): MutableList<(String) -> String>{
+        return mutableListOf<(String)->String>(
+            {if (it.contains(anyM6)) it else ""
             },{
-                if(it.contains(drawno)){
-                    drawnnn.find(it)?.let {f->
-                        return@mutableListOf true
-                    }
-//                    sbu.appendLine("??")
-                }
-                false
-            },{
-                if(it.contains(number)){
-                    true
-                } else {
-                    false
-                }
-            },{
+                "(\\d{3}|[A-Z]{3})$".toRegex().find(it)?.let {f-> f.groups[0]?.value}?:""
+            }/*,{
                 if(it.contains(unitprice)){
                     dollaru.find(it)?.let { f ->
 //                        sb.appendLine(f.groups[1]?.value)
@@ -278,40 +276,56 @@ class CameraScanActivity : AppCompatActivity() {
 //                    sbu.appendLine("??")
                 }
                 false
-            },{
-                it.contains(drawdate)
-            },{
-                it.contains(jockey)
-                false
-            },{
-                it.contains(barcode)
-                false
+            }*/,{"(\\d{2})年".toRegex().find(it)?.let {f->f.groups[1]?.value}?:""
+            },{if(it.contains(anyJockey)) it else ""
+            },{if(it.contains(barcode)) it else ""
             })
     }
-    private fun validateNumbers(legs:List<String>, bans:List<String>):Boolean{
+    private fun validateNumbers(legs:List<String>, bans:List<String>):Int{
         if (bans.size > 5) {
             println("falses ban>5,${bans.size}")
-            return false
+            return 0
         }
-        if (legs.size + bans.size < 7 &&legs.size != 6) {
-            println("falses ${legs.size}, ${bans.size}")
-            return false
-        }
-        return (legs.isSort() && bans.isSort() && legs.intersect(bans.toSet()).isEmpty())
+        if (legs.size + bans.size < 7)
+            if (legs.size == 6)
+                return 1
+            else {
+                println("falses ${legs.size}, ${bans.size}")
+                return 0
+            }
+        if (legs.isSort() && bans.isSort() && legs.intersect(bans.toSet()).isEmpty()) {
+            val x = 6 - bans.size
+            val temp = arrayOf(x, legs.size - x)
+            temp.sort()
+            val rem = (temp[1] + 1..legs.size).toMutableList()
+            var divider = 1
+            (1..temp[0]).forEach { item -> // this is avoid conversion from Int to Long and return Int, cause the result of leg!, factorial, maybe Long
+                val idx = rem.indexOfFirst { it % item == 0 }
+                if (idx == -1)
+                    divider *= item
+                else
+                    rem[idx] /= item
+            }
+            val draw = rem.fold(1) { acc, i -> i * acc }.div(divider)
+            Log.d(TAG, "noof draw:$draw")
+            return draw
+        } else
+            return 0
     }
     companion object {
-        val m6 = "[六合彩]|Mark|Six".toRegex(RegexOption.IGNORE_CASE)
-        val drawno = "[期數]|Draw|No".toRegex(RegexOption.IGNORE_CASE)
-        val number = "[+/]".toRegex()
-        val unitprice = "[注]|Unit|bet".toRegex(RegexOption.IGNORE_CASE)
-        val totalprice = "[總額]|Total".toRegex(RegexOption.IGNORE_CASE)
-        val drawdate = "[年月日]".toRegex(RegexOption.IGNORE_CASE)
-        val jockey = "JOCKEY|CLUB|HONG|KONG".toRegex(RegexOption.IGNORE_CASE)
+        val anyM6 = "[六合彩]|Mark|Six".toRegex(RegexOption.IGNORE_CASE)
+        val anyDrawNo = "[期數]|Draw|No".toRegex(RegexOption.IGNORE_CASE)
+        val anyUnitPrice = "[注]|Unit|bet".toRegex(RegexOption.IGNORE_CASE)
+        val anyTotalPrice = "[總額]|Total".toRegex(RegexOption.IGNORE_CASE)
+        val anyDrawDate = "[年月日]".toRegex(RegexOption.IGNORE_CASE)
+        val anyJockey = "JOCKEY|CLUB|HONG|KONG".toRegex(RegexOption.IGNORE_CASE)
         val barcode = "[A-F0-9]{7}\\s[A-F0-9]{17}"
+
+        val regexDrawDate = "(\\d{2})年".toRegex()
+        val regexDrawNo = "(\\d{3}|[A-Z]{3})$".toRegex()
 
         val dollarp = "(\\$\\d*[.]+\\d+)".toRegex()
         val dollaru = "[(](\\$\\d*)[)]".toRegex()
-        val drawnnn = "(\\d{3})".toRegex()
         val regRight = Regex("JOCKEY|CLUB|HONG|KONG")
         val sam = "香港馬會奬券有限公司".toCharArray().toSet()
         val sam2 = "六合彩".toCharArray().toSet()
@@ -329,18 +343,12 @@ class CameraScanActivity : AppCompatActivity() {
 //            return true
             return toint.zipWithNext().all {(a,b)-> a!=-1&& a<b}
         }
-        private fun String.toNumbers():List<Int>{
-            return this.split('+').map { N49.indexOf(it) }.filterNot{it==-1}
-        }
         private fun String.getDrawNumbers():List<Pair<List<String>, List<String>>>{
-           return this.split('/').map {
-                val bl = it.split('>')
-                when (bl.count()) {
-                    2 -> bl[0] to bl[1]
-                    1 -> bl[0] to ""
-                    else -> "" to ""
-                }
-            }.map{(f,s)-> f.split('+') to s.split('+')}
+           return this.split('/').map {//"banker>leg"
+                                                //or "leg"
+               val bl = it.split('>').map{ it.split('+')}
+               if(bl.size==2) bl[1] to bl[0] else bl[0] to listOf() // legs to banker
+            }
         }
         private const val TAG = "CameraXApp"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"

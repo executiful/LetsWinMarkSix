@@ -126,6 +126,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             }
         alertDialog = dlg.show()
     }
+
+    override fun onPause() {
+        super.onPause()
+        M6Db.dismiss()
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -211,6 +216,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
         }
         if(savedInstanceState==null) {
+            Log.d("Main-Start", "savedInstanceState")
             ResetNumberDialog()
         }
 
@@ -758,20 +764,30 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
 
     }
-
-    private val launcherForOCR = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){rs->
+    fun launchLauncher(){
+        launcherForOCR.launch(Intent(this, CameraScanActivity::class.java))
+    }
+    @SuppressLint("SimpleDateFormat")
+    private val launcherForOCR = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ rs->
         if(rs.resultCode == RESULT_OK) {
             with(TICKETRESULT) {
                 rs.data?.let {
                     if(it.hasExtra(this)){
                         it.getStringExtra(this)?.let { nbs->
                             val other = (if(it.hasExtra(TICKETSTRING)) it.getStringExtra(TICKETSTRING)!! else "").split("#")
-
+                            val dfm = SimpleDateFormat("ddMMMyy")
                             val drawResultDao = M6Db.getDatabase(this@MainActivity).DrawResultDao()
                             val rec = drawResultDao.checkDrawBy(other[0], other[1])
+                            val numsfmt = if(rec==null) getString(R.string.drawn_id_not_found) else "${rec.no.nos.joinToString(numberseperator)}$thinsp(${rec.sno})"
                             AlertDialog.Builder(this@MainActivity)
-                                .setTitle(other[0]+other[1])
-                                .setMessage(nbs+System.lineSeparator()+rec.no.nos.joinToString("+")+",${rec.sno}").show()
+                                .setTitle(if(rec==null) "$other[0] $other[1]" else {
+                                    "${rec.id} ${dfm.format(rec.date)}"
+                                }
+                                )
+                                .setPositiveButton(android.R.string.ok) {d,_->d.dismiss()  }
+                                .setNegativeButton("另一彩票") { _,_->launchLauncher() }
+                                .setNeutralButton(android.R.string.copy) { _,_-> }
+                                .setMessage(numsfmt+System.lineSeparator()+nbs+System.lineSeparator()+ other[2]).show()
                         }
                     }
                 }
@@ -1144,74 +1160,78 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         currentStatus = calcDrawStatus.first
     }
 
-    private fun WebViewGetNextDraw(drawResultDao: DrawResultDao, exec:(message:String)->Unit) {
+    private fun WebViewGetNextDraw(drawResultDao: DrawResultDao, exec: (message: String) -> Unit) {
         val nextref = getSharedPreferences("NEXTDRAW", Context.MODE_PRIVATE)
-        nextref.getDateTimeISO(KEY_NEXT_UPDATE)?.let{
+        nextref.getDateTimeISO(KEY_NEXT_UPDATE)?.let {
             val now = Calendar.getInstance()
             val latest = drawResultDao.getLatest()
-            if(!it.isEarlyBy(now, Calendar.MINUTE,
+            if (!it.isEarlyBy(
+                    now, Calendar.MINUTE,
                     when {
-                        latest.p1==null || (nextref.getString(KEY_NEXT, "")?:"").contains(latest.id) -> 2
-                        (nextref.getString(KEY_NEXT_UPDATE, "")?:"").contains("估計頭獎基金${indexTD}-")->3
+                        latest.p1 == null || (nextref.getString(KEY_NEXT, "")
+                            ?: "").contains(latest.id) -> 2
+
+                        (nextref.getString(KEY_NEXT_UPDATE, "")
+                            ?: "").contains("估計頭獎基金${indexTD}-") -> 3
+
                         else -> 15
                     }
-                )){
-//                return download_next_draw(indexsharedPreferences)
+                )
+            ) {
                 return
             }
         }
         val wv = WebView(this)
-        with (wv.settings){
-            javaScriptEnabled=true
-            domStorageEnabled=true
-            loadsImagesAutomatically=false
+        with(wv.settings) {
+            javaScriptEnabled = true
+            domStorageEnabled = true
+            loadsImagesAutomatically = false
         }
         var targetfound = ""
         var isstart = false
-        val cntr = object:CountDownTimer(1000*5, 1000){
+        val cntr = object : CountDownTimer(800 * 5, 800) {
             val jsCode = "(function() {" +
                     "  var element = document.querySelector('.next-draw-table-container');" +
                     "  return element ? element.innerText : 'Element not found';" +
                     "})();"
+
             override fun onTick(millisUntilFinished: Long) {
-                wv.evaluateJavascript( jsCode) { value ->
-                    if (targetfound=="" && value != "\"Element not found\"") {
+                wv.evaluateJavascript(jsCode) { value ->
+                    if (targetfound == "" && value != "\"Element not found\"") {
                         targetfound = value
                         Log.d("WebView", "Extracted data: $value")
-//                        if(targetfound!="") {
-                            nextref.edit {
-                                clear()
-                                putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
-                                val items = targetfound.trim('"').split("\\n", "\\t")
-                                    .filterIndexed { index, _ -> index > 0 }
-                                    .zipWithNext { a, b -> "$a$indexTD" }.filterIndexed { index, _ -> index%2==0 }
-                                    .joinToString(indexTR)
-                                putString(KEY_NEXT, items)
-                            }
-//                        }
+                        nextref.edit {
+                            putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
+                            val items = targetfound.trim('"').split("\\n", "\\t")
+                                .filterIndexed { index, _ -> index > 0 }
+                                .chunked(2) { it.joinToString(indexTD) }
+                                .joinToString(indexTR)
+                            putString(KEY_NEXT, items)
+                        }
                         exec(targetfound)
                     }
                 }
             }
+
             override fun onFinish() {
                 Log.d("WebView", "Finished")
-
                 wv.destroy()
             }
         }
-        wv.webViewClient = object:WebViewClient(){
+        wv.webViewClient = object : WebViewClient() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                Log.d("WebView", "start")
-                if(!isstart) {
-                    isstart =true
+                if (!isstart) {  //handling start once, because onPageFinished will be called twice.
+                    Log.d("WebView", "start $url")
+                    isstart = true
                     cntr.start()
                 }
             }
         }
         wv.loadUrl("https://bet.hkjc.com/ch/marksix")
     }
+
     private fun ResetNumberDialog() {
         Dialog(this, R.style.Theme_Wait_Dialog).apply{
 

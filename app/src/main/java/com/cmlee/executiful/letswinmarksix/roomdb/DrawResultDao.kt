@@ -18,7 +18,7 @@ interface DrawResultDao {
     fun find(): DrawResult
 
     @Query("SELECT * FROM DrawResult WHERE id like :year||'/'||:code OR ( id like :year || '/%' and sbcode=:code)")
-    fun checkDrawBy(year:String, code:String):DrawResult
+    fun checkDrawBy(year:String, code:String):DrawResult?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOrReplace(vararg drawResults: DrawResult)

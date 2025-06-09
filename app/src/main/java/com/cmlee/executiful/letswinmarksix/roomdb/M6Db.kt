@@ -21,6 +21,12 @@ abstract class M6Db : RoomDatabase() {
 
     companion object {
         private var INSTANCE: M6Db? = null
+        fun dismiss(){
+            if(INSTANCE != null) {
+                INSTANCE?.close()
+                INSTANCE = null
+            }
+        }
         internal fun getDatabase(context: Context): M6Db {
             if (INSTANCE == null) {
                 synchronized(M6Db::class.java) {
@@ -30,7 +36,7 @@ abstract class M6Db : RoomDatabase() {
                             M6Db::class.java,
                             "m6.db3"
                         )
-                            .createFromAsset("databases/m6.v3.db3")
+                            .createFromAsset("databases/m6.v4.db3")
                             .addTypeConverter(DayYearConverter())
                             //.addTypeConverter(LocalDateConverter())
                             .addTypeConverter(UnitPriceConverter())
