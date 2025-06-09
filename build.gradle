@@ -5,7 +5,7 @@ buildscript {
         verCo = 13
         verMajor = 1
         verMinor = 2
-        verPatch = '0.beta'
+        verPatch = 0
     }
 }
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
