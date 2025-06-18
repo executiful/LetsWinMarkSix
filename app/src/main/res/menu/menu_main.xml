@@ -75,8 +75,7 @@
             <item
                 android:id="@+id/id_scanticket"
                 android:icon="@drawable/outline_frame_inspect_24"
-                android:title="@string/title_scanticket"
-                android:visible="false" />
+                android:title="@string/title_scanticket" />
         </menu>
     </item>
 </menu>

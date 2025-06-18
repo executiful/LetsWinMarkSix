@@ -12,6 +12,8 @@ import android.graphics.Color.RED
 import android.graphics.Typeface
 import android.graphics.drawable.Animatable2
 import android.graphics.drawable.AnimatedVectorDrawable
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.os.Handler
@@ -775,23 +777,40 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     if(it.hasExtra(this)){
                         it.getStringExtra(this)?.let { nbs->
                             val other = (if(it.hasExtra(TICKETSTRING)) it.getStringExtra(TICKETSTRING)!! else "").split("#")
-                            val dfm = SimpleDateFormat("ddMMMyy")
+                            val dfm = SimpleDateFormat("ddMMMyy", Locale.ENGLISH)
                             val drawResultDao = M6Db.getDatabase(this@MainActivity).DrawResultDao()
-                            val rec = drawResultDao.checkDrawBy(other[0], other[1])
-                            val numsfmt = if(rec==null) getString(R.string.drawn_id_not_found) else "${rec.no.nos.joinToString(numberseperator)}$thinsp(${rec.sno})"
-                            AlertDialog.Builder(this@MainActivity)
-                                .setTitle(if(rec==null) "$other[0] $other[1]" else {
-                                    "${rec.id} ${dfm.format(rec.date)}"
+                            val rec = drawResultDao.checkDrawBy(other[0], other[1], other[4].toInt())
+                            val numsfmt = if(rec.isEmpty()) getString(R.string.drawn_id_not_found) else {
+                                rec.joinToString(System.lineSeparator()) { itm ->
+                                    "${itm.id}:${
+                                        itm.no.nos.joinToString(
+                                            numberseperator
+                                        )
+                                    }$thinsp(${itm.sno})"
                                 }
+
+                            }
+                            AlertDialog.Builder(this@MainActivity)
+                                .setTitle(
+                                    if (rec.isEmpty()) "${other[0]}/${other[1]} ${other[6]}" else {
+                                        "${rec.first().id} ${dfm.format(rec.first().date)}"
+                                    }
                                 )
-                                .setPositiveButton(android.R.string.ok) {d,_->d.dismiss()  }
-                                .setNegativeButton("另一彩票") { _,_->launchLauncher() }
-                                .setNeutralButton(android.R.string.copy) { _,_-> }
-                                .setMessage(numsfmt+System.lineSeparator()+nbs+System.lineSeparator()+ other[2]).show()
+                                .setPositiveButton(android.R.string.ok) { d, _ -> d.dismiss() }
+                                .setNeutralButton("再掃瞄") { _, _ -> launchLauncher() }
+                                .setNegativeButton(android.R.string.copy) { _, _ -> }
+                                .setMessage(nbs + System.lineSeparator() + other[5] +
+                                        System.lineSeparator() + "相關攪珠${if(other[4]!="1") other[4] else ""}結果" + System.lineSeparator() + numsfmt)
+                                .show()
                         }
                     }
                 }
             }
+        } else if (rs.resultCode== RESULT_CANCELED){
+            AlertDialog.Builder(this@MainActivity).setTitle("掃瞄過時")
+                .setNeutralButton("再掃瞄") { _, _ -> launchLauncher() }
+                .setPositiveButton(android.R.string.ok){ d,_->d.dismiss()}
+                    .show()
         }
     }
     private fun populate_menu(){
@@ -1239,30 +1258,50 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
             setCancelable(false)
             setOnShowListener {
-                val db = M6Db.getDatabase(this@MainActivity)
+                if (isNetworkAvailable(this@MainActivity)) {
+                    val db = M6Db.getDatabase(this@MainActivity)
 //                WebViewGetNextDraw(db.DrawResultDao()){}
-                hr.postDelayed({
-
-
-                    UpdateLatestDraw(this@MainActivity) {ok->
-                        runOnUiThread {
-                            binding.toolbar.menu.findItem(R.id.action_view_all).run {
-                                isVisible = blind
+                    hr.postDelayed({
+                        UpdateLatestDraw(this@MainActivity) { ok ->
+                            runOnUiThread {
+                                binding.toolbar.menu.findItem(R.id.action_view_all).run {
+                                    isVisible = blind
+                                }
+                                if (ok == "OK") {
+                                    genBall(db.DrawResultDao())
+                                }
+                                dismiss()
+                                updateStatus()
+                                binding.root.setWillNotDraw(true)
+                                initball()
+                                binding.root.setWillNotDraw(false)
                             }
-                            if(ok=="OK") {
-                                genBall(db.DrawResultDao())
-                            }
-                            dismiss()
-                            updateStatus()
-                            binding.root.setWillNotDraw(true)
-                            initball()
-                            binding.root.setWillNotDraw(false)
                         }
-                    }
-                },1000)
+                    }, 10)
+                } else
+                    dismiss()
             }
             show()
         }
+    }
+
+    private fun isNetworkAvailable(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val network = connectivityManager.activeNetwork
+            val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
+            return networkCapabilities != null && (
+                    networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                            networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+                    )
+//        } else {
+//            @Suppress("DEPRECATION")
+//            val activeNetworkInfo = connectivityManager.activeNetworkInfo
+//            @Suppress("DEPRECATION")
+//            return activeNetworkInfo != null && activeNetworkInfo.isConnected
+//        }
     }
 
     private fun initball() {

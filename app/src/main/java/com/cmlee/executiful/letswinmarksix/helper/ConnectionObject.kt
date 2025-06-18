@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.text.Html
+import android.util.Log
 import androidx.core.content.edit
 import androidx.core.text.HtmlCompat
 import com.cmlee.executiful.letswinmarksix.BuildConfig
@@ -38,9 +39,9 @@ import java.util.concurrent.TimeoutException
 
 object ConnectionObject {
     private const val TAG_DEBUG= "DEBUG :123:"
-    private const val connectTO = 8
+    private const val connectTO = 5
     private const val incTO = 1
-    private const val readTO = 5
+    private const val readTO = 4
     private const val Scheme = "https"
     private const val Auth = "bet2.hkjc.com"
     private const val M6Path = "marksix"
@@ -140,8 +141,8 @@ object ConnectionObject {
                     allowUserInteraction=false
                     instanceFollowRedirects=true
                     requestMethod="GET"
-                    connectTimeout=(connectTO + incTO * i) * 1000
-                    readTimeout = (readTO+incTO *i)*1000
+                    connectTimeout=(connectTO + incTO * i) * 500
+                    readTimeout = (readTO+incTO *i)*500
                     connect()
                     if(responseCode== HTTP_OK && inputStream !=null){
                         val content = inputStream.readBytes()
@@ -217,6 +218,7 @@ object ConnectionObject {
         while(today > ref) {
             ref.add(Calendar.MONTH, 3)
             val ed = sdf.format(ref.time)
+            Log.d(TAG_JSON, "${System.currentTimeMillis()} $sd $ed")
             getJsonData(TAG_JSON, mapOf("sd" to sd, "ed" to ed, "sb" to "0"))?.let { str->
                 try {
                     val text = Jsoup.parse(str).text()

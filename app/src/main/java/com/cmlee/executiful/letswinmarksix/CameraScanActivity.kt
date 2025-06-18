@@ -9,7 +9,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
@@ -21,6 +20,7 @@ import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityCameraScanBinding
+import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETRESULT
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETSTRING
 import com.google.mlkit.vision.common.InputImage
@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
-class CameraScanActivity : AppCompatActivity() {
+class CameraScanActivity : BannerAppCompatActivity() {
     private lateinit var viewBinding: ActivityCameraScanBinding
 
     private var imageCapture: ImageCapture? = null
@@ -39,6 +39,12 @@ class CameraScanActivity : AppCompatActivity() {
     private var recording: Recording? = null
 
     private lateinit var cameraExecutor: ExecutorService
+
+    override val adUnitStringId: Int = R.string.admob_m6_lottery
+    override fun onAdLoaded() {
+//        TODO("Not yet implemented")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -64,16 +70,19 @@ class CameraScanActivity : AppCompatActivity() {
         viewBinding.videoCaptureButton.setOnClickListener { captureVideo() }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
+        adContainerView = viewBinding.adViewContainer
     }
+
     private fun takePhoto() {}
 
     private fun captureVideo() {}
 
-//    private fun startCamera() {}
+    //    private fun startCamera() {}
     val REQUIRED_PERMISSIONS = arrayOf(android.Manifest.permission.CAMERA)
     private val activityResultLauncher =
         registerForActivityResult(
-            ActivityResultContracts.RequestMultiplePermissions())
+            ActivityResultContracts.RequestMultiplePermissions()
+        )
         { permissions ->
             // Handle Permission granted/rejected
             var permissionGranted = true
@@ -82,21 +91,25 @@ class CameraScanActivity : AppCompatActivity() {
                     permissionGranted = false
             }
             if (!permissionGranted) {
-                Toast.makeText(baseContext,
+                Toast.makeText(
+                    baseContext,
                     "Permission request denied",
-                    Toast.LENGTH_SHORT).show()
+                    Toast.LENGTH_SHORT
+                ).show()
                 finish()
             } else {
                 startCamera()
             }
         }
+
     private fun requestPermissions() {
         activityResultLauncher.launch(REQUIRED_PERMISSIONS)
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
-            baseContext, it) == PackageManager.PERMISSION_GRANTED
+            baseContext, it
+        ) == PackageManager.PERMISSION_GRANTED
     }
 
     override fun onDestroy() {
@@ -112,7 +125,8 @@ class CameraScanActivity : AppCompatActivity() {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
 // When using Chinese script library
-            val recognizer = TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
+            val recognizer =
+                TextRecognition.getClient(ChineseTextRecognizerOptions.Builder().build())
             // Preview
             val preview = Preview.Builder()
                 .build()
@@ -125,98 +139,133 @@ class CameraScanActivity : AppCompatActivity() {
             val imageAnalysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
+            val startAt = System.currentTimeMillis() + 35000
 
             imageAnalysis.setAnalyzer(
                 cameraExecutor,
                 ImageAnalysis.Analyzer { imageProxy ->
                     val mediaImage = imageProxy.image
                     if (mediaImage != null) {
-                        val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                        val image = InputImage.fromMediaImage(
+                            mediaImage,
+                            imageProxy.imageInfo.rotationDegrees
+                        )
                         // Pass image to an ML Kit Vision API
                         // ...
                         recognizer.process(image)
-                            .addOnSuccessListener {
+                            .addOnSuccessListener { iof ->
+                                val intent = Intent()
                                 val sb = StringBuilder()
                                 val ii = mutableListOf<String>()
-                                var (m6str, dyr, dno, pn, pv) = listOf<String?>(null, null, null, null, null)
-                                var(ttl, uni) = listOf<Float>(0f, 0f)
-                                val sorted = it.textBlocks.sortedWith(compareBy ({b->b.boundingBox?.top}, {b->b.boundingBox?.left} ))
-                                sorted.forEachIndexed {idx, firstline->
-                                    if(!firstline.text.contains(anyJockey)) {
+                                var (m6str, dyr, dym, dno) = listOf<String?>(null, null, null, null)
+                                var (pn, pv, dc) = listOf<String?>(null, null, null)
+                                var (ttl, uni) = listOf(0f, 0f)
+                                var drawcount = 1
+                                val sorted = iof.textBlocks.sortedWith(compareBy(
+                                    { b -> b.boundingBox?.top },
+                                    { b -> b.boundingBox?.left }))
+                                sorted.forEach { firstline ->
+                                    if (!firstline.text.contains(anyJockey)) {
                                         Log.d(TAG, ">${firstline.text}<")
-                                        firstline.lines.sortedWith(compareBy ({b->b.boundingBox?.top}, {b->b.boundingBox?.left} )).forEach{
-                                            val test = it.text.replace ( "\\s".toRegex() , "")
+                                        firstline.lines.sortedWith(compareBy(
+                                            { b -> b.boundingBox?.top },
+                                            { b -> b.boundingBox?.left })).forEach {
+                                            val test = it.text.replace("\\s".toRegex(), "")
+
                                             when {
-                                                test.contains('+') || test.isDigitsOnly() -> {sb.append(test)}
+                                                test.contains('+') || test.isDigitsOnly() -> {
+                                                    sb.append(test)
+                                                }
 
-                                                dyr==null &&test.contains(anyDrawDate) -> {
-                                                    regexDrawDate.find(test)?.let {f->
-                                                        dyr = f.groups[1]?.value
+                                                dyr == null && test.contains(anyDrawDate) -> {
+                                                    dym =
+                                                        regexDrawDate.find(test)?.groupValues?.get(1)
+                                                    dym?.let { it1 ->
+                                                        dyr = "(\\d{2})$".toRegex()
+                                                            .find(it1)?.groupValues?.get(1)
                                                     }
                                                 }
 
-                                                dno==null &&test.contains(anyDrawNo) -> {
-                                                    regexDrawNo.find(test)?.let { f ->
-                                                        dno = f.groups[1]?.value
-                                                    }
+                                                dno == null && test.contains(anyDrawNo) -> {
+                                                    dno =
+                                                        regexDrawNo.find(test)?.groupValues?.get(1)
                                                 }
 
-                                                m6str==null && test.contains(anyM6) -> {m6str=it.text}
+                                                dc == null && test.contains("期|Draw[s]?".toRegex()) -> {
+                                                    dc = "^(5|10|20|30)".toRegex()
+                                                        .find(test)?.groupValues?.get(1)
+                                                }
+
+                                                m6str == null && test.contains(anyM6) -> {
+                                                    m6str = it.text
+                                                }
+
                                                 else -> {
-                                                    if(pn==null)
+                                                    if (pn == null)
                                                         pn = getDollarType(test)
-                                                    if(pv==null&& test.contains("$"))
+                                                    if (pv == null && test.contains("$"))
                                                         pv = getDollar(test)
                                                 }
+
                                             }
                                         }
-                                        if(pn!=null){
-                                            pv?.let {s->
-                                                if (pn == "T") {
-                                                    ttl = s.toFloatOrNull()?:0f
-                                                } else if (pn == "@") {
-                                                    uni = s.toFloatOrNull()?:0f
-                                                }
+                                        if (pn != null) {
+                                            pv?.toFloatOrNull()?.also {
+                                                if (pn == "T")
+                                                    ttl = it
+                                                else if (pn == "@")
+                                                    uni = it
                                                 ii.add("$pn:$pv")
-                                                pv=null
-                                                pn=null
+                                                pv = null
+                                                pn = null
                                             }
                                         }
                                     }
                                 }
-
-                                Log.d(TAG, "$dyr $dno $ttl")
-                                if(!dyr.isNullOrBlank() && !dno.isNullOrBlank()&& ttl >= 20 ) {
+                                dc?.let { d -> drawcount = d.toInt() }
+                                Log.d(TAG, "$dyr $dno $ttl * $drawcount")
+                                if (!dyr.isNullOrBlank() && !dno.isNullOrBlank() && ttl >= 10) {
                                     val nums = sb.toString().getDrawNumbers()//
 
-                                    val valid = nums.map {(legs,bans)-> validateNumbers(legs,bans) }
+                                    val valid =
+                                        nums.map { (legs, bans) -> validateNumbers(legs, bans) }
 
-                                    Log.d(TAG, "$ii,$nums $uni * ${valid.sum()}==$ttl")
-                                    if (valid.all{it>0} && uni * valid.sum() == ttl) {
+                                    Log.d(TAG, "$ii,$nums $uni * ${valid.sum() * drawcount}==$ttl")
+                                    if (valid.all { it > 0 } && drawcount * uni * valid.sum() == ttl) {
                                         val res =
                                             nums.joinToString("${System.lineSeparator()}/ ") { (legs, bans) ->
-                                                legs.joinToString("+").also{
-                                                    if(bans.isNotEmpty())
-                                                        "${bans.joinToString("+")}>$it"
-                                                }
+                                                listOf(
+                                                    bans.joinToString("+"),
+                                                    legs.joinToString("+")
+                                                )
+                                                    .filter { it.isNotEmpty() }
+                                                    .joinToString(">")
                                             }
-                                        val intent = Intent()
                                         val bde = Bundle().also {
                                             it.putString(TICKETRESULT, res)
                                             it.putString(
                                                 TICKETSTRING,
-                                                "$dyr#$dno#${ii.joinToString("")}"
+                                                "$dyr#$dno#$ttl#$uni#$drawcount#$$ttl=$$uni*${valid.sum()}${if (drawcount > 1) "*$drawcount" else ""}#$dym"
                                             )
                                         }
                                         intent.putExtras(bde)
                                         setResult(RESULT_OK, intent)
                                         finish() //onBackPressed()
                                     }
+                                } else {
+                                    val timeLeft = System.currentTimeMillis() - startAt
+                                    "time left \n${timeLeft / -1000}".let {
+                                        viewBinding.imageCaptureButton.text = it
+                                    }
+                                    if (timeLeft > 0) {
+                                        setResult(RESULT_CANCELED, intent)
+                                        finish()
+                                    }
                                 }
-                        }
+                            }
                             .addOnFailureListener {
 
-                        }
+                            }
                     }
 
                     // Close the ImageProxy
@@ -232,32 +281,37 @@ class CameraScanActivity : AppCompatActivity() {
 
                 // Bind use cases to camera
                 cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageAnalysis)
+                    this, cameraSelector, preview, imageAnalysis
+                )
 
-            } catch(exc: Exception) {
+            } catch (exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
 
         }, ContextCompat.getMainExecutor(this))
     }
-    private fun getDollar(str:String):String?{
+
+    private fun getDollar(str: String): String? {
         Log.d(TAG, "<$str>")
-        "[$](\\d*[.]+\\d*)$".toRegex().find(str)?.let{f->
+        "[$](\\d*[.]+\\d*)$".toRegex().find(str)?.let { f ->
             return f.groups[1]?.value
         }
-        "[(][$](\\d*)[)]$".toRegex().find(str)?.let{f->
+        "[(][$](\\d*)[)]$".toRegex().find(str)?.let { f ->
             return f.groups[1]?.value
         }
         return null
     }
-    private fun getDollarType(str:String):String?{
-        return if(str.contains(anyTotalPrice)) "T" else if (str.contains(anyUnitPrice)) "@" else null
+
+    private fun getDollarType(str: String): String? {
+        return if (str.contains(anyTotalPrice)) "T" else if (str.contains(anyUnitPrice)) "@" else null
     }
-    private fun getFuns(): MutableList<(String) -> String>{
-        return mutableListOf<(String)->String>(
-            {if (it.contains(anyM6)) it else ""
-            },{
-                "(\\d{3}|[A-Z]{3})$".toRegex().find(it)?.let {f-> f.groups[0]?.value}?:""
+
+    private fun getFuns(): MutableList<(String) -> String> {
+        return mutableListOf<(String) -> String>(
+            {
+                if (it.contains(anyM6)) it else ""
+            }, {
+                "(\\d{3}|[A-Z]{3})$".toRegex().find(it)?.let { f -> f.groups[0]?.value } ?: ""
             }/*,{
                 if(it.contains(unitprice)){
                     dollaru.find(it)?.let { f ->
@@ -276,12 +330,16 @@ class CameraScanActivity : AppCompatActivity() {
 //                    sbu.appendLine("??")
                 }
                 false
-            }*/,{"(\\d{2})年".toRegex().find(it)?.let {f->f.groups[1]?.value}?:""
-            },{if(it.contains(anyJockey)) it else ""
-            },{if(it.contains(barcode)) it else ""
+            }*/, {
+                "(\\d{2})年".toRegex().find(it)?.let { f -> f.groups[1]?.value } ?: ""
+            }, {
+                if (it.contains(anyJockey)) it else ""
+            }, {
+                if (it.contains(barcode)) it else ""
             })
     }
-    private fun validateNumbers(legs:List<String>, bans:List<String>):Int{
+
+    private fun validateNumbers(legs: List<String>, bans: List<String>): Int {
         if (bans.size > 5) {
             println("falses ban>5,${bans.size}")
             return 0
@@ -312,6 +370,7 @@ class CameraScanActivity : AppCompatActivity() {
         } else
             return 0
     }
+
     companion object {
         val anyM6 = "[六合彩]|Mark|Six".toRegex(RegexOption.IGNORE_CASE)
         val anyDrawNo = "[期數]|Draw|No".toRegex(RegexOption.IGNORE_CASE)
@@ -321,7 +380,7 @@ class CameraScanActivity : AppCompatActivity() {
         val anyJockey = "JOCKEY|CLUB|HONG|KONG".toRegex(RegexOption.IGNORE_CASE)
         val barcode = "[A-F0-9]{7}\\s[A-F0-9]{17}"
 
-        val regexDrawDate = "(\\d{2})年".toRegex()
+        val regexDrawDate = "(\\d{2}[A-Z]{3}\\d{2})".toRegex()
         val regexDrawNo = "(\\d{3}|[A-Z]{3})$".toRegex()
 
         val dollarp = "(\\$\\d*[.]+\\d+)".toRegex()
@@ -329,10 +388,10 @@ class CameraScanActivity : AppCompatActivity() {
         val regRight = Regex("JOCKEY|CLUB|HONG|KONG")
         val sam = "香港馬會奬券有限公司".toCharArray().toSet()
         val sam2 = "六合彩".toCharArray().toSet()
-        private val N49 = (1..49).map{it.toString()}
-        private fun List<String>.isSort():Boolean{
-            if(this.size<2) return true
-            val toint = this.map{ N49.indexOf(it) }
+        private val N49 = (1..49).map { it.toString() }
+        private fun List<String>.isSort(): Boolean {
+            if (this.size < 2) return true
+            val toint = this.map { N49.indexOf(it) }
 //            var idx = -1
 //            for (s in this) {
 //                val idxof = N49.indexOf(s)
@@ -341,19 +400,21 @@ class CameraScanActivity : AppCompatActivity() {
 //                idx=idxof
 //            }
 //            return true
-            return toint.zipWithNext().all {(a,b)-> a!=-1&& a<b}
+            return toint.zipWithNext().all { (a, b) -> a != -1 && a < b }
         }
-        private fun String.getDrawNumbers():List<Pair<List<String>, List<String>>>{
-           return this.split('/').map {//"banker>leg"
-                                                //or "leg"
-               val bl = it.split('>').map{ it.split('+')}
-               if(bl.size==2) bl[1] to bl[0] else bl[0] to listOf() // legs to banker
+
+        private fun String.getDrawNumbers(): List<Pair<List<String>, List<String>>> {
+            return this.split('/').map {//"banker>leg"
+                //or "leg"
+                val bl = it.split('>').map { it.split('+') }
+                if (bl.size == 2) bl[1] to bl[0] else bl[0] to listOf() // legs to banker
             }
         }
+
         private const val TAG = "CameraXApp"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =
-            mutableListOf (
+            mutableListOf(
                 android.Manifest.permission.CAMERA,
                 android.Manifest.permission.RECORD_AUDIO
             ).apply {

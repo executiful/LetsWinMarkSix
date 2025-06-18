@@ -2,10 +2,10 @@ buildscript {
     ext{
         buildTime = new Date().format("yyyyMMddHHmmss")
         appName = project.name
-        verCo = 13
+        verCo = 14
         verMajor = 1
         verMinor = 2
-        verPatch = 0
+        verPatch = '0.tobechanged'
     }
 }
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
