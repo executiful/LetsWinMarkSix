@@ -19,6 +19,8 @@ import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
 import androidx.core.content.ContextCompat
 import androidx.core.text.isDigitsOnly
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.m6_sep_banker
+import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.m6_sep_num
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityCameraScanBinding
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETRESULT
@@ -73,6 +75,10 @@ class CameraScanActivity : BannerAppCompatActivity() {
         adContainerView = viewBinding.adViewContainer
     }
 
+//    override fun onPause() {
+//        super.onPause()
+//        finish()
+//    }
     private fun takePhoto() {}
 
     private fun captureVideo() {}
@@ -96,7 +102,7 @@ class CameraScanActivity : BannerAppCompatActivity() {
                     "Permission request denied",
                     Toast.LENGTH_SHORT
                 ).show()
-                finish()
+//                finish()
             } else {
                 startCamera()
             }
@@ -139,7 +145,7 @@ class CameraScanActivity : BannerAppCompatActivity() {
             val imageAnalysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
-            val startAt = System.currentTimeMillis() + 35000
+            val startAt = System.currentTimeMillis() + 55000
 
             imageAnalysis.setAnalyzer(
                 cameraExecutor,
@@ -161,52 +167,65 @@ class CameraScanActivity : BannerAppCompatActivity() {
                                 var (pn, pv, dc) = listOf<String?>(null, null, null)
                                 var (ttl, uni) = listOf(0f, 0f)
                                 var drawcount = 1
-                                val sorted = iof.textBlocks.sortedWith(compareBy(
+                                var info = StringBuilder()
+                                var updateinfo:(str:String)->Unit={t->
+//                                    if(t!=null) {
+                                        info.appendLine(t)
+                                        viewBinding.videoCaptureButton.text = info.toString()
+//                                    }
+                                }
+                                viewBinding.videoCaptureButton.text = "?"
+                                iof.textBlocks/*.sortedWith(compareBy(
                                     { b -> b.boundingBox?.top },
-                                    { b -> b.boundingBox?.left }))
-                                sorted.forEach { firstline ->
+                                    { b -> b.boundingBox?.left }))*/.forEach { firstline ->
                                     if (!firstline.text.contains(anyJockey)) {
                                         Log.d(TAG, ">${firstline.text}<")
                                         firstline.lines.sortedWith(compareBy(
                                             { b -> b.boundingBox?.top },
                                             { b -> b.boundingBox?.left })).forEach {
-                                            val test = it.text.replace("\\s".toRegex(), "")
+                                            val test = it.text//.replace("\\s".toRegex(), "")
 
                                             when {
-                                                test.contains('+') || test.isDigitsOnly() -> {
-                                                    sb.append(test)
+                                                test.contains(m6_sep_num) || test.isDigitsOnly() -> {
+                                                    if(!test.startsWith("/"))
+                                                        sb.append("&")
+                                                    sb.append(test.replace("\\s".toRegex(), ""))
                                                 }
 
-                                                dyr == null && test.contains(anyDrawDate) -> {
+                                                dyr == null && (test.contains(anyDrawDate)||test.contains(regexDrawDate)) -> {
                                                     dym =
                                                         regexDrawDate.find(test)?.groupValues?.get(1)
                                                     dym?.let { it1 ->
                                                         dyr = "(\\d{2})$".toRegex()
                                                             .find(it1)?.groupValues?.get(1)
+                                                        updateinfo(dym!!)
                                                     }
                                                 }
 
                                                 dno == null && test.contains(anyDrawNo) -> {
                                                     dno =
                                                         regexDrawNo.find(test)?.groupValues?.get(1)
+                                                    updateinfo(dno!!)
                                                 }
 
                                                 dc == null && test.contains("期|Draw[s]?".toRegex()) -> {
                                                     dc = "^(5|10|20|30)".toRegex()
                                                         .find(test)?.groupValues?.get(1)
+                                                    updateinfo(dc!!)
                                                 }
 
                                                 m6str == null && test.contains(anyM6) -> {
                                                     m6str = it.text
+                                                    updateinfo("六合彩")
                                                 }
-
+                                                "^[0-9A-F]{5}\\s[0-9A-F]{5}\\s[0-9A-F]{5}".toRegex().find(it.text)!=null->
+                                                    return@forEach
                                                 else -> {
                                                     if (pn == null)
                                                         pn = getDollarType(test)
                                                     if (pv == null && test.contains("$"))
                                                         pv = getDollar(test)
                                                 }
-
                                             }
                                         }
                                         if (pn != null) {
@@ -216,6 +235,7 @@ class CameraScanActivity : BannerAppCompatActivity() {
                                                 else if (pn == "@")
                                                     uni = it
                                                 ii.add("$pn:$pv")
+                                                updateinfo("${pn!!}:$${pv!!}")
                                                 pv = null
                                                 pn = null
                                             }
@@ -225,7 +245,8 @@ class CameraScanActivity : BannerAppCompatActivity() {
                                 dc?.let { d -> drawcount = d.toInt() }
                                 Log.d(TAG, "$dyr $dno $ttl * $drawcount")
                                 if (!dyr.isNullOrBlank() && !dno.isNullOrBlank() && ttl >= 10) {
-                                    val nums = sb.toString().getDrawNumbers()//
+                                    Log.d(TAG, sb.toString())
+                                    val nums = sb.toString().removePrefix("&").replace("&[+]|[+]&".toRegex(), "").replace("&1","/").getDrawNumbers()//
 
                                     val valid =
                                         nums.map { (legs, bans) -> validateNumbers(legs, bans) }
@@ -235,11 +256,11 @@ class CameraScanActivity : BannerAppCompatActivity() {
                                         val res =
                                             nums.joinToString("${System.lineSeparator()}/ ") { (legs, bans) ->
                                                 listOf(
-                                                    bans.joinToString("+"),
-                                                    legs.joinToString("+")
+                                                    bans.joinToString(m6_sep_num),
+                                                    legs.joinToString(m6_sep_num)
                                                 )
                                                     .filter { it.isNotEmpty() }
-                                                    .joinToString(">")
+                                                    .joinToString(m6_sep_banker)
                                             }
                                         val bde = Bundle().also {
                                             it.putString(TICKETRESULT, res)
@@ -258,6 +279,7 @@ class CameraScanActivity : BannerAppCompatActivity() {
                                         viewBinding.imageCaptureButton.text = it
                                     }
                                     if (timeLeft > 0) {
+                                        intent.putExtras(Bundle().also{it.putString(TICKETRESULT,"掃瞄逾時")})
                                         setResult(RESULT_CANCELED, intent)
                                         finish()
                                     }
@@ -404,9 +426,9 @@ class CameraScanActivity : BannerAppCompatActivity() {
         }
 
         private fun String.getDrawNumbers(): List<Pair<List<String>, List<String>>> {
-            return this.split('/').map {//"banker>leg"
+            return this.replace("[^0-9>+/]".toRegex(), "").split('/').map {//"banker>leg"
                 //or "leg"
-                val bl = it.split('>').map { it.split('+') }
+                val bl = it.split(m6_sep_banker).map { it.split(m6_sep_num) }
                 if (bl.size == 2) bl[1] to bl[0] else bl[0] to listOf() // legs to banker
             }
         }

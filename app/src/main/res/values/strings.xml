@@ -115,10 +115,10 @@
         This is an ad unit ID for an interstitial test ad. Replace with your own interstitial ad unit id.
         For more information, see https://support.google.com/admob/answer/3052638
     <!- -->
-    <string name="interstitial_ad_unit_id">ca-app-pub-3940256099942544/1033173712</string>
+    <string name="interstitial_ad_unit_id" translatable="false">ca-app-pub-3940256099942544/1033173712</string>
     <string name="title_activity_ocrticket">OCRTicket</string>
     <string name="take_photo">影相</string>
     <string name="start_capture">Capture</string>
     <string name="title_scanticket">掃瞄彩票</string>
-    <string name="drawn_id_not_found">找不到相關攪珠期數</string>
+    <string name="drawn_id_not_found">找不到相關攪珠結果</string>
 </resources>

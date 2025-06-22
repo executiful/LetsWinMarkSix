@@ -75,7 +75,6 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.UpdateLatestD
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISO
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISOFormat
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getLatestSchecule
-import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getScheduleAll
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTD
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTR
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.isEarlyBy
@@ -722,7 +721,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }.setPositiveButton(if(originalballs.any { it.status!=NumStat.NUMSTATUS.UNSEL }) R.string.message_replace else R.string.replace_numbers)  { dlg, _ ->
                         val selectedPosition = dlg.ListView().checkedItemPosition
                         if(dlg.ListView().indices.contains(selectedPosition)) {
-                            val strings = adp.getItem(selectedPosition)?.split('>') ?: listOf()
+                            val strings = adp.getItem(selectedPosition)?.split(m6_sep_banker) ?: listOf()
                             dlg.dismiss()
                             val lnums = cnv2Int(strings.last())
                             val bnums = if (strings.size > 1) cnv2Int(strings.first()) else listOf()
@@ -780,7 +779,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                             val dfm = SimpleDateFormat("ddMMMyy", Locale.ENGLISH)
                             val drawResultDao = M6Db.getDatabase(this@MainActivity).DrawResultDao()
                             val rec = drawResultDao.checkDrawBy(other[0], other[1], other[4].toInt())
-                            val numsfmt = if(rec.isEmpty()) getString(R.string.drawn_id_not_found) else {
+                            val numsfmt = "相關攪珠${if(other[4]!="1") other[4] else ""}結果" + System.lineSeparator() + if(rec.isEmpty()) getString(R.string.drawn_id_not_found) else {
                                 rec.joinToString(System.lineSeparator()) { itm ->
                                     "${itm.id}:${
                                         itm.no.nos.joinToString(
@@ -796,20 +795,21 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                         "${rec.first().id} ${dfm.format(rec.first().date)}"
                                     }
                                 )
-                                .setPositiveButton(android.R.string.ok) { d, _ -> d.dismiss() }
-                                .setNeutralButton("再掃瞄") { _, _ -> launchLauncher() }
-                                .setNegativeButton(android.R.string.copy) { _, _ -> }
+                                .setPositiveButton("再掃瞄") { _, _ -> launchLauncher() }
+                                .setNeutralButton(android.R.string.copy) { _, _ -> }
+                                .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
                                 .setMessage(nbs + System.lineSeparator() + other[5] +
-                                        System.lineSeparator() + "相關攪珠${if(other[4]!="1") other[4] else ""}結果" + System.lineSeparator() + numsfmt)
+                                        System.lineSeparator() + numsfmt)
                                 .show()
                         }
                     }
                 }
             }
         } else if (rs.resultCode== RESULT_CANCELED){
-            AlertDialog.Builder(this@MainActivity).setTitle("掃瞄過時")
-                .setNeutralButton("再掃瞄") { _, _ -> launchLauncher() }
-                .setPositiveButton(android.R.string.ok){ d,_->d.dismiss()}
+            val title = rs.data?.getStringExtra(TICKETRESULT)?: "掃瞄彩票"
+            AlertDialog.Builder(this@MainActivity).setTitle(title)
+                .setPositiveButton("再掃瞄") { _, _ -> launchLauncher() }
+                .setNeutralButton(android.R.string.cancel){ d,_->d.dismiss()}
                     .show()
         }
     }
@@ -1007,7 +1007,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
     @SuppressLint("SuspiciousIndentation")
     private fun show_checking(): Boolean {
-        if(currentStatus!=DrawStatus.UnClassify){
+/*        if(currentStatus!=DrawStatus.UnClassify){
             latestDrawResult?.let {rs->
                 val max1 = 6 - bankers.size
                 val scheduleAll = getScheduleAll(this)
@@ -1021,7 +1021,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //                        numberseperator)
 //                } else ""
             }
-        }
+        }*/
         startActivity(Intent(this, DrawnNumberCheckingActivity::class.java))
         return true
     }
@@ -1476,7 +1476,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
         const val numberseperator = "$thinsp+"
         const val m6_49StartDate = "2002/07/04"
-
+        const val m6_sep_num = "+"
+        const val m6_sep_banker = ">"
         val ballcolor = mutableListOf<Int>()
 
         val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }.toSet()

@@ -126,7 +126,7 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
         val s = allresult.map{it.id to it.no.nos.plus(it.sno).toSet()}.windowed(2).take(20).map{(curr,next)->
             curr.first to curr.second.intersect(next.second)
         }//.filter { it.second.isNotEmpty() }
-        val ss=s.map{l->"${l.first}:${l.second.joinToString()}"}.joinToString("\n")
+//        val ss=s.map{l->"${l.first}:${l.second.joinToString()}"}.joinToString("\n")
 //        AlertDialog.Builder(this).setMessage(filterValues+"\n"+top+"\n"+d+"\n"+ss).show()
         binding.idPrizeList.adapter =
             ResultAdapter(data20, s, this)
