@@ -1,10 +1,13 @@
 package com.cmlee.executiful.letswinmarksix.helper
 
 import android.content.DialogInterface
+import android.widget.Button
+import android.widget.ListView
 import androidx.appcompat.app.AlertDialog
 
 object AlertDialogHelper {
-    fun DialogInterface.PositiveButton() = (this as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE)
-    fun DialogInterface.NeutralButton() = (this as AlertDialog).getButton(AlertDialog.BUTTON_NEUTRAL)
-    fun DialogInterface.ListView() = (this as AlertDialog).listView
+    val DialogInterface.PositiveButton: Button get() = (this as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE)
+    val DialogInterface.NeutralButton: Button get() = (this as AlertDialog).getButton(AlertDialog.BUTTON_NEUTRAL)
+    val DialogInterface.NegativeButton: Button get() = (this as AlertDialog).getButton(AlertDialog.BUTTON_NEGATIVE)
+    val DialogInterface.ListView:ListView get() = (this as AlertDialog).listView
 }

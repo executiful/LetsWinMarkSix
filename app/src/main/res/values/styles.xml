@@ -24,13 +24,13 @@
         <!--        <item name="android:interminateOnly">false</item>-->
     </style>
 
-    <style name="styleselectnum" parent="Widget.AppCompat.TextView" >
+    <style name="styleselectnum" parent="Widget.AppCompat.TextView">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_columnWeight">1</item>
         <item name="android:layout_marginEnd">2dp</item>
         <item name="android:padding">3dp</item>
-<!--        <item name="android:background">@drawable/ic_prizing_fill</item>-->
+        <!--        <item name="android:background">@drawable/ic_prizing_fill</item>-->
         <item name="android:layout_weight">1</item>
         <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
         <item name="android:ellipsize">marquee</item>
@@ -43,9 +43,11 @@
         <item name="android:fillAlpha">20</item>
         <item name="background">@android:color/holo_green_dark</item>
     </style>
+
     <style name="styleselectiontype" parent="android:Widget.Material.Light.SegmentedButton">
 
     </style>
+
     <style name="Ticket">
         <item name="android:orientation">vertical</item>
         <item name="android:layout_width">wrap_content</item>
@@ -93,14 +95,16 @@
     <style name="Theme_Wait_Dialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
+
     <style name="Theme_Monthly_Dialog" parent="ThemeOverlay.AppCompat.Dialog.Alert">
         <item name="android:windowBackground">@drawable/border3d</item>
         <item name="windowNoTitle">false</item>
         <item name="android:windowMinWidthMinor">89%</item>
-<!--        <item name="android:titleMargin">0dp</item>-->
+        <!--        <item name="android:titleMargin">0dp</item>-->
 
-<!--        <item name="android:actionBarDivider">@android:drawable/divider_horizontal_dim_dark</item>-->
+        <!--        <item name="android:actionBarDivider">@android:drawable/divider_horizontal_dim_dark</item>-->
     </style>
+
     <style name="bankorleg" parent="android:Widget.Material.Button.Toggle">
 
     </style>
@@ -121,10 +125,10 @@
 
     <color name="shrine_pink_900">#FFEB3B</color>
 
-<!--    <style name="Widget.Theme.LetsWinMarkSix.MyView" parent="">-->
-<!--        <item name="android:background">@color/gray_400</item>-->
-<!--        <item name="exampleColor">@color/light_blue_400</item>-->
-<!--    </style>-->
+    <!--    <style name="Widget.Theme.LetsWinMarkSix.MyView" parent="">-->
+    <!--        <item name="android:background">@color/gray_400</item>-->
+    <!--        <item name="exampleColor">@color/light_blue_400</item>-->
+    <!--    </style>-->
 
     <style name="prizingBar" parent="@style/Widget.AppCompat.RatingBar">
         <item name="android:progressDrawable">@drawable/custom_rating</item>
@@ -139,15 +143,16 @@
         <item name="android:clickable">false</item>
         <item name="android:focusable">false</item>
         <item name="android:layout_margin">2dp</item>
-<!--        <item name="android:padding">2dp</item>-->
+        <!--        <item name="android:padding">2dp</item>-->
         <item name="layout_constraintBottom_toBottomOf">parent</item>
         <item name="layout_constraintDimensionRatio">1:1</item>
         <item name="layout_constraintEnd_toEndOf">parent</item>
         <item name="layout_constraintStart_toStartOf">parent</item>
         <item name="layout_constraintTop_toTopOf">parent</item>
         <item name="android:fontFamily">monospace</item>
-<!--        <item name="android:textColor">@color/selectedballtext</item>-->
+        <!--        <item name="android:textColor">@color/selectedballtext</item>-->
     </style>
+
     <style name="matchtext" parent="@style/TextAppearance.AppCompat.Medium">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">0dp</item>
@@ -162,7 +167,7 @@
         <item name="android:fontFamily">monospace</item>
     </style>
 
-    <style name="date_box" >
+    <style name="date_box">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_columnWeight">1</item>
@@ -170,15 +175,16 @@
         <item name="android:gravity">end</item>
         <item name="android:layout_margin">2dp</item>
         <item name="backgroundColor">?android:attr/titleTextColor</item>
-<!--        <item name="android:layout_row">1</item>-->
+        <!--        <item name="android:layout_row">1</item>-->
     </style>
+
     <style name="money" parent="@style/TextAppearance.AppCompat.Medium">
         <item name="android:fontFamily">monospace</item>
     </style>
 
     <!-- for text -->
     <style name="AppTabTextAppearance" parent="TextAppearance.AppCompat.Medium">
-<!--        <item name="android:textSize">@dimen/key_text_size</item>-->
+        <!--        <item name="android:textSize">@dimen/key_text_size</item>-->
         <!--        <item name="android:textColor">@color/orange</item>-->
         <item name="hintEnabled">false</item>
         <item name="android:textAllCaps">false</item>x
@@ -197,6 +203,7 @@
         <!--        <item name="tabIndicatorHeight">@dimen/margin_general</item>-->
         <!--        <item name="tabSelectedTextColor">@color/color_blue</item>-->
     </style>
+
     <style name="countnumber" parent="TextAppearance.Material3.LabelSmall">
         <item name="android:textColor">@color/count</item>
     </style>
@@ -205,8 +212,13 @@
         <item name="android:textAlignment">center</item>
         <item name="android:gravity">center</item>
         <item name="android:fontFamily">monospace</item>
-<!--        <item name="app:layoutManager">androidx.recyclerview.widget.LinearLayoutManager</item>-->
-<!--        <item name="app:layout_behavior">@string/appbar_scrolling_view_behavior</item>-->
-<!--        <item name="tools:listitem">@layout/drawn_list_item</item>-->
+        <!--        <item name="app:layoutManager">androidx.recyclerview.widget.LinearLayoutManager</item>-->
+        <!--        <item name="app:layout_behavior">@string/appbar_scrolling_view_behavior</item>-->
+        <!--        <item name="tools:listitem">@layout/drawn_list_item</item>-->
+    </style>
+
+    <style name="Widget.Theme.LetsWinMarkSix.MyView" parent="">
+        <item name="android:background">@color/gray_400</item>
+        <item name="exampleColor">@color/light_blue_400</item>
     </style>
 </resources>

@@ -76,12 +76,12 @@ abstract class BannerAppCompatActivity : AppCompatActivity() {
             val windowWidth = resources.configuration.screenWidthDp
             return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, windowWidth)
         }
-    protected val listDivider: Drawable?
-        get() {
-            val typedValue = TypedValue()
-            theme?.resolveAttribute(android.R.attr.listDivider, typedValue, true)
-            return AppCompatResources.getDrawable(this, typedValue.resourceId)
-        }
+//    protected val listDivider: Drawable?
+//        get() {
+//            val typedValue = TypedValue()
+//            theme?.resolveAttribute(android.R.attr.listDivider, typedValue, true)
+//            return AppCompatResources.getDrawable(this, typedValue.resourceId)
+//        }
     //    private AdSize getAdSize() {
     //        // Determine the screen width (less decorations) to use for the ad width.
     //        Display display = getWindowManager().getDefaultDisplay();

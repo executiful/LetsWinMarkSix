@@ -543,7 +543,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                                 "${rBtn.tag} ${(actv.tag as String).padStart(2)}".apply { actv.text = this }
                                             }
                                         }
-                                        alertDialog!!.PositiveButton().isEnabled = !grpNums.any{ ent-> ent.value.size in 1..2}
+                                        alertDialog!!.PositiveButton.isEnabled = !grpNums.any{ ent-> ent.value.size in 1..2}
                                     }
                                 grpNums.map { item ->
                                     "${item.key}：${item.value.sortedBy { it.trim().padStart(2, '0') }.joinToString(",") { m -> m.padStart(2) }}"
@@ -595,14 +595,14 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                             with(if (b) View.VISIBLE else View.GONE) {
                                 dialogBinding.viscon.visibility = this
                             }
-                            alertDialog!!.PositiveButton().isEnabled =
+                            alertDialog!!.PositiveButton.isEnabled =
                                 (it&&grpNums.any { ent -> ent.value.size in 1..2 }).not()
                         }
                     }
 
                     alertDialog?.show()
                     dialogBinding.opLike.isChecked = false
-                    alertDialog!!.PositiveButton().isEnabled = !grpNums.any { ent -> ent.value.size in 1..2 }
+                    alertDialog!!.PositiveButton.isEnabled = !grpNums.any { ent -> ent.value.size in 1..2 }
                     alertDialog != null
                 }
                 R.id.action_marksix -> {
@@ -714,13 +714,13 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }
                     AlertDialog.Builder(this).setSingleChoiceItems(adp, -1) { di, i->
                         adp.getItem(i)?.let{
-                            di.PositiveButton().isVisible = it.toString() != msgNumbers
+                            di.PositiveButton.isVisible = it.toString() != msgNumbers
                         }
                     }.setNeutralButton(android.R.string.cancel) { dlg, _ ->
                         dlg.dismiss()
                     }.setPositiveButton(if(originalballs.any { it.status!=NumStat.NUMSTATUS.UNSEL }) R.string.message_replace else R.string.replace_numbers)  { dlg, _ ->
-                        val selectedPosition = dlg.ListView().checkedItemPosition
-                        if(dlg.ListView().indices.contains(selectedPosition)) {
+                        val selectedPosition = dlg.ListView.checkedItemPosition
+                        if(dlg.ListView.indices.contains(selectedPosition)) {
                             val strings = adp.getItem(selectedPosition)?.split(m6_sep_banker) ?: listOf()
                             dlg.dismiss()
                             val lnums = cnv2Int(strings.last())
@@ -738,8 +738,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         }
                     }.create().also{
                         it.setOnShowListener{dlg->
-                            dlg.PositiveButton().isVisible=false
-                            dlg.ListView().divider = AppCompatResources.getDrawable(this, android.R.drawable.divider_horizontal_dark)
+                            dlg.PositiveButton.isVisible=false
+                            dlg.ListView.divider = AppCompatResources.getDrawable(this, android.R.drawable.divider_horizontal_dark)
                         }
                     }.show()
                     true
@@ -755,7 +755,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //                        }
 //                    }
 
-                    launcherForOCR.launch(Intent(this, CameraScanActivity::class.java))
+//                    launcherForOCR.launch(Intent(this, CameraScanActivity::class.java))
+                    startActivity(Intent(this, CameraScanActivity::class.java))
                     true
                 }
                 else -> {
@@ -767,6 +768,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     }
     fun launchLauncher(){
         launcherForOCR.launch(Intent(this, CameraScanActivity::class.java))
+//        startActivity(Intent(this, ReadTicket::class.java))
     }
     @SuppressLint("SimpleDateFormat")
     private val launcherForOCR = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){ rs->
@@ -779,7 +781,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                             val dfm = SimpleDateFormat("ddMMMyy", Locale.ENGLISH)
                             val drawResultDao = M6Db.getDatabase(this@MainActivity).DrawResultDao()
                             val rec = drawResultDao.checkDrawBy(other[0], other[1], other[4].toInt())
-                            val numsfmt = "相關攪珠${if(other[4]!="1") other[4] else ""}結果" + System.lineSeparator() + if(rec.isEmpty()) getString(R.string.drawn_id_not_found) else {
+                            val numsfmt = "相關攪珠${if(other[4]!="1") other[4] else ""}結果:" + System.lineSeparator() + if(rec.isEmpty()) getString(R.string.drawn_id_not_found) else {
                                 rec.joinToString(System.lineSeparator()) { itm ->
                                     "${itm.id}:${
                                         itm.no.nos.joinToString(
@@ -789,17 +791,32 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                 }
 
                             }
+
+                            val sp = SpannableStringBuilder()
+                            sp.appendLine("彩票期數:").appendLine(if (rec.isEmpty()) "${other[0]}/${other[1]} ${other[6]}" else {
+                                "${rec.first().id} ${dfm.format(rec.first().date)}"
+                            })
+                            sp.appendLine("注項:")
+                            sp.appendLine(nbs)
+                            sp.appendLine()
+                            sp.appendLine("相關攪珠${if(other[4]!="1") "${other[4]}期" else ""}結果:")
+                            if (rec.isEmpty()) sp.append(getString(R.string.drawn_id_not_found))
+                            else
+                                for (itm in rec) {
+                                    sp.appendLine(
+                                        "${itm.id}:${
+                                            itm.no.nos.joinToString(
+                                                numberseperator
+                                            )
+                                        }$thinsp(${itm.sno})"
+                                    )
+                                }
                             AlertDialog.Builder(this@MainActivity)
-                                .setTitle(
-                                    if (rec.isEmpty()) "${other[0]}/${other[1]} ${other[6]}" else {
-                                        "${rec.first().id} ${dfm.format(rec.first().date)}"
-                                    }
-                                )
+                                .setTitle(R.string.title_scanticket)
                                 .setPositiveButton("再掃瞄") { _, _ -> launchLauncher() }
                                 .setNeutralButton(android.R.string.copy) { _, _ -> }
                                 .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
-                                .setMessage(nbs + System.lineSeparator() + other[5] +
-                                        System.lineSeparator() + numsfmt)
+                                .setMessage(sp)
                                 .show()
                         }
                     }
@@ -859,10 +876,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         return with(getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE)){
 
             if(!contains(msgNumbers)){
-                edit().putLong(msgNumbers, System.currentTimeMillis()).apply()
+                edit {putLong(msgNumbers, System.currentTimeMillis())}
                 Toast.makeText(this@MainActivity, R.string.message_save, Toast.LENGTH_SHORT).show()
                 if(BuildConfig.DEBUG) {
-                    with(edit()) {
+                    edit {
 
                         all.entries.forEach{
                             val k = it.key.split("\\s*\\+\\s*").joinToString(numberseperator)
@@ -871,7 +888,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                             remove(it.key)
                             putLong(k, parse)
                         }
-                        apply()
+
                     }
                 }
                 if(all.size>6)
