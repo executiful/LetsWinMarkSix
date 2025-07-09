@@ -8,12 +8,11 @@
     android:orientation="vertical"
     tools:context=".CameraScanActivity">
 
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adView"
-        app:adSize="MEDIUM_RECTANGLE"
-        app:adUnitId="@string/banner_ad_unit_id"
+    <FrameLayout
+        android:id="@+id/ad_view_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|start"/>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -27,12 +26,18 @@
             android:id="@+id/boundingBoxOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-
+        <ImageView
+            android:visibility="visible"
+            android:id="@+id/id_my_app_image"
+            android:src="@drawable/_2025_07_07_162145"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
         <TextView
             android:id="@+id/temp"
             android:ems="10"
-            android:textAppearance="?android:textAppearanceLargeInverse"
-
+            android:textAppearance="?android:textAppearanceLarge"
+android:shadowRadius="2"
+            android:shadowColor="?android:attr/colorControlActivated"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="bottom|center"

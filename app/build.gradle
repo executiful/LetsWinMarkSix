@@ -17,13 +17,13 @@ android {
         }
     }
     namespace 'com.cmlee.executiful.letswinmarksix'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.cmlee.executiful.letswinmarksix"
         minSdk 24
+        targetSdk 35
 
-        targetSdk 34
         versionCode verCo
         versionName "$verMajor.$verMinor.$verPatch"
 

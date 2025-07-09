@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <ImageButton
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/nothing_to_show"
+        android:src="@drawable/admob_close_button_black_circle_white_cross"
+        android:layout_gravity="top|start" />
+
+    <ImageButton
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:contentDescription="@string/nothing_to_show"
+        android:src="@drawable/admob_close_button_black_circle_white_cross"
+        tools:src="@android:drawable/ic_menu_close_clear_cancel" />
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/nothing_to_show"
+        app:srcCompat="@drawable/_2025_07_07_162145" />
+
+
+</FrameLayout>

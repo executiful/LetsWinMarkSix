@@ -4,8 +4,8 @@ buildscript {
         appName = project.name
         verCo = 14
         verMajor = 1
-        verMinor = 2
-        verPatch = '0.tobechanged'
+        verMinor = 3
+        verPatch = 0
     }
 }
 // Top-level build file where you can add configuration options common to all sub-projects/modules.

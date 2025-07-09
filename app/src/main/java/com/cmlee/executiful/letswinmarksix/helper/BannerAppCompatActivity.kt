@@ -1,12 +1,10 @@
 package com.cmlee.executiful.letswinmarksix.helper
 
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
-import android.util.TypedValue
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.content.res.AppCompatResources
+import com.cmlee.executiful.letswinmarksix.R
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -14,6 +12,7 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
+import com.google.firebase.components.BuildConfig
 
 
 abstract class BannerAppCompatActivity : AppCompatActivity() {
@@ -30,7 +29,7 @@ abstract class BannerAppCompatActivity : AppCompatActivity() {
     private fun loadBanner() {
         // Create an ad request.
         adView = AdView(this)
-        adView.adUnitId = adUnitId
+        adView.adUnitId = if(BuildConfig.DEBUG) getString(R.string.banner_ad_unit_id) else adUnitId
         adContainerView.removeAllViews()
         adContainerView.addView(adView)
         val adSize :AdSize = adSize

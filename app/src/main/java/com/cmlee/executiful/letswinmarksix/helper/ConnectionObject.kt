@@ -329,11 +329,11 @@ object ConnectionObject {
                 Regex("\\s*var\\s*dataJson\\s*=\\s*(.*)\\s*;", RegexOption.DOT_MATCHES_ALL)
             doc.getElementsByTag("script").forEach { element ->
                 if (element.hasAttr("src").not()) {
-                    regex.find(element.data())?.let { mr ->
-                        val jsonObject = JSONObject(mr.groupValues[1])
+                    regex.find(element.data())?.groupValues?.let { mr ->
+                        val jsonObject = JSONObject(mr[1])
                         val objDates = jsonObject.getJSONObject("drawDates")
                         val same = objDates.getString("drawYear")
-                        schuPref.edit() {
+                        schuPref.edit {
                             putDateTimeISO(KEY_FIXTURES_UPDATE, today)
 
                                 .putString(KEY_FIXTURES, same)

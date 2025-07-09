@@ -93,13 +93,30 @@
     </style>
 
     <style name="Theme_Wait_Dialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+<!--        <item name="android:windowActionModeOverlay">false</item>-->
+        <item name="android:windowIsFloating">true</item>
+<!--        <item name="android:state_window_focused">false</item>-->
+        <item name="android:backgroundDimAmount">.7</item>
+
         <item name="android:windowBackground">@android:color/transparent</item>
     </style>
 
-    <style name="Theme_Monthly_Dialog" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+    <style name="OCR_Dialog" parent="Theme.MaterialComponents.DayNight.Dialog.Alert">
+        <item name="android:backgroundDimAmount">.2</item>
+    </style>
+
+    <style name="TEMP_Ads_Dialog" parent="OCR_Dialog">
+        <item name="android:windowAnimationStyle">@style/DialogAnimation</item>
+    </style>
+    <style name="Theme_Monthly_Dialog" parent="Theme.MaterialComponents.DayNight.Dialog">
         <item name="android:windowBackground">@drawable/border3d</item>
         <item name="windowNoTitle">false</item>
         <item name="android:windowMinWidthMinor">89%</item>
+        <item name="android:windowIsFloating">true</item>
+                <item name="android:divider">@drawable/gradient_gold</item>
+<item name="android:backgroundDimAmount">.5</item>
+        <!--        <item name="android:state_window_focused">false</item>-->
+<!--        <item name="android:backgroundDimEnabled">false</item>-->
         <!--        <item name="android:titleMargin">0dp</item>-->
 
         <!--        <item name="android:actionBarDivider">@android:drawable/divider_horizontal_dim_dark</item>-->
@@ -217,8 +234,12 @@
         <!--        <item name="tools:listitem">@layout/drawn_list_item</item>-->
     </style>
 
-    <style name="Widget.Theme.LetsWinMarkSix.MyView" parent="">
-        <item name="android:background">@color/gray_400</item>
-        <item name="exampleColor">@color/light_blue_400</item>
+<!--    <style name="Widget.Theme.LetsWinMarkSix.MyView" parent="">-->
+<!--        <item name="android:background">@color/gray_400</item>-->
+<!--        <item name="exampleColor">@color/light_blue_400</item>-->
+<!--    </style>-->
+    <style name="DialogAnimation">
+        <item name="android:windowEnterAnimation">@android:anim/slide_in_left</item>
+        <item name="android:windowExitAnimation">@android:anim/slide_out_right</item>
     </style>
 </resources>

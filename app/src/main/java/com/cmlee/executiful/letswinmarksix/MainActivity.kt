@@ -324,18 +324,18 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             }
             balldata(it, numberordering[index])
 
-            if (BuildConfig.DEBUG) {
-                it.idNumber.setOnLongClickListener {
-                    if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
-                        val phraseDialog = newInstance(index)
-                        phraseDialog.show(
-                            supportFragmentManager.beginTransaction(),
-                            TAG_BALL_DIALOG
-                        )
-                    }
-                    true
-                }
-            }
+//            if (BuildConfig.DEBUG) {
+//                it.idNumber.setOnLongClickListener {
+//                    if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
+//                        val phraseDialog = newInstance(index)
+//                        phraseDialog.show(
+//                            supportFragmentManager.beginTransaction(),
+//                            TAG_BALL_DIALOG
+//                        )
+//                    }
+//                    true
+//                }
+//            }
         }
         changeStatus(currentStatus, true)
 //        pauseDlg.dismiss()
