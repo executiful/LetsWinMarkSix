@@ -365,8 +365,7 @@ class CameraScanActivity : AppCompatActivity() {
                                                         )) -> {
                                                             regexDrawDate.find(test)?.groupValues?.let { f ->
                                                                 dym = f[1]
-                                                                dyr = "(\\d{2})$".toRegex()
-                                                                    .find(f[1])?.groupValues?.get(1)
+                                                                dyr = f[1].takeLast(2)
                                                                 info.add(f[1])
                                                             }
                                                             if (dyr == null)
@@ -387,10 +386,7 @@ class CameraScanActivity : AppCompatActivity() {
                                                                     )
                                                                     dym = dfm.format(now.time)
                                                                         .uppercase()
-                                                                    dyr = "(\\d{2})$".toRegex()
-                                                                        .find(f[1])?.groupValues?.get(
-                                                                        1
-                                                                    )
+                                                                    dyr = f[1]
                                                                     info.add(
                                                                         dfm.format(now.time)
                                                                             .uppercase()
@@ -398,14 +394,14 @@ class CameraScanActivity : AppCompatActivity() {
                                                                 }
                                                         }
 
-                                                        dno == null && test.contains(anyDrawNo) -> {
+                                                        dno == null && test.contains(anyDrawNo) &&test.contains("^5|10|20|30".toRegex()).not() -> {
                                                             regexDrawNo.find(test)?.groupValues?.let { f ->
                                                                 dno = f[1]
                                                                 info.add(f[1])
                                                             }
                                                         }
 
-                                                        dc == null && test.contains("期|Draw[s]?".toRegex()) -> {
+                                                        dc == null && test.contains("期|Draw[s]?".toRegex())&&test.contains("^5|10|20|30".toRegex()) -> {
                                                             "^(5|10|20|30)".toRegex()
                                                                 .find(test)?.groupValues?.let { f ->
                                                                     dc = f[1]
@@ -576,10 +572,12 @@ class CameraScanActivity : AppCompatActivity() {
     }
 
     private fun validateNumbers(legs: List<String>, bans: List<String>): Int {
-        if (bans.size > 5 || !(legs.isSort()) || !(bans.isSort())) {
+        if (bans.size > 5 || !(bans.isSort())) {
             println("falses ban>5,${bans.size}")
             return 0
         }
+        if(!legs.isSort())
+            return 0
         if (legs.size + bans.size < 7)
             if (legs.size == 6)
                 return 1
@@ -705,7 +703,7 @@ class CameraScanActivity : AppCompatActivity() {
         val sam2 = "六合彩".toCharArray().toSet()
         private val N49 = (1..49).map { it.toString() }
         private fun List<String>.isSort(): Boolean {
-            if(isEmpty()) return false
+            if(isEmpty()) return true
             val ids = map{N49.indexOf(it)}
             if(ids.any{it==-1}) return false
             if(size<2) return true
@@ -718,6 +716,7 @@ class CameraScanActivity : AppCompatActivity() {
             return this.removePrefix("&")
                 //1+2|/2+3|+3+4+|5+6+7|8
                 //1+2&12+3&+3+4+&5+6+7&8
+                .replace("\\s".toRegex(), "")
                 .replace("&[+]|[+]&".toRegex(), "")
                 .replace("&1", "/").replace("[^0-9>+/]".toRegex(), "").split('/')
                 .map {//"banker>leg"
