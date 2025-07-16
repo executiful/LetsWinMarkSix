@@ -50,7 +50,6 @@ import androidx.core.view.children
 import androidx.core.view.indices
 import androidx.core.view.isVisible
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.TAG_BALL_DIALOG
-import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.newInstance
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityMainBinding
 import com.cmlee.executiful.letswinmarksix.databinding.BallBinding
 import com.cmlee.executiful.letswinmarksix.databinding.ColumnOfNumberBinding
@@ -142,7 +141,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         binding.idBallselect.removeAllViews()
         binding.ticketlayout.idLegs.removeAllViews()
         binding.ticketlayout.idBankers.removeAllViews()
-
+        
+        avoidViewOverlapping(binding.adViewContainer)
         val tmpColorArray = resources.obtainTypedArray(R.array.ball_color_array)
         tmpColorArray.getColor(0, RED)
         ballcolor.addAll(

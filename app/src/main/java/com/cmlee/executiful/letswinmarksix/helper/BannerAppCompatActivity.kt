@@ -1,7 +1,11 @@
 package com.cmlee.executiful.letswinmarksix.helper
 
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.cmlee.executiful.letswinmarksix.R
@@ -24,6 +28,53 @@ abstract class BannerAppCompatActivity : AppCompatActivity() {
         super.onPostCreate(savedInstanceState)
     }
 
+    fun avoidViewOverlapping(v: View){
+//        ViewCompat.setOnApplyWindowInsetsListener(v) { v, windowInsets ->
+//            val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+//            // Apply the insets as a margin to the view. This solution sets
+//            // only the bottom, left, and right dimensions, but you can apply whichever
+//            // insets are appropriate to your layout. You can also update the view padding
+//            // if that's more appropriate.
+//            v.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+//                leftMargin = insets.left
+//                bottomMargin = insets.bottom
+//                rightMargin = insets.right
+//            }
+//
+//            // Return CONSUMED if you don't want the window insets to keep passing
+//            // down to descendant views.
+//            WindowInsetsCompat.CONSUMED
+//        }
+        // In your Activity's onCreate()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.insetsController?.let {
+                // Hide both navigation bar and status bar
+//                it.hide(WindowInsets.Type.systemBars())
+                it.hide(WindowInsets.Type.navigationBars())
+                // Make the navigation bar stay hidden even after user interaction
+                it.systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        }
+/*        // In your Activity's onCreate()
+        window.decorView.systemUiVisibility = (
+                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        // Optional: if you want to hide status bar as well
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                )
+
+// To handle when the system bars reappear
+        window.decorView.setOnSystemUiVisibilityChangeListener { visibility ->
+            if (visibility and View.SYSTEM_UI_FLAG_HIDE_NAVIGATION == 0) {
+                // System bars are visible, hide them again
+                window.decorView.systemUiVisibility = (
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        )
+            }
+        }*/
+    }
     val adUnitId get() = getString(adUnitStringId)
     protected abstract val adUnitStringId:Int
     private fun loadBanner() {

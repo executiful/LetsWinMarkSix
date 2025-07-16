@@ -52,7 +52,7 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
         binding = ActivityLatestDrawnBinding.inflate(layoutInflater)
         setContentView(binding.root)
         adContainerView = binding.adViewContainer
-
+        avoidViewOverlapping(adContainerView)
         setSupportActionBar(findViewById(R.id.toolbar))
 //        binding.toolbarLayout.title = title
 //        binding.fab.setOnClickListener { view ->

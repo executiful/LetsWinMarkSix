@@ -125,6 +125,7 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         binding.toolbar.setNavigationOnClickListener {
             finish()
         }
+        avoidViewOverlapping(binding.idPrizeList)
         binding.tabPrize.isHorizontalFadingEdgeEnabled = true
         binding.tabPrize.addOnTabSelectedListener(this)
         val waitdlg = AlertDialog.Builder(this, R.style.Theme_Wait_Dialog)
