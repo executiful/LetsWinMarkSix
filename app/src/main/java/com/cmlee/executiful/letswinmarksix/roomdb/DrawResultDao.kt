@@ -15,24 +15,24 @@ import com.cmlee.executiful.letswinmarksix.helper.WinningUnitConverter
 @Dao
 @TypeConverters(/*LocalDateConverter::class, */DayYearConverter::class, UnitPriceConverter::class, WinningUnitConverter::class, NoArrayConverter::class)
 interface DrawResultDao {
-    @Query("SELECT * FROM DrawResult ORDER BY date DESC")
-    fun getAll(): List<DrawResult>
+    @Query("SELECT * FROM DrawResult WHERE date >= '2002/07/04' ORDER BY date DESC")
+    suspend fun getAll(): List<DrawResult>
 
     @Query("SELECT * FROM DrawResult ORDER BY date DESC limit 1")
-    fun getLatest():DrawResult
+    suspend fun getLatest():DrawResult
     @Query("SELECT * FROM DrawResult WHERE p1 IS NOT NULL ORDER BY date DESC limit 1")
-    fun getLatestNotNull():DrawResult
+    suspend fun getLatestNotNull():DrawResult
 
     @Query("SELECT * FROM DrawResult WHERE id = '00/081' LIMIT 1")
     fun find(): DrawResult
 
 //    @Query("SELECT * FROM DrawResult WHERE date >= (SELECT date FROM DrawResult WHERE id like :year||'/'||:code OR ( id like :year || '/%' and sbcode=:code)) LIMIT :count")
     @Query("SELECT * FROM DrawResult WHERE date >= \n" +
-            "(SELECT date FROM DrawResult WHERE (id = :year || '/' || :code OR id LIKE :year || '/%' and sbcode=:code) AND id IN (SELECT id FROM DrawResult ORDER BY date DESC LIMIT 60))  LIMIT :count")
-    fun checkDrawBy(year:String, code:String, count:Int):List<DrawResult>
+            "(SELECT date FROM DrawResult WHERE (id = :year || '/' || :code OR id LIKE :year || '/%' AND sbcode=:code) ) LIMIT :count")
+    suspend fun checkDrawBy(year:String, code:String, count:Int):List<DrawResult>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertOrReplace(vararg drawResults: DrawResult)
+    suspend fun insertOrReplace(vararg drawResults: DrawResult)
 
     @Query("SELECT last_insert_rowid()")
     fun lastInsertRowId():Int

@@ -9,6 +9,8 @@ import android.view.WindowInsetsController
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.cmlee.executiful.letswinmarksix.R
+import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultRepository
+import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
@@ -16,16 +18,35 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.RequestConfiguration
-import com.google.firebase.components.BuildConfig
+import com.google.firebase.components.BuildConfig.DEBUG
 
 
 abstract class BannerAppCompatActivity : AppCompatActivity() {
     lateinit var adContainerView: FrameLayout
-    private lateinit var adView: AdView
+    protected lateinit var repository: DrawResultRepository
+
+    private var adView: AdView?=null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        repository = DrawResultRepository(M6Db.getDatabase(this).DrawResultDao())
+
+        super.onCreate(savedInstanceState)
+    }
     override fun onPostCreate(savedInstanceState: Bundle?) {
+//        repository = DrawResultRepository(M6Db.getDatabase(this).DrawResultDao())
+
         init_banner()
 //        window.statusBarColor = ContextCompat.getColor(baseContext, R.color.colorPrimaryDark)
         super.onPostCreate(savedInstanceState)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        adView?.pause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adView?.resume()
     }
 
     fun avoidViewOverlapping(v: View){
@@ -79,45 +100,47 @@ abstract class BannerAppCompatActivity : AppCompatActivity() {
     protected abstract val adUnitStringId:Int
     private fun loadBanner() {
         // Create an ad request.
-        adView = AdView(this)
-        adView.adUnitId = if(BuildConfig.DEBUG) getString(R.string.banner_ad_unit_id) else adUnitId
-        adContainerView.removeAllViews()
-        adContainerView.addView(adView)
-        val adSize :AdSize = adSize
-        adView.setAdSize(adSize)
-        val adRequest = AdRequest.Builder().build()
+        adView = AdView(this).apply {
+            adUnitId = if(DEBUG) getString(R.string.banner_ad_unit_id) else adUnitId
+            adContainerView.removeAllViews()
+            adContainerView.addView(this)
+            val adSize :AdSize = this@BannerAppCompatActivity  . adSize
+            setAdSize(adSize)
+            val adRequest = AdRequest.Builder().build()
 
-        // Start loading the ad in the background.
-        adView.loadAd(adRequest)
-        adView.adListener = object : AdListener() {
-            override fun onAdLoaded() {
-                super.onAdLoaded()
-                this@BannerAppCompatActivity.onAdLoaded()
-            }
+            // Start loading the ad in the background.
+            loadAd(adRequest)
+            adListener = object : AdListener() {
+                override fun onAdLoaded() {
+                    super.onAdLoaded()
+                    this@BannerAppCompatActivity.onAdLoaded()
+                }
 
-            override fun onAdFailedToLoad(error: LoadAdError) {
-                // Gets the domain from which the error came.
-                val errorDomain = error.domain
-                // Gets the error code. See
-                // https://developers.google.com/android/reference/com/google/android/gms/ads/AdRequest#constant-summary
-                // for a list of possible codes.
-                val errorCode = error.code
-                // Gets an error message.
-                // For example "Account not approved yet". See
-                // https://support.google.com/admob/answer/9905175 for explanations of
-                // common errors.
-                val errorMessage = error.message
-                // Gets additional response information about the request. See
-                // https://developers.google.com/admob/android/response-info for more
-                // information.
-                val responseInfo = error.responseInfo
-                // Gets the cause of the error, if available.
-                val cause = error.cause
-                // All of this information is available via the error's toString() method.
-                Log.d("Ads", error.toString())
+                override fun onAdFailedToLoad(error: LoadAdError) {
+                    // Gets the domain from which the error came.
+                    val errorDomain = error.domain
+                    // Gets the error code. See
+                    // https://developers.google.com/android/reference/com/google/android/gms/ads/AdRequest#constant-summary
+                    // for a list of possible codes.
+                    val errorCode = error.code
+                    // Gets an error message.
+                    // For example "Account not approved yet". See
+                    // https://support.google.com/admob/answer/9905175 for explanations of
+                    // common errors.
+                    val errorMessage = error.message
+                    // Gets additional response information about the request. See
+                    // https://developers.google.com/admob/android/response-info for more
+                    // information.
+                    val responseInfo = error.responseInfo
+                    // Gets the cause of the error, if available.
+                    val cause = error.cause
+                    // All of this information is available via the error's toString() method.
+                    Log.d("Ads", error.toString())
 //                super.onAdFailedToLoad(p0)
+                }
             }
         }
+
     }
 
     protected abstract fun onAdLoaded()

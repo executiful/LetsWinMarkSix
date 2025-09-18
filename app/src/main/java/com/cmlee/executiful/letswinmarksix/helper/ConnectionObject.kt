@@ -6,11 +6,11 @@ import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.icu.text.SimpleDateFormat
 import android.net.Uri
+import android.os.NetworkOnMainThreadException
 import android.text.Html
 import android.util.Log
 import androidx.core.content.edit
 import androidx.core.text.HtmlCompat
-import com.cmlee.executiful.letswinmarksix.BuildConfig
 import com.cmlee.executiful.letswinmarksix.model.NoArray
 import com.cmlee.executiful.letswinmarksix.model.UnitPrice
 import com.cmlee.executiful.letswinmarksix.model.WinningUnit
@@ -21,13 +21,14 @@ import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawYearItem
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultArray
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultDao
-import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
+import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultRepository
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
-import java.io.File
 import java.net.HttpURLConnection
 import java.net.HttpURLConnection.HTTP_OK
 import java.net.URL
@@ -40,7 +41,7 @@ import java.util.concurrent.TimeoutException
 object ConnectionObject {
     private const val TAG_DEBUG= "DEBUG :123:"
     private const val connectTO = 5
-    private const val incTO = 1
+    private const val incTO = 2
     private const val readTO = 4
     private const val Scheme = "https"
     private const val Auth = "bet2.hkjc.com"
@@ -155,6 +156,7 @@ object ConnectionObject {
                 println("what ex ${e.message} ${e.javaClass.simpleName}")
                 when(e){
                     is UnknownHostException->break
+                    is NetworkOnMainThreadException->break
                     is TimeoutException->continue
                     else->continue
                 }
@@ -173,6 +175,7 @@ object ConnectionObject {
                 println("what ex ${e.message} ${e.javaClass.simpleName}")
                 when(e){
                     is UnknownHostException->break
+                    is NetworkOnMainThreadException ->break
                     is TimeoutException->continue
                     else->continue
                 }
@@ -198,7 +201,50 @@ object ConnectionObject {
             }
         return null
     }
-    fun getLatestResult(drawResultDao: DrawResultDao, context: Context):List<DrawResult> {
+    fun getLatestDrawResult(drawResult: DrawResult, processResults:(List<DrawResult>)->Unit) {
+        val gson = GsonBuilder().setPrettyPrinting()//.registerTypeAdapter(LocalDate::class.java, LocalDateConverter())
+            .registerTypeAdapter(Date::class.java, DayYearConverter())
+            .registerTypeAdapter(UnitPrice::class.java, UnitPriceConverter())
+            .registerTypeAdapter(WinningUnit::class.java, WinningUnitConverter())
+            .registerTypeAdapter(NoArray::class.java, NoArrayConverter())
+            .create()
+        val ref = Calendar.getInstance()
+        val today = Calendar.getInstance()
+        ref.clear()
+        ref.time = drawResult.date
+//        println(lat.id)
+        ref.add(Calendar.DATE, 1)
+        var sd = sdf.format(ref.time)
+        val arrResult = mutableListOf<DrawResult>()
+//        println("ref time ${ref.time} today ${today.time}")
+        while(today > ref) {
+            ref.add(Calendar.MONTH, 3)
+            val ed = sdf.format(ref.time)
+            Log.d(TAG_JSON, "${System.currentTimeMillis()} $sd $ed")
+//            withContext(Dispatchers.IO){
+//            Thread{
+                getJsonData(TAG_JSON, mapOf("sd" to sd, "ed" to ed, "sb" to "0"))?.let { str ->
+                    try {
+                        val text = Jsoup.parse(str).text()
+                        if (text.isNullOrEmpty().not()) {
+                            val tmp = gson.fromJson(text, DrawResultArray::class.java)
+                            arrResult.addAll(tmp)
+                        }
+                    } catch (e: Exception) {
+                        println("${e.message} what is wrong???")
+                    }
+                    println("$sd $ed ${arrResult.size} size")
+                }
+//            }.start()
+//            }
+            if(arrResult.isEmpty())
+                break
+            ref.add(Calendar.DATE, 1)
+            sd = sdf.format(ref.time)
+        }
+        processResults(arrResult)
+    }
+    suspend fun getLatestResult(drawResultDao: DrawResultRepository):List<DrawResult> {
         val gson = GsonBuilder().setPrettyPrinting()//.registerTypeAdapter(LocalDate::class.java, LocalDateConverter())
             .registerTypeAdapter(Date::class.java, DayYearConverter())
             .registerTypeAdapter(UnitPrice::class.java, UnitPriceConverter())
@@ -219,22 +265,19 @@ object ConnectionObject {
             ref.add(Calendar.MONTH, 3)
             val ed = sdf.format(ref.time)
             Log.d(TAG_JSON, "${System.currentTimeMillis()} $sd $ed")
-            getJsonData(TAG_JSON, mapOf("sd" to sd, "ed" to ed, "sb" to "0"))?.let { str->
-                try {
-                    val text = Jsoup.parse(str).text()
-                    if (text.isNullOrEmpty().not()) {
-                        if(BuildConfig.DEBUG){
-//                            println(text)
-//                            println(TAG_JSON)
-                            File.createTempFile("test", ".json", context.cacheDir).writeText(text)
+            withContext(Dispatchers.IO){
+                getJsonData(TAG_JSON, mapOf("sd" to sd, "ed" to ed, "sb" to "0"))?.let { str ->
+                    try {
+                        val text = Jsoup.parse(str).text()
+                        if (text.isNullOrEmpty().not()) {
+                            val tmp = gson.fromJson(text, DrawResultArray::class.java)
+                            arrResult.addAll(tmp)
                         }
-                        val tmp = gson.fromJson(text, DrawResultArray::class.java)
-                        arrResult.addAll(tmp)
+                    } catch (e: Exception) {
+                        println("${e.message} what is wrong???")
                     }
-                } catch (e: Exception) {
-                    println("${e.message} what is wrong???")
+                    println("$sd $ed ${arrResult.size} size")
                 }
-                println("$sd $ed ${arrResult.size} size")
             }
             if(arrResult.isEmpty())
                 break
@@ -400,27 +443,27 @@ object ConnectionObject {
         }
         return download_next_draw(indexsharedPreferences)
     }
-    fun UpdateLatestDraw(context : Context, exec:(message:String)->Unit){
+    suspend fun UpdateLatestDraw(repo : DrawResultRepository, exec:(message:String, drawResult: DrawResult)->Unit){
 //         getJsoupDoc0()?.let { document ->
 //             val str = document.select(".next-draw-table-container")
 //             println("what next item ${str.text()}")
 //         }
 
-        val db = M6Db.getDatabase(context)
-        if(db.isOpen) {//java.lang.IllegalStateException:
-            val drawResultDao = db.DrawResultDao()
+//        val db = M6Db.getDatabase(repo)
+//        if(db.isOpen) {//java.lang.IllegalStateException:
+//            val drawResultDao = db.DrawResultDao()
 //            getIndex(context, drawResultDao.getLatest())?.also {
                 // load schedule , today not found ==> fixtures => draw schedule
                 // latest date < today => error
 //                val (_, _) = getLatestSchecule(context)
-                val latestResult = getLatestResult(drawResultDao, context)
+                val latestResult = getLatestResult(repo)
 
                 if (latestResult.isNotEmpty()) {
-                    exec("OK")
+                    exec("OK", repo.getLatest())
                     println("what is this ??<< OK")
                 }
                 else {
-                    exec("what")
+                    exec("what",repo.getLatest())
                     println("what is this ??<< what")
                 }
 //                return
@@ -428,7 +471,7 @@ object ConnectionObject {
 //            exec("nook")
 //            println("what is this ??<< nook")
 
-        } else
-         exec("db not open??")
+//        } else
+//         exec("db not open??")
     }
 }

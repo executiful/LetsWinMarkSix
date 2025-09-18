@@ -17,6 +17,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.bankers
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.dateStart
@@ -30,12 +31,13 @@ import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.sqlDate
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
+import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultRepository
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
 import com.google.android.material.tabs.TabLayout
+import kotlinx.coroutines.launch
 
 class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
     TabLayout.OnTabSelectedListener/*, OnBackPressedCallback*/ {
-    private lateinit var db: M6Db
     private val ht = HandlerThread("m6thread")
     private lateinit var hr: Handler
     private lateinit var binding: ActivityDrawnNumberCheckingBinding
@@ -134,7 +136,7 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         ht.start()
         hr = Handler(ht.looper)
         waitdlg.setOnShowListener {
-            hr.post {
+            lifecycleScope.launch {
                 population(waitdlg)
             }
         }
@@ -168,9 +170,8 @@ class DrawnNumberCheckingActivity : BannerAppCompatActivity(),
         super.onPause()
         finish()
     }
-    private fun population(waitdlg: AlertDialog) {
-        db = M6Db.getDatabase(this)
-        val allresult = db.DrawResultDao().getAll().filter { it.date >= dateStart }
+    private suspend fun population(waitdlg: AlertDialog) {
+        val allresult = repository.getAll()//.filter { it.date >= dateStart }
         val max1 = 6 - bankers.size
 
         val gb = allresult.indices.asSequence()./*parallelStream().*/map {

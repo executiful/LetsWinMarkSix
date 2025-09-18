@@ -18,6 +18,7 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.AppCompatButton
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.cmlee.executiful.letswinmarksix.DrawnNumberCheckingActivity.DrawnVH.Companion.colors
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.emsp
@@ -29,6 +30,7 @@ import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
+import kotlinx.coroutines.launch
 
 
 class LatestDrawnActivity : BannerAppCompatActivity() {
@@ -62,12 +64,12 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
 //        }
         onBackPressedDispatcher.addCallback(bpcb)
         binding.toolbar.setNavigationOnClickListener { finish() }
-        populateResult()
+        lifecycleScope.launch{ populateResult() }
     }
 
-    private fun populateResult() {
-        val drawResultDao = M6Db.getDatabase(this).DrawResultDao()
-        val allresult = drawResultDao.getAll().filter { it.p1!=null }.take(50)
+    private suspend fun populateResult() {
+//        val drawResultDao = M6Db.getDatabase(this).DrawResultDao()
+        val allresult = repository.getAll().filter { it.p1!=null }.take(50)
         val looseCount = allresult.takeWhile { (!it.p1!!.winner) }.size
         val beforeLosse =
             allresult.takeLast(allresult.size - looseCount).takeWhile { it.p1!!.winner }.size

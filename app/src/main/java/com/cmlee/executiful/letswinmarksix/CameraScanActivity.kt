@@ -5,7 +5,10 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.DialogInterface
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -21,7 +24,9 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.collection.mutableFloatListOf
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.m6_sep_banker
@@ -31,6 +36,8 @@ import com.cmlee.executiful.letswinmarksix.databinding.MyAdDialogBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.NegativeButton
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.NeutralButton
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.bitmapToBase64
+import com.cmlee.executiful.letswinmarksix.model.tickets.Ticket
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
@@ -42,12 +49,14 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.gson.GsonBuilder
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -69,10 +78,16 @@ class CameraScanActivity : AppCompatActivity() {
         }
     }
     private lateinit var dlgConfirm: AlertDialog
-
-    @SuppressLint("SuspiciousIndentation")
+    var untilTime: Long = 10000
+    private val KEY_UNTIL = "UNTIL"
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putLong(KEY_UNTIL, untilTime)
+    }
+    @SuppressLint("SuspiciousIndentation", "SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+//        requestedOrientation= ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         enableEdgeToEdge()
         viewBinding = ActivityCameraScanBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
@@ -107,6 +122,9 @@ class CameraScanActivity : AppCompatActivity() {
             }
         }
         adView.loadAd(adRequest)
+        savedInstanceState?.let { state->
+            untilTime = state.getLong(KEY_UNTIL, 10000)
+        }
         // Request camera permissions
         if (allPermissionsGranted()) {
             startCameraWhile()
@@ -150,13 +168,12 @@ class CameraScanActivity : AppCompatActivity() {
         initDlg()
         lifecycleScope.launch {
 
-            var untilTime = 10000
             val indicate = "0123456789"
             while (untilTime > 0 && !largeBannerLoaded) {
                 kotlinx.coroutines.delay(1000)
                 untilTime -= 1000
                 runOnUiThread {
-                    viewBinding.temp.text = indicate.substring(0, untilTime / 1000)
+                    viewBinding.temp.text = indicate.substring(0, (untilTime / 1000).toInt())
                 }
             }
             viewBinding.idMyAppImage.isVisible = false
@@ -221,6 +238,7 @@ class CameraScanActivity : AppCompatActivity() {
 //        ) { }
 //        // Load the InterstitialAd and set the adUnitId (defined in values/strings.xml).
         goToNextLevel()
+        val gson = GsonBuilder().create()
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
 
@@ -309,12 +327,19 @@ class CameraScanActivity : AppCompatActivity() {
             imageAnalysis.setAnalyzer(
                 cameraExecutor,
                 ImageAnalysis.Analyzer { imageProxy ->
+//                    lifecycleScope.launch{
+//                        cacheDir.listFiles { ff->ff.name.startsWith("bm") }?.first()?.delete()
+//                        createTempFile("bm").writeText(imageString)
+//                    }
                     val mediaImage = imageProxy.image
-                    if (mediaImage != null) {
-                        val image = InputImage.fromMediaImage(
-                            mediaImage,
-                            imageProxy.imageInfo.rotationDegrees
-                        )
+
+                    if (mediaImage == null) {
+                        Log.d(TAG, "mediaImage is null?")
+                    } else {
+                        val imageString = imageProxy.toBitmap()
+
+                        val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
                         // Pass image to an ML Kit Vision API
                         // ...
                         recognizer.process(image)
@@ -324,7 +349,8 @@ class CameraScanActivity : AppCompatActivity() {
 
                                 var (m6str, dyr, dym, dno) = listOf<String?>(null, null, null, null)
                                 var (pn, pv, dc) = listOf<String?>(null, null, null)
-                                var (ttl, uni) = listOf(0f, 0f)
+                                var (uni, ttl) = listOf(0f, 0f)
+                                val dollars = mutableFloatListOf()
                                 var drawcount = 1
                                 val info = mutableListOf<String>()
 //                                val updateInfo:(str:String, line: Text.Line)->Unit={ t, _->
@@ -418,25 +444,12 @@ class CameraScanActivity : AppCompatActivity() {
                                                             .find(test) != null -> {
                                                             //                                                    return@forEach
                                                         }
-
-                                                        else -> {
-                                                            if (pn == null)
-                                                                pn = getDollarType(test)
-                                                            if (pv == null && test.contains("$"))
-                                                                pv = getDollar(test)
-                                                            pv?.toFloatOrNull()?.also { f ->
-                                                                if (pn != null) {
-                                                                    Log.d(TAG, " $pn ")
-                                                                    if (pn == "T")
-                                                                        ttl = f
-                                                                    else if (pn == "@")
-                                                                        uni = f
-//                                                                if(ii.none { it.startsWith(pn!!) }) {
-                                                                    ii.add("$pn:$pv")
-                                                                    info.add("${pn!!}:$${pv!!}")
-//                                                                }
-                                                                    pv = null
-                                                                    pn = null
+                                                        test.contains("$") ->{
+                                                            getDollar(test)?.toFloatOrNull()?.let{f->
+                                                                if(f>0&&dollars.contains(f).not()){
+                                                                    info.add(test)
+                                                                    dollars.add(f)
+                                                                    dollars.sort()
                                                                 }
                                                             }
                                                         }
@@ -448,50 +461,55 @@ class CameraScanActivity : AppCompatActivity() {
                                 runOnUiThread {
                                     viewBinding.temp.text = info.joinToString("\n")
                                 }
-                                Log.d(TAG, "$dyr $dno $ttl")
-                                if (!dyr.isNullOrBlank() && !dno.isNullOrBlank() && ttl >= 10) {
-                                    dc?.let { d -> drawcount = d.toInt() }
+                                Log.d(TAG, "year:$dyr, id: $dno, total: ${dollars.joinToString()}'")
+                                if (!dyr.isNullOrBlank() && !dno.isNullOrBlank() &&dollars.any{a->a>=10}) {
+                                    dc?.toIntOrNull()?.let { d -> drawcount = d }
+                                    uni = dollars[0]
+                                    ttl = if(dollars.size==1) uni else dollars[1]
                                     Log.d(TAG, sb.toString())
-                                    val nums = sb.toString().getDrawNumbers()//
-                                    if (ttl < uni) {
-                                        val value = ttl
-                                        ttl = uni
-                                        uni = value
-                                    }
-                                    val valid =
-                                        nums.map { (legs, bans) -> validateNumbers(legs, bans) }
+                                    val nums = sb.toString().getDrawNumbers()
+
+                                    val valid = nums.map { (legs, bans) -> validateNumbers(legs, bans) }
 
                                     Log.d(TAG, "$ii,$nums $uni * ${valid.sum() * drawcount}==$ttl")
                                     if (valid.all { it > 0 } && drawcount * uni * valid.sum() == ttl) {
-//                                        val res =
-//                                            nums.joinToString("${System.lineSeparator()}/ ") { (legs, bans) ->
-//                                                listOf(
-//                                                    bans.joinToString(m6_sep_num),
-//                                                    legs.joinToString(m6_sep_num)
-//                                                )
-//                                                    .filter { it.isNotEmpty() }
-//                                                    .joinToString(m6_sep_banker)
-//                                            }
-//                                        val bde = Bundle().also {
-//                                            it.putString(TICKETRESULT, res)
-//                                            it.putString(
-//                                                TICKETSTRING,
-//                                                "$dyr#$dno#$ttl#$uni#$drawcount#$$ttl=$$uni*${valid.sum()}${if (drawcount > 1) "*$drawcount" else ""}#$dym"
-//                                            )
-//                                        }
+                                        val mtx=Matrix()
+                                        mtx.postRotate(imageProxy.imageInfo.rotationDegrees.toFloat(), imageString.width/2f, imageString.height/2f)
+                                        val img = bitmapToBase64(Bitmap.createBitmap(imageString, 0,0, imageString.width, imageString.height, mtx, true))
+                                        val ticket = Ticket(drawYear = dyr, buyDate = dym?:"", drawNo = dno, drawTotal = ttl, drawUnit = uni,
+                                            drawItemNumbers = nums, ocr = img, draws = drawcount)
                                         outputString.clear().appendLine("期數:")
-                                            .appendLine("$dyr/$dno ${if (drawcount > 1) "(${drawcount}期)" else ""} $dym")
+                                            .appendLine("${ticket.drawID} ${if (ticket.draws > 1) "(${ticket.draws}期)" else ""} $dym")
                                             .appendLine("注項:")
-                                            .appendLine(nums.joinToString("${System.lineSeparator()}/ ") { (legs, bans) ->
-                                                listOf(
-                                                    bans.joinToString(m6_sep_num),
-                                                    legs.joinToString(m6_sep_num)
-                                                )
-                                                    .filter { it.isNotEmpty() }
-                                                    .joinToString(m6_sep_banker)
-                                            })
+                                            .appendLine(ticket.numbersString)
                                             .appendLine()
-                                            .appendLine("$$ttl = $$uni * ${valid.sum()}${if (drawcount > 1) " * $drawcount" else ""}")
+                                            .appendLine("$${ticket.drawTotal} = $${ticket.drawUnit} * ${valid.sum()}${if (drawcount > 1) " * $drawcount" else ""}")
+                                        with(getSharedPreferences(OCR_TICKETS, MODE_PRIVATE)) {
+                                            try {
+                                                if (all.isEmpty()||!all.entries.parallelStream().anyMatch { (k,v)->
+                                                        val r = gson.fromJson(
+                                                            v as String,
+                                                            Ticket::class.java
+                                                        )
+                                                        (r.drawID == ticket.drawID && r.drawItemNumbers == ticket.drawItemNumbers&&r.draws==ticket.draws).also{
+                                                            if(it){outputString.appendLine("(已有紀錄:${
+                                                                Date(
+                                                                    k.toLong()
+                                                                )
+                                                            })")}
+                                                        }
+                                                    }) {
+                                                    edit {
+                                                        putString(
+                                                            System.currentTimeMillis().toString(),
+                                                            gson.toJson(ticket)
+                                                        )
+                                                    }
+                                                }
+                                            } catch (e: Exception) {
+                                                Log.d(TAG, "ticket exception ${e.message?:e.stackTraceToString()}")
+                                            }
+                                        }
                                         with(dlgConfirm) {
                                             if (isShowing) dismiss()
                                             setTitle("掃瞄結果")
@@ -523,7 +541,6 @@ class CameraScanActivity : AppCompatActivity() {
 
                             }
                     }
-
                     // Close the ImageProxy
                     imageProxy.close()
                 })
@@ -551,6 +568,7 @@ class CameraScanActivity : AppCompatActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_0 -> {
                 largeBannerLoaded = true
+                untilTime = 10
                 true
             }
 
@@ -559,7 +577,7 @@ class CameraScanActivity : AppCompatActivity() {
     }
 
     private fun getDollar(str: String): String? {
-        "[(][$](\\d*)[)]|[$](\\d{2,}[.]\\d{2})".toRegex().find(str)?.groupValues?.let { f ->
+        "[(][$](\\d*)[)]|[$](\\d*[.]\\d{2})".toRegex().find(str)?.groupValues?.let { f ->
             Log.d(TAG, "<$str>$f")
 
             return f[1].ifEmpty { f[2] }
@@ -686,6 +704,7 @@ class CameraScanActivity : AppCompatActivity() {
     }
 
     companion object {
+        const val OCR_TICKETS = "OCR Readings"
         val dfm = SimpleDateFormat("ddMMMyy", Locale.ENGLISH)
         val anyM6 = "[六合彩]|Mark|Six".toRegex(RegexOption.IGNORE_CASE)
         val anyDrawNo = "[期數]|Draw|No".toRegex(RegexOption.IGNORE_CASE)

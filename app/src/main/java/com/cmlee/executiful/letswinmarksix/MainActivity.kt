@@ -32,14 +32,12 @@ import android.text.style.UnderlineSpan
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
-import android.view.ViewGroup
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ArrayAdapter
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.RadioButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -49,6 +47,7 @@ import androidx.core.content.edit
 import androidx.core.view.children
 import androidx.core.view.indices
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.TAG_BALL_DIALOG
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityMainBinding
 import com.cmlee.executiful.letswinmarksix.databinding.BallBinding
@@ -73,6 +72,7 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.UpdateLatestDraw
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISO
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISOFormat
+import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getLatestDrawResult
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getLatestSchecule
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTD
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTR
@@ -83,8 +83,9 @@ import com.cmlee.executiful.letswinmarksix.model.DrawStatus
 import com.cmlee.executiful.letswinmarksix.model.NumStat
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
-import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultDao
+import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultRepository
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
+import kotlinx.coroutines.launch
 import java.lang.Math.random
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -95,6 +96,7 @@ import kotlin.random.Random
 
 class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelection {
     private lateinit var binding: ActivityMainBinding
+//    private lateinit var repository : DrawResultRepository
     private lateinit var legViews: List<NumberTextviewBinding>
     private lateinit var bankerViews: List<NumberTextviewBinding>
     private lateinit var m6bViews: List<BallBinding>
@@ -141,7 +143,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         binding.idBallselect.removeAllViews()
         binding.ticketlayout.idLegs.removeAllViews()
         binding.ticketlayout.idBankers.removeAllViews()
-        
+
         avoidViewOverlapping(binding.adViewContainer)
         val tmpColorArray = resources.obtainTypedArray(R.array.ball_color_array)
         tmpColorArray.getColor(0, RED)
@@ -218,7 +220,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
         if(savedInstanceState==null) {
             Log.d("Main-Start", "savedInstanceState")
-            ResetNumberDialog()
+            if(BuildConfig.DEBUG.not())ResetNumberDialog()
         }
 
         updateStatus()
@@ -267,8 +269,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 show_checking()
             else false
         }
-        val db = M6Db.getDatabase(this)
-        genBall(db.DrawResultDao())
+        genBall(repository)
 
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
 
@@ -351,7 +352,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
                 true
             }
-            KeyEvent.KEYCODE_MINUS->{
+/*            KeyEvent.KEYCODE_MINUS->{
                 val db = M6Db.getDatabase(this)
                 db.DrawResultDao().let {
                     val latestNotNull = it.getLatestNotNull()
@@ -361,11 +362,29 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     initball()
                 }
                 true
+            }*/
+            KeyEvent.KEYCODE_6->{
+                alertDialog?.let {
+                    if(it.isShowing) return false
+                }
+                AlertDialog.Builder(this, R.style.Theme_Wait_Dialog).create().apply{
+                    alertDialog = this@apply
+                    setOnShowListener {
+                            startActivity(Intent(this@MainActivity, ScanResults::class.java))
+                        }
+                    lifecycleScope.launch {
+                        kotlinx.coroutines.delay(1000)
+                        runOnUiThread {
+                            this@apply.dismiss()
+                        }
+                    }
+                }.show()
+                true
             }
             KeyEvent.KEYCODE_0 -> {
                     binding.ticketlayout.idTicket.performLongClick()
             }
-            KeyEvent.KEYCODE_9->{
+/*            KeyEvent.KEYCODE_9->{
                 val allresult = M6Db.getDatabase(this).DrawResultDao().getAll().filter { it.date>= dateStart }
 
                 val message = AlertDialog.Builder(this).setMessage("wait")
@@ -373,14 +392,14 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     .create()
                 message.setOnShowListener {
                         val odd_indices = allresult.indices.filter { it%2!=0 }.dropLast(1)
-                        val str = odd_indices/*.parallelStream()*/.filter {
+                        val str = odd_indices*//*.parallelStream()*//*.filter {
                             allresult[it].no.nos.toList().intersect(allresult[it+1].no.nos.toSet()).size>2
                         }.map{sdf_display.format(allresult[it].date)}.toList().joinToString()
                         message.setMessage(str)
                 }
                 message.show()
                 true
-            }
+            }*/
             KeyEvent.KEYCODE_4->{
 //                if(49-legs.size-bankers.size>6){
                 val luckies = originalballs
@@ -414,28 +433,28 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             else -> super.onKeyDown(keyCode, event)
         }
     }
-    private class ResultHolder(val root:TextView)
-
-    private class PassResultAdp(context: Context, list:List<DrawResult>):ArrayAdapter<DrawResult>(context, android.R.layout.simple_list_item_2, android.R.id.text1, list) {
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            val view = super.getView(position, convertView, parent)
-//            convertView?.let { cnv->
-                getItem(position)?.let { item->
-                    val ssp = SpannableStringBuilder(item.id)
-                    ssp.append(sdf_display.format(item.date))
-                        .appendLine(item.inv)
-                        .append(item.no.nos.joinToString(":/"))
-                view.findViewById<TextView>(android.R.id.text1).text=ssp
-                    ssp.clear()
-                    ssp.append(context.getString(R.string.chprize_1st)).append(item.p1.toString()).appendLine(item.p1u.toString())
-                    ssp.append(context.getString(R.string.chprize_2nd)).append(item.p2.toString()).appendLine(item.p2u.toString())
-                    ssp.append(context.getString(R.string.chprize_3rd)).append(item.p3.toString()).appendLine(item.p3u.toString())
-                view.findViewById<TextView>(android.R.id.text2).text=ssp
-                }
-//            }
-            return view
-        }
-    }
+//    private class ResultHolder(val root:TextView)
+//
+//    private class PassResultAdp(context: Context, list:List<DrawResult>):ArrayAdapter<DrawResult>(context, android.R.layout.simple_list_item_2, android.R.id.text1, list) {
+//        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+//            val view = super.getView(position, convertView, parent)
+////            convertView?.let { cnv->
+//                getItem(position)?.let { item->
+//                    val ssp = SpannableStringBuilder(item.id)
+//                    ssp.append(sdf_display.format(item.date))
+//                        .appendLine(item.inv)
+//                        .append(item.no.nos.joinToString(":/"))
+//                view.findViewById<TextView>(android.R.id.text1).text=ssp
+//                    ssp.clear()
+//                    ssp.append(context.getString(R.string.chprize_1st)).append(item.p1.toString()).appendLine(item.p1u.toString())
+//                    ssp.append(context.getString(R.string.chprize_2nd)).append(item.p2.toString()).appendLine(item.p2u.toString())
+//                    ssp.append(context.getString(R.string.chprize_3rd)).append(item.p3.toString()).appendLine(item.p3u.toString())
+//                view.findViewById<TextView>(android.R.id.text2).text=ssp
+//                }
+////            }
+//            return view
+//        }
+//    }
     private fun populate_toobar(){
         binding.toolbar.setOnMenuItemClickListener { item ->
             alertDialog?.let{
@@ -648,22 +667,28 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     ssb.setSpan(AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     ssb.setSpan(BackgroundColorSpan(Color.LTGRAY), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog)//.setTitle(ssb)
-                        .setMessage(getDrawString()).show().also { dlg ->
+                        .setMessage("更新中...")
+                        .show().also { dlg ->
                             alertDialog = dlg
-                            val db = M6Db.getDatabase(this)
-                            WebViewGetNextDraw(db.DrawResultDao()){ if (it!="") dlg.setMessage(getDrawString())}
-                            hr.postDelayed({
-                                UpdateLatestDraw(this) {
-                                    runOnUiThread {
-                                        if (it == "OK") {
-                                            genBall(db.DrawResultDao())
-                                            initball()
+                            lifecycleScope.launch{
+                                WebViewGetNextDraw(repository.getLatest()) {
+                                    dlg.setMessage(getDrawString(it))
+                                }
+                            }
+                            hr.post ({
+                                lifecycleScope.launch{
+                                    UpdateLatestDraw(repository) { str, dr ->
+                                        runOnUiThread {
+                                            if (str == "OK") {
+                                                genBall(repository)
+                                                initball()
+                                            }
+                                            if (dlg.isShowing)
+                                                dlg.setMessage(getDrawString(dr))
                                         }
-                                        if (dlg.isShowing)
-                                            dlg.setMessage(getDrawString())
                                     }
                                 }
-                            },800)
+                            })
                         }
                     alertDialog!=null
                 }
@@ -775,49 +800,49 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         if(rs.resultCode == RESULT_OK) {
             with(TICKETRESULT) {
                 rs.data?.let {
-                    if(it.hasExtra(this)){
-                        it.getStringExtra(this)?.let { nbs->
-                            val other = (if(it.hasExtra(TICKETSTRING)) it.getStringExtra(TICKETSTRING)!! else "").split("#")
-                            val dfm = SimpleDateFormat("ddMMMyy", Locale.ENGLISH)
-                            val drawResultDao = M6Db.getDatabase(this@MainActivity).DrawResultDao()
-                            val rec = drawResultDao.checkDrawBy(other[0], other[1], other[4].toInt())
-                            val numsfmt = "相關攪珠${if(other[4]!="1") other[4] else ""}結果:" + System.lineSeparator() + if(rec.isEmpty()) getString(R.string.drawn_id_not_found) else {
-                                rec.joinToString(System.lineSeparator()) { itm ->
-                                    "${itm.id}:${
-                                        itm.no.nos.joinToString(
-                                            numberseperator
-                                        )
-                                    }$thinsp(${itm.sno})"
-                                }
-
-                            }
-
-                            val sp = SpannableStringBuilder()
-                            sp.appendLine("彩票期數:").appendLine(if (rec.isEmpty()) "${other[0]}/${other[1]} ${other[6]}" else {
-                                "${rec.first().id} ${dfm.format(rec.first().date)}"
-                            })
-                            sp.appendLine("注項:")
-                            sp.appendLine(nbs)
-                            sp.appendLine()
-                            sp.appendLine("相關攪珠${if(other[4]!="1") "${other[4]}期" else ""}結果:")
-                            if (rec.isEmpty()) sp.append(getString(R.string.drawn_id_not_found))
-                            else
-                                for (itm in rec) {
-                                    sp.appendLine(
+                    if(it.hasExtra(this)) {
+                        lifecycleScope.launch{
+                            it.getStringExtra(this@with)?.let { nbs->
+                                val other = (if(it.hasExtra(TICKETSTRING)) it.getStringExtra(TICKETSTRING)!! else "").split("#")
+                                val dfm = SimpleDateFormat("ddMMMyy", Locale.ENGLISH)
+                                val drawResultDao = M6Db.getDatabase(this@MainActivity).DrawResultDao()
+                                val rec = drawResultDao.checkDrawBy(other[0], other[1], other[4].toInt())
+                                val numsfmt = "相關攪珠${if(other[4]!="1") other[4] else ""}結果:" + System.lineSeparator() + if(rec.isEmpty()) getString(R.string.drawn_id_not_found) else {
+                                    rec.joinToString(System.lineSeparator()) { itm ->
                                         "${itm.id}:${
                                             itm.no.nos.joinToString(
                                                 numberseperator
                                             )
                                         }$thinsp(${itm.sno})"
-                                    )
+                                    }
                                 }
-                            AlertDialog.Builder(this@MainActivity)
-                                .setTitle(R.string.title_scanticket)
-                                .setPositiveButton("再掃瞄") { _, _ -> launchLauncher() }
-                                .setNeutralButton(android.R.string.copy) { _, _ -> }
-                                .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
-                                .setMessage(sp)
-                                .show()
+                                val sp = SpannableStringBuilder()
+                                sp.appendLine("彩票期數:").appendLine(if (rec.isEmpty()) "${other[0]}/${other[1]} ${other[6]}" else {
+                                    "${rec.first().id} ${dfm.format(rec.first().date)}"
+                                })
+                                sp.appendLine("注項:")
+                                sp.appendLine(nbs)
+                                sp.appendLine()
+                                sp.appendLine("相關攪珠${if(other[4]!="1") "${other[4]}期" else ""}結果:")
+                                if (rec.isEmpty()) sp.append(getString(R.string.drawn_id_not_found))
+                                else
+                                    for (itm in rec) {
+                                        sp.appendLine(
+                                            "${itm.id}:${
+                                                itm.no.nos.joinToString(
+                                                    numberseperator
+                                                )
+                                            }$thinsp(${itm.sno})"
+                                        )
+                                    }
+                                AlertDialog.Builder(this@MainActivity)
+                                    .setTitle(R.string.title_scanticket)
+                                    .setPositiveButton("再掃瞄") { _, _ -> launchLauncher() }
+                                    .setNeutralButton(android.R.string.copy) { _, _ -> }
+                                    .setNegativeButton(android.R.string.cancel) { d, _ -> d.dismiss() }
+                                    .setMessage(sp)
+                                    .show()
+                            }
                         }
                     }
                 }
@@ -915,8 +940,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
         ssb.appendLine()
     }
-    fun getDrawString() : SpannableStringBuilder {
-        val pre = M6Db.getDatabase(this).DrawResultDao().getLatest()
+    fun getDrawString(pre: DrawResult) : SpannableStringBuilder {
+//        val pre = M6Db.getDatabase(this).DrawResultDao().getLatest()
         val sf = getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
 
         val ssb = SpannableStringBuilder()
@@ -1196,12 +1221,13 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         currentStatus = calcDrawStatus.first
     }
 
-    private fun WebViewGetNextDraw(drawResultDao: DrawResultDao, exec: (message: String) -> Unit) {
+    private fun WebViewGetNextDraw(latest:DrawResult, exec: (message: DrawResult) -> Unit) {
         val nextref = getSharedPreferences("NEXTDRAW", Context.MODE_PRIVATE)
         nextref.getDateTimeISO(KEY_NEXT_UPDATE)?.let {
             val now = Calendar.getInstance()
-            val latest = drawResultDao.getLatest()
-            if (!it.isEarlyBy(
+//            val latest = repository.getLatest()
+            exec(latest)
+            if (it.isEarlyBy(
                     now, Calendar.MINUTE,
                     when {
                         latest.p1 == null || (nextref.getString(KEY_NEXT, "")
@@ -1214,58 +1240,58 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }
                 )
             ) {
-                return
-            }
-        }
-        val wv = WebView(this)
-        with(wv.settings) {
-            javaScriptEnabled = true
-            domStorageEnabled = true
-            loadsImagesAutomatically = false
-        }
-        var targetfound = ""
-        var isstart = false
-        val cntr = object : CountDownTimer(800 * 5, 800) {
-            val jsCode = "(function() {" +
-                    "  var element = document.querySelector('.next-draw-table-container');" +
-                    "  return element ? element.innerText : 'Element not found';" +
-                    "})();"
+                val wv = WebView(this)
+                with(wv.settings) {
+                    javaScriptEnabled = true
+                    domStorageEnabled = true
+                    loadsImagesAutomatically = false
+                }
+                var targetfound = ""
+                var isstart = false
+                val cntr = object : CountDownTimer(800 * 5, 800) {
+                    val jsCode = "(function() {" +
+                            "  var element = document.querySelector('.next-draw-table-container');" +
+                            "  return element ? element.innerText : 'Element not found';" +
+                            "})();"
 
-            override fun onTick(millisUntilFinished: Long) {
-                wv.evaluateJavascript(jsCode) { value ->
-                    if (targetfound == "" && value != "\"Element not found\"") {
-                        targetfound = value
-                        Log.d("WebView", "Extracted data: $value")
-                        nextref.edit {
-                            putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
-                            val items = targetfound.trim('"').split("\\n", "\\t")
-                                .filterIndexed { index, _ -> index > 0 }
-                                .chunked(2) { it.joinToString(indexTD) }
-                                .joinToString(indexTR)
-                            putString(KEY_NEXT, items)
+                    override fun onTick(millisUntilFinished: Long) {
+                        wv.evaluateJavascript(jsCode) { value ->
+                            if (targetfound == "" && value != "\"Element not found\"") {
+                                targetfound = value
+                                Log.d("WebView", "Extracted data: $value")
+                                nextref.edit {
+                                    putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
+                                    val items = targetfound.trim('"').split("\\n", "\\t")
+                                        .filterIndexed { index, _ -> index > 0 }
+                                        .chunked(2) { ch->ch.joinToString(indexTD) }
+                                        .joinToString(indexTR)
+                                    putString(KEY_NEXT, items)
+                                }
+                                lifecycleScope.launch{  exec(repository.getLatest()) }
+                            }
                         }
-                        exec(targetfound)
+                    }
+
+                    override fun onFinish() {
+                        Log.d("WebView", "Finished")
+                        wv.destroy()
                     }
                 }
-            }
+                wv.webViewClient = object : WebViewClient() {
 
-            override fun onFinish() {
-                Log.d("WebView", "Finished")
-                wv.destroy()
-            }
-        }
-        wv.webViewClient = object : WebViewClient() {
-
-            override fun onPageFinished(view: WebView?, url: String?) {
-                super.onPageFinished(view, url)
-                if (!isstart) {  //handling start once, because onPageFinished will be called twice.
-                    Log.d("WebView", "start $url")
-                    isstart = true
-                    cntr.start()
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+                        if (!isstart) {  //handling start once, because onPageFinished will be called twice.
+                            Log.d("WebView", "start $url")
+                            isstart = true
+                            cntr.start()
+                        }
+                    }
                 }
+                wv.loadUrl("https://bet.hkjc.com/ch/marksix")
             }
         }
-        wv.loadUrl("https://bet.hkjc.com/ch/marksix")
+
     }
 
     private fun ResetNumberDialog() {
@@ -1276,25 +1302,51 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             setCancelable(false)
             setOnShowListener {
                 if (isNetworkAvailable(this@MainActivity)) {
-                    val db = M6Db.getDatabase(this@MainActivity)
+//                    val db = M6Db.getDatabase(this@MainActivity)
 //                WebViewGetNextDraw(db.DrawResultDao()){}
-                    hr.postDelayed({
-                        UpdateLatestDraw(this@MainActivity) { ok ->
-                            runOnUiThread {
-                                binding.toolbar.menu.findItem(R.id.action_view_all).run {
-                                    isVisible = blind
+//                    hr.post{
+                        lifecycleScope.launch {
+//                            repository.deleteLatest()
+                            WebViewGetNextDraw(repository.getLatest()){}
+                            val dr = repository.getLatestNotNull()
+                            Thread {
+                                getLatestDrawResult(dr) { results ->
+                                    runOnUiThread {
+                                        binding.toolbar.menu.findItem(R.id.action_view_all).run {
+                                            isVisible = blind
+                                        }
+                                        if (results.isNotEmpty()) {
+                                            lifecycleScope.launch {
+                                                repository.insertOrReplace(*results.toTypedArray())
+                                                genBall(repository)
+                                                updateStatus()
+                                            }
+                                        }
+                                        dismiss()
+
+                                        binding.root.setWillNotDraw(true)
+                                        initball()
+                                        binding.root.setWillNotDraw(false)
+                                    }
                                 }
-                                if (ok == "OK") {
-                                    genBall(db.DrawResultDao())
+                            }.start()
+/*                            UpdateLatestDraw(repository) { ok, dr ->
+                                runOnUiThread {
+                                    binding.toolbar.menu.findItem(R.id.action_view_all).run {
+                                        isVisible = blind
+                                    }
+                                    if (ok == "OK") {
+                                        genBall(repository)
+                                    }
+                                    dismiss()
+                                    updateStatus()
+                                    binding.root.setWillNotDraw(true)
+                                    initball()
+                                    binding.root.setWillNotDraw(false)
                                 }
-                                dismiss()
-                                updateStatus()
-                                binding.root.setWillNotDraw(true)
-                                initball()
-                                binding.root.setWillNotDraw(false)
-                            }
-                        }
-                    }, 10)
+                            }*/
+//                        }
+                    }
                 } else
                     dismiss()
             }
@@ -1409,19 +1461,21 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             DrawStatus.Banker to draw
         }
     }
-    private fun genBall(drawResultDao: DrawResultDao):Boolean {
-        latestDrawResult = drawResultDao.getLatest()
-        val dr = drawResultDao.getAll()
-        val temp = dr.sortedByDescending { it.date }
-            .filter { it.date >= dateStart }
-            .mapIndexed { index, data -> index to data.no.nos.plus(data.sno) }
-        originalballs.parallelStream().forEach { i ->
-            val f = temp.filter { it.second.contains(i.num) }
-            i.times = f.count()
-            if (i.times > 0)
-                i.since = f.first().first
-            else
-                i.since = -1
+    private fun genBall(repo: DrawResultRepository):Boolean {
+        lifecycleScope.launch {
+            latestDrawResult = repo.getLatest()
+            val dr = repo.getAll()
+            val temp = dr.sortedByDescending { it.date }
+                //.filter { it.date >= dateStart }
+                .mapIndexed { index, data -> index to data.no.nos.plus(data.sno) }
+            originalballs.parallelStream().forEach { i ->
+                val f = temp.filter { it.second.contains(i.num) }
+                i.times = f.count()
+                if (i.times > 0)
+                    i.since = f.first().first
+                else
+                    i.since = -1
+            }
         }
         return false
     }
@@ -1487,6 +1541,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         const val emsp = '\u2003'
         const val ensp = '\u2002'
         const val thinsp = '\u2009'
+        const val hairsp = '\u200B'
         const val dollar = '\uFE69'
         const val emdash = '\u2014'
         const val dotdotdot = '\u2026'
