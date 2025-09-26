@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    tools:context=".CameraScanActivity">
+
+    <FrameLayout
+        android:id="@+id/ad_view_container"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/viewFinder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <SurfaceView
+            android:id="@+id/boundingBoxOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <ImageView
+            android:contentDescription="@string/chinese_chinese"
+            android:visibility="visible"
+            android:id="@+id/id_my_app_image"
+            android:src="@drawable/_2025_07_07_162145"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+        <TextView
+            android:id="@+id/temp"
+            android:ems="10"
+            android:textAppearance="?android:textAppearanceLarge"
+            android:shadowRadius="2"
+            android:shadowColor="?android:attr/colorControlActivated"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom|center"
+            android:layout_marginBottom="@dimen/app_bar_height"
+            android:text="" />
+    </FrameLayout>
+
+</LinearLayout>

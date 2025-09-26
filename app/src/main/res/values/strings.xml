@@ -68,6 +68,7 @@
     <string name="draw_date">攪珠日期 %1$s</string>
     <string name="title_activity_splash_screen">SplashScreen</string>
     <string name="nothing_to_show">無法下載相關資料！</string>
+    <string name="downloading_to_show">下載中》》》</string>
     <string name="prizeof">%1$s奬項</string>
     <string name="action_entry">注項</string>
     <string name="title_details">奬項資格</string>
@@ -125,4 +126,5 @@
     <string name="title_scanticket">掃瞄彩票</string>
     <string name="drawn_id_not_found">找不到相關攪珠結果</string>
     <string name="title_activity_scan_results">ScanResults</string>
+    <string name="chinese_chinese">搜碼選字</string>
 </resources>

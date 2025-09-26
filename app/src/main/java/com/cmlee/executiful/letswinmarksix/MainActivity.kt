@@ -38,7 +38,6 @@ import android.widget.ArrayAdapter
 import android.widget.GridLayout
 import android.widget.ImageView
 import android.widget.RadioButton
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
@@ -57,6 +56,7 @@ import com.cmlee.executiful.letswinmarksix.databinding.RefreshDialogBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.ListView
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.HONG_KONG_TIMEZONE
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_BLIND
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_GROUP
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_ORDER
@@ -66,31 +66,30 @@ import com.cmlee.executiful.letswinmarksix.helper.CommonObject.NAME_NUM_GRP
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.NAME_ORDER
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETRESULT
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETSTRING
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.convertTimeBetweenTimezones
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.dateInTimezone
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.getCurrentTimeInTimezone
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT_UPDATE
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.UpdateLatestDraw
-import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISO
-import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getDateTimeISOFormat
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getLatestDrawResult
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.getLatestSchecule
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTD
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTR
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.isEarlyBy
-import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.putDateTimeISO
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.sqlDate
 import com.cmlee.executiful.letswinmarksix.model.DrawStatus
 import com.cmlee.executiful.letswinmarksix.model.NumStat
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
-import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultRepository
 import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
 import kotlinx.coroutines.launch
 import java.lang.Math.random
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import kotlin.random.Random
 
 
@@ -220,7 +219,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
         if(savedInstanceState==null) {
             Log.d("Main-Start", "savedInstanceState")
-            if(BuildConfig.DEBUG.not())ResetNumberDialog()
+//            if(BuildConfig.DEBUG.not())
+                ResetNumberDialog()
         }
 
         updateStatus()
@@ -269,7 +269,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 show_checking()
             else false
         }
-        genBall(repository)
+        genBall()
 
         val spec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
 
@@ -324,22 +324,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
             }
             balldata(it, numberordering[index])
-
-//            if (BuildConfig.DEBUG) {
-//                it.idNumber.setOnLongClickListener {
-//                    if (supportFragmentManager.findFragmentByTag(TAG_BALL_DIALOG) == null) {
-//                        val phraseDialog = newInstance(index)
-//                        phraseDialog.show(
-//                            supportFragmentManager.beginTransaction(),
-//                            TAG_BALL_DIALOG
-//                        )
-//                    }
-//                    true
-//                }
-//            }
         }
         changeStatus(currentStatus, true)
-//        pauseDlg.dismiss()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -363,6 +349,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
                 true
             }*/
+
             KeyEvent.KEYCODE_6->{
                 alertDialog?.let {
                     if(it.isShowing) return false
@@ -671,8 +658,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         .show().also { dlg ->
                             alertDialog = dlg
                             lifecycleScope.launch{
-                                WebViewGetNextDraw(repository.getLatest()) {
-                                    dlg.setMessage(getDrawString(it))
+                                WebViewGetNextDraw() {dr,ft->
+                                    dlg.setMessage(getDrawString(dr,ft))
                                 }
                             }
                             hr.post ({
@@ -680,7 +667,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                     UpdateLatestDraw(repository) { str, dr ->
                                         runOnUiThread {
                                             if (str == "OK") {
-                                                genBall(repository)
+                                                genBall()
                                                 initball()
                                             }
                                             if (dlg.isShowing)
@@ -692,9 +679,9 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                         }
                     alertDialog!=null
                 }
-                R.id.action_save ->{
-                    saveEntry()
-                }
+//                R.id.action_save ->{
+//                    saveEntry()
+//                }
 //                R.id.action_info ->{
 //                    val ssb = SpannableStringBuilder()
 //
@@ -897,31 +884,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
     }
 
-    fun saveEntry():Boolean{
-        return with(getSharedPreferences(NAME_ENTRIES, MODE_PRIVATE)){
-
-            if(!contains(msgNumbers)){
-                edit {putLong(msgNumbers, System.currentTimeMillis())}
-                Toast.makeText(this@MainActivity, R.string.message_save, Toast.LENGTH_SHORT).show()
-                if(BuildConfig.DEBUG) {
-                    edit {
-
-                        all.entries.forEach{
-                            val k = it.key.split("\\s*\\+\\s*").joinToString(numberseperator)
-
-                            val parse = if(it.value is String) Date.parse(it.value as String) else it.value as Long
-                            remove(it.key)
-                            putLong(k, parse)
-                        }
-
-                    }
-                }
-                if(all.size>6)
-                    edit(){ remove(all.entries.last().key) }
-                true
-            }     else false
-        }
-    }
     fun drawSpannableLine(line:Pair<String, String>, ssb:SpannableStringBuilder){
         val (name, value) = line
         ssb.append("$name$nbsp： ")
@@ -940,7 +902,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
         ssb.appendLine()
     }
-    fun getDrawString(pre: DrawResult) : SpannableStringBuilder {
+    fun getDrawString(pre: DrawResult, firstTime: Boolean=false) : SpannableStringBuilder {
 //        val pre = M6Db.getDatabase(this).DrawResultDao().getLatest()
         val sf = getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
 
@@ -975,7 +937,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
         if(sf.all.isEmpty()) {
             start = ssb.length
-            ssb.append(getString(R.string.nothing_to_show)).setSpan(
+            ssb.append(getString(if(firstTime)R.string.downloading_to_show else R.string.nothing_to_show)).setSpan(
                 AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
                 start,
                 ssb.length,
@@ -988,7 +950,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
         } else {
-            val nextstring = sf.getString(KEY_NEXT, "--") ?: ""
+            val nextstring = sf.getString(KEY_NEXT, null) ?: ""
             if(nextstring.contains(pre.id)){
                 ssb.appendLine(dotdotdot)
             } else {
@@ -1015,7 +977,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
         ssb.appendLine().appendLine()
         start = ssb.length
-        val updateat = sf.getDateTimeISOFormat(KEY_NEXT_UPDATE) ?: "--"
+        val updateat = sf.getString(KEY_NEXT_UPDATE,null) ?.let{timeString->
+            convertTimeBetweenTimezones(timeString, toTimezone = TimeZone.getDefault().id)+
+                    "\n(HK_${convertTimeBetweenTimezones(timeString)})"
+        }?:"--"
         ssb.append(getString(R.string.last_update_at, updateat)).setSpan(
             AlignmentSpan.Standard(Layout.Alignment.ALIGN_OPPOSITE),
             start,
@@ -1221,77 +1186,86 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         currentStatus = calcDrawStatus.first
     }
 
-    private fun WebViewGetNextDraw(latest:DrawResult, exec: (message: DrawResult) -> Unit) {
-        val nextref = getSharedPreferences("NEXTDRAW", Context.MODE_PRIVATE)
-        nextref.getDateTimeISO(KEY_NEXT_UPDATE)?.let {
-            val now = Calendar.getInstance()
-//            val latest = repository.getLatest()
-            exec(latest)
-            if (it.isEarlyBy(
-                    now, Calendar.MINUTE,
-                    when {
-                        latest.p1 == null || (nextref.getString(KEY_NEXT, "")
-                            ?: "").contains(latest.id) -> 2
+    private suspend fun WebViewGetNextDraw(exec: (message: DrawResult, firstTime:Boolean) -> Unit) {
+        val nextref = getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
+        val latest = repository.getLatest()
+        val now = Calendar.getInstance()
+        exec(latest,true)
 
-                        (nextref.getString(KEY_NEXT_UPDATE, "")
-                            ?: "").contains("估計頭獎基金${indexTD}-") -> 3
+        val updateAt = nextref.getString(KEY_NEXT_UPDATE, null)?.let { hkTimeString ->
+            dateInTimezone(hkTimeString, HONG_KONG_TIMEZONE)?.isEarlyBy(
+                now, Calendar.MINUTE,
+                when {
+                    latest.p1 == null || (nextref.getString(KEY_NEXT, null)?.contains(latest.id)
+                        ?: false) -> 2
 
-                        else -> 15
-                    }
-                )
-            ) {
-                val wv = WebView(this)
-                with(wv.settings) {
-                    javaScriptEnabled = true
-                    domStorageEnabled = true
-                    loadsImagesAutomatically = false
+                    (nextref.getString(KEY_NEXT_UPDATE, null)?.contains("估計頭獎基金${indexTD}-")
+                        ?: false) -> 3
+
+                    else -> 15
                 }
-                var targetfound = ""
-                var isstart = false
-                val cntr = object : CountDownTimer(800 * 5, 800) {
-                    val jsCode = "(function() {" +
-                            "  var element = document.querySelector('.next-draw-table-container');" +
-                            "  return element ? element.innerText : 'Element not found';" +
-                            "})();"
-
-                    override fun onTick(millisUntilFinished: Long) {
-                        wv.evaluateJavascript(jsCode) { value ->
-                            if (targetfound == "" && value != "\"Element not found\"") {
-                                targetfound = value
-                                Log.d("WebView", "Extracted data: $value")
-                                nextref.edit {
-                                    putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
-                                    val items = targetfound.trim('"').split("\\n", "\\t")
-                                        .filterIndexed { index, _ -> index > 0 }
-                                        .chunked(2) { ch->ch.joinToString(indexTD) }
-                                        .joinToString(indexTR)
-                                    putString(KEY_NEXT, items)
-                                }
-                                lifecycleScope.launch{  exec(repository.getLatest()) }
-                            }
-                        }
-                    }
-
-                    override fun onFinish() {
-                        Log.d("WebView", "Finished")
-                        wv.destroy()
-                    }
-                }
-                wv.webViewClient = object : WebViewClient() {
-
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        super.onPageFinished(view, url)
-                        if (!isstart) {  //handling start once, because onPageFinished will be called twice.
-                            Log.d("WebView", "start $url")
-                            isstart = true
-                            cntr.start()
-                        }
-                    }
-                }
-                wv.loadUrl("https://bet.hkjc.com/ch/marksix")
-            }
+            )
         }
 
+        if (updateAt ?: true) try {
+            val wv = WebView(this)
+            with(wv.settings) {
+                javaScriptEnabled = true
+                domStorageEnabled = true
+                loadsImagesAutomatically = false
+            }
+            var targetfound = ""
+            var isstart = false
+            val cntr = object : CountDownTimer(800 * 5, 800) {
+                val jsCode = "(function() {" +
+                        "  var element = document.querySelector('.next-draw-table-container');" +
+                        "  return element ? element.innerText : 'Element not found';" +
+                        "})();"
+
+                override fun onTick(millisUntilFinished: Long) {
+                    wv.evaluateJavascript(jsCode) { value ->
+                        if (targetfound == "" && value != "\"Element not found\"") {
+                            targetfound = value
+                            Log.d("WebView", "Extracted data: $value")
+                            nextref.edit {
+//                                    putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
+                                putString(
+                                    KEY_NEXT_UPDATE,
+                                    getCurrentTimeInTimezone()
+                                )
+                                val items = targetfound.trim('"').split("\\n", "\\t")
+                                    .filterIndexed { index, _ -> index > 0 }
+                                    .chunked(2) { ch -> ch.joinToString(indexTD) }
+                                    .joinToString(indexTR)
+                                putString(KEY_NEXT, items)
+                            }
+                            lifecycleScope.launch { exec(repository.getLatest(), false) }
+                        }
+                    }
+                }
+
+                override fun onFinish() {
+                    Log.d("WebView", "Finished")
+                    if(targetfound==""||targetfound=="\"Element not found\"")
+                        lifecycleScope.launch { exec(repository.getLatest(), false) }
+
+                    wv.destroy()
+                }
+            }
+            wv.webViewClient = object : WebViewClient() {
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    super.onPageFinished(view, url)
+                    if (!isstart) {  //handling start once, because onPageFinished will be called twice.
+                        Log.d("WebView", "start $url")
+                        isstart = true
+                        cntr.start()
+                    }
+                }
+            }
+            runOnUiThread { wv.loadUrl("https://bet.hkjc.com/ch/marksix") }
+        } catch (e: Exception) {
+            Log.d("WebView", "${e.message} webview")
+        }
     }
 
     private fun ResetNumberDialog() {
@@ -1302,12 +1276,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             setCancelable(false)
             setOnShowListener {
                 if (isNetworkAvailable(this@MainActivity)) {
-//                    val db = M6Db.getDatabase(this@MainActivity)
-//                WebViewGetNextDraw(db.DrawResultDao()){}
-//                    hr.post{
                         lifecycleScope.launch {
-//                            repository.deleteLatest()
-                            WebViewGetNextDraw(repository.getLatest()){}
+                            WebViewGetNextDraw{_,_->}
                             val dr = repository.getLatestNotNull()
                             Thread {
                                 getLatestDrawResult(dr) { results ->
@@ -1318,34 +1288,17 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                         if (results.isNotEmpty()) {
                                             lifecycleScope.launch {
                                                 repository.insertOrReplace(*results.toTypedArray())
-                                                genBall(repository)
+                                                genBall()
                                                 updateStatus()
                                             }
                                         }
                                         dismiss()
-
                                         binding.root.setWillNotDraw(true)
                                         initball()
                                         binding.root.setWillNotDraw(false)
                                     }
                                 }
                             }.start()
-/*                            UpdateLatestDraw(repository) { ok, dr ->
-                                runOnUiThread {
-                                    binding.toolbar.menu.findItem(R.id.action_view_all).run {
-                                        isVisible = blind
-                                    }
-                                    if (ok == "OK") {
-                                        genBall(repository)
-                                    }
-                                    dismiss()
-                                    updateStatus()
-                                    binding.root.setWillNotDraw(true)
-                                    initball()
-                                    binding.root.setWillNotDraw(false)
-                                }
-                            }*/
-//                        }
                     }
                 } else
                     dismiss()
@@ -1461,10 +1414,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             DrawStatus.Banker to draw
         }
     }
-    private fun genBall(repo: DrawResultRepository):Boolean {
+    private fun genBall():Boolean {
         lifecycleScope.launch {
-            latestDrawResult = repo.getLatest()
-            val dr = repo.getAll()
+            latestDrawResult = repository.getLatest()
+            val dr = repository.getAll()
             val temp = dr.sortedByDescending { it.date }
                 //.filter { it.date >= dateStart }
                 .mapIndexed { index, data -> index to data.no.nos.plus(data.sno) }

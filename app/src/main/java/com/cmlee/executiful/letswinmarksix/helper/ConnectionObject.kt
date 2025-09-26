@@ -20,7 +20,6 @@ import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawYear
 import com.cmlee.executiful.letswinmarksix.model.drawYears.DrawYearItem
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultArray
-import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultDao
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultRepository
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers

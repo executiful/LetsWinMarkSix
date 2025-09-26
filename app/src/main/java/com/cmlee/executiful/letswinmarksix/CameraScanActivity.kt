@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.DialogInterface
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
@@ -37,6 +36,7 @@ import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.NegativeButt
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.NeutralButton
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.bitmapToBase64
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.getCurrentTimeInTimezone
 import com.cmlee.executiful.letswinmarksix.model.tickets.Ticket
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdListener
@@ -501,7 +501,7 @@ class CameraScanActivity : AppCompatActivity() {
                                                     }) {
                                                     edit {
                                                         putString(
-                                                            System.currentTimeMillis().toString(),
+                                                            getCurrentTimeInTimezone(),
                                                             gson.toJson(ticket)
                                                         )
                                                     }
