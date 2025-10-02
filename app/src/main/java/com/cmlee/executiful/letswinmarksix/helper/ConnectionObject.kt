@@ -11,6 +11,7 @@ import android.text.Html
 import android.util.Log
 import androidx.core.content.edit
 import androidx.core.text.HtmlCompat
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.getHKInstance
 import com.cmlee.executiful.letswinmarksix.model.NoArray
 import com.cmlee.executiful.letswinmarksix.model.UnitPrice
 import com.cmlee.executiful.letswinmarksix.model.WinningUnit
@@ -114,6 +115,7 @@ object ConnectionObject {
      */
     fun Calendar.isEarlyBy(c2:Calendar, field:Int, time: Int): Boolean {
         val cp = this.clone() as Calendar
+        Log.d(TAG_INDEX, "$time field $field")
         when (field) {
             Calendar.YEAR, Calendar.MONTH, Calendar.DAY_OF_MONTH, Calendar.HOUR,
             Calendar.MINUTE, Calendar.SECOND, Calendar.MILLISECOND -> {
@@ -125,7 +127,7 @@ object ConnectionObject {
     }
     fun Date?.toCalendar() :Calendar? {
         return this?.let {
-            val c = Calendar.getInstance()
+            val c = getHKInstance()
             c.time = it
             c
         }
@@ -207,8 +209,8 @@ object ConnectionObject {
             .registerTypeAdapter(WinningUnit::class.java, WinningUnitConverter())
             .registerTypeAdapter(NoArray::class.java, NoArrayConverter())
             .create()
-        val ref = Calendar.getInstance()
-        val today = Calendar.getInstance()
+        val ref = getHKInstance()
+        val today = getHKInstance()
         ref.clear()
         ref.time = drawResult.date
 //        println(lat.id)
@@ -250,8 +252,8 @@ object ConnectionObject {
             .registerTypeAdapter(WinningUnit::class.java, WinningUnitConverter())
             .registerTypeAdapter(NoArray::class.java, NoArrayConverter())
             .create()
-        val ref = Calendar.getInstance()
-        val today = Calendar.getInstance()
+        val ref = getHKInstance()
+        val today = getHKInstance()
         ref.clear()
         val lat = drawResultDao.getLatestNotNull()
         ref.time = lat.date
@@ -285,7 +287,7 @@ object ConnectionObject {
         }
         if(arrResult.isNotEmpty()) {
             arrResult.sortedByDescending { it.date }
-            drawResultDao.insertOrReplace(*arrResult.distinct().filter { it.date<=Calendar.getInstance().time }.toTypedArray())
+            drawResultDao.insertOrReplace(*arrResult.distinct().filter { it.date<=getHKInstance().time }.toTypedArray())
         }
         return arrResult
     }
@@ -301,7 +303,7 @@ object ConnectionObject {
         val flatMap = drawYear.flatMap { yy ->
             yy.drawMonth.flatMap { mm ->
                 mm.drawDate.map { dd ->
-                    val date = Calendar.getInstance()
+                    val date = getHKInstance()
                     date.clear()
                     date.set(yy.year, mm.month-1, dd.date)
                     date to dd
@@ -312,7 +314,7 @@ object ConnectionObject {
     }
     @SuppressLint("SimpleDateFormat")
     fun getLatestDDate(schuPref: SharedPreferences): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
-        val today = Calendar.getInstance()  //TODO  : 如何更新可能出現已下載的日期表之後有所改變，而不需經常訪問網址。
+        val today = getHKInstance()  //TODO  : 如何更新可能出現已下載的日期表之後有所改變，而不需經常訪問網址。
         today.clearTimePart()
 //        println("first day of week ${today.time}")
         today.add(Calendar.DATE,-today.get(Calendar.DAY_OF_WEEK))
@@ -326,7 +328,7 @@ object ConnectionObject {
         val flatMap = drawYear.flatMap { yy ->
             yy.drawMonth.flatMap { mm ->
                 mm.drawDate.map { dd ->
-                    val date = Calendar.getInstance()
+                    val date = getHKInstance()
                     date.clear()
                     date.set(yy.year, mm.month-1, dd.date)
                     date to dd
@@ -349,7 +351,7 @@ object ConnectionObject {
     }
 
     fun getLatestSchecule(context: Context): Pair<List<Pair<Calendar, DrawDate>>, List<Pair<Date, String>>> {
-        val today = Calendar.getInstance()
+        val today = getHKInstance()
 //        val dom = today.get(Calendar.DAY_OF_MONTH)
 //        today.set(Calendar.DAY_OF_MONTH, 17)
         val schuPref = context.getSharedPreferences(TAG_FIXTURES, MODE_PRIVATE)
@@ -421,7 +423,7 @@ object ConnectionObject {
      */
     fun getIndex(context: Context, latest: DrawResult) :String?{
         val indexsharedPreferences = context.getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
-        val now = Calendar.getInstance()
+        val now = getHKInstance()
         indexsharedPreferences.getDateTimeISO(KEY_NEXT_UPDATE)?.let{
             try {
 //                val date = sdf_now.parse(it).toCalendar()

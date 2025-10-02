@@ -56,7 +56,6 @@ import com.cmlee.executiful.letswinmarksix.databinding.RefreshDialogBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.ListView
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
-import com.cmlee.executiful.letswinmarksix.helper.CommonObject.HONG_KONG_TIMEZONE
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_BLIND
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_GROUP
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.KEY_ORDER
@@ -69,6 +68,7 @@ import com.cmlee.executiful.letswinmarksix.helper.CommonObject.TICKETSTRING
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.convertTimeBetweenTimezones
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.dateInTimezone
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.getCurrentTimeInTimezone
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.getHKInstance
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.KEY_NEXT_UPDATE
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.TAG_INDEX
@@ -152,18 +152,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             }
         )
         tmpColorArray.recycle()
-        /*
-                Handler(mainLooper).post {
-                    cacheDir.listFiles()?.forEach {
-                        if (it.endsWith(".json")) {
-                            if (it.length() == 0L || it.readText() == "[]") it.delete()
-        //                }else if (it.endsWith(".txt")) {
-        //                    val fromJson = Gson().fromJson(it.readText(), DrawYear::class.java)
-        //                    File(it.name.replace(".txt", ".json")).writeText(Gson().toJson(fromJson, DrawYear::class.java))
-                        }
-                    }
-                }
-        */
         if (BuildConfig.DEBUG) {
             hr.post {
                 cacheDir.listFiles()?.filter { it.length() == 0L }?.parallelStream()
@@ -217,11 +205,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }
                 }
         }
-        if(savedInstanceState==null) {
-            Log.d("Main-Start", "savedInstanceState")
-//            if(BuildConfig.DEBUG.not())
-                ResetNumberDialog()
-        }
+
 
         updateStatus()
         originalballs.also {
@@ -326,6 +310,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             balldata(it, numberordering[index])
         }
         changeStatus(currentStatus, true)
+        if(savedInstanceState==null) {
+            Log.d("Main-Start", "savedInstanceState")
+//            if(BuildConfig.DEBUG.not())
+            ResetNumberDialog()
+        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -950,30 +939,25 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
             )
         } else {
-            val nextstring = sf.getString(KEY_NEXT, null) ?: ""
-            if(nextstring.contains(pre.id)){
-                ssb.appendLine(dotdotdot)
+            val nextstring = sf.getString(KEY_NEXT, "") ?: ""
+            val ndata =
+                nextstring.split(indexTR).map { it.replace('$', dollar).split(indexTD) }
+                    .filter { it.size == 2 }
+                    .map {
+                        it[0] to if (it[0].contains('金') && it[1].startsWith(dollar)) String.format(
+                            "%11s",
+                            it[1]
+                        ) else it[1]
+                    }
+            if(ndata.isNotEmpty() && ndata.first().second<=pre.id){
+                ssb.appendLine(getString(if(firstTime) R.string.downloading_to_show else R.string.nothing_to_show))
             } else {
-                val ndata =
-                    nextstring.split(indexTR).map { it.replace('$', dollar).split(indexTD) }
-                        .filter { it.size == 2 }
-                        .map {
-                            it[0] to if (it[0].contains('金') && it[1].startsWith(dollar)) String.format(
-                                "%11s",
-                                it[1]
-                            ) else it[1]
-                        }
-
                 ndata.forEach{
                     drawSpannableLine(it, ssb)
                 }
-                ssb.setSpan(
-                    TabStopSpan.Standard(100),
-                    0,
-                    ssb.length,
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                )
+                ssb.setSpan(TabStopSpan.Standard(100), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
+
         }
         ssb.appendLine().appendLine()
         start = ssb.length
@@ -1189,11 +1173,11 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private suspend fun WebViewGetNextDraw(exec: (message: DrawResult, firstTime:Boolean) -> Unit) {
         val nextref = getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
         val latest = repository.getLatest()
-        val now = Calendar.getInstance()
+        val now = getHKInstance()
         exec(latest,true)
 
         val updateAt = nextref.getString(KEY_NEXT_UPDATE, null)?.let { hkTimeString ->
-            dateInTimezone(hkTimeString, HONG_KONG_TIMEZONE)?.isEarlyBy(
+            dateInTimezone(hkTimeString)?.isEarlyBy(
                 now, Calendar.MINUTE,
                 when {
                     latest.p1 == null || (nextref.getString(KEY_NEXT, null)?.contains(latest.id)
@@ -1207,7 +1191,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             )
         }
 
-        if (updateAt ?: true) try {
+        if (updateAt ?: true)
+            try {
             val wv = WebView(this)
             with(wv.settings) {
                 javaScriptEnabled = true
@@ -1218,13 +1203,13 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             var isstart = false
             val cntr = object : CountDownTimer(800 * 5, 800) {
                 val jsCode = "(function() {" +
-                        "  var element = document.querySelector('.next-draw-table-container');" +
-                        "  return element ? element.innerText : 'Element not found';" +
+                        "  var element = document.querySelectorAll('.next-draw-table-header .next-draw-table-item, .jackpot-row, .estdiv-row');" +
+                        "  return [].slice.call(element).map(function(e){return e.innerText;}).join('#');" +
                         "})();"
 
                 override fun onTick(millisUntilFinished: Long) {
                     wv.evaluateJavascript(jsCode) { value ->
-                        if (targetfound == "" && value != "\"Element not found\"") {
+                        if (targetfound == "" && value != "\"\"") {
                             targetfound = value
                             Log.d("WebView", "Extracted data: $value")
                             nextref.edit {
@@ -1233,10 +1218,8 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                     KEY_NEXT_UPDATE,
                                     getCurrentTimeInTimezone()
                                 )
-                                val items = targetfound.trim('"').split("\\n", "\\t")
-                                    .filterIndexed { index, _ -> index > 0 }
-                                    .chunked(2) { ch -> ch.joinToString(indexTD) }
-                                    .joinToString(indexTR)
+                                val items = "\\\\[tn]".toRegex().replace(targetfound.trim('"'), indexTD)
+
                                 putString(KEY_NEXT, items)
                             }
                             lifecycleScope.launch { exec(repository.getLatest(), false) }
@@ -1246,7 +1229,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 
                 override fun onFinish() {
                     Log.d("WebView", "Finished")
-                    if(targetfound==""||targetfound=="\"Element not found\"")
+                    if(targetfound==""||targetfound=="\"\"")
                         lifecycleScope.launch { exec(repository.getLatest(), false) }
 
                     wv.destroy()
@@ -1300,8 +1283,12 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                                 }
                             }.start()
                     }
-                } else
+                } else {
+                    genBall()
+                    updateStatus()
+                    initball()
                     dismiss()
+                }
             }
             show()
         }
@@ -1414,24 +1401,25 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             DrawStatus.Banker to draw
         }
     }
-    private fun genBall():Boolean {
+    private fun genBall() {
         lifecycleScope.launch {
-            latestDrawResult = repository.getLatest()
             val dr = repository.getAll()
             val temp = dr.sortedByDescending { it.date }
                 //.filter { it.date >= dateStart }
                 .mapIndexed { index, data -> index to data.no.nos.plus(data.sno) }
+
             originalballs.parallelStream().forEach { i ->
                 val f = temp.filter { it.second.contains(i.num) }
                 i.times = f.count()
+                Log.d("nextdraw", "$i ${i.times}")
                 if (i.times > 0)
                     i.since = f.first().first
                 else
                     i.since = -1
             }
         }
-        return false
     }
+
 //    private fun isNetworkAvailable(): Boolean {
 //        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 //        val activeNetworkInfo = connectivityManager?.activeNetworkInfo

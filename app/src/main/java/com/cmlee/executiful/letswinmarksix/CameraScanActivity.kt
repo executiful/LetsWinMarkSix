@@ -25,7 +25,6 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.collection.mutableFloatListOf
 import androidx.core.content.ContextCompat
-import androidx.core.content.edit
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.m6_sep_banker
@@ -36,7 +35,7 @@ import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.NegativeButt
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.NeutralButton
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
 import com.cmlee.executiful.letswinmarksix.helper.CommonObject.bitmapToBase64
-import com.cmlee.executiful.letswinmarksix.helper.CommonObject.getCurrentTimeInTimezone
+import com.cmlee.executiful.letswinmarksix.helper.CommonObject.getHKInstance
 import com.cmlee.executiful.letswinmarksix.model.tickets.Ticket
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdListener
@@ -56,7 +55,6 @@ import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -397,7 +395,7 @@ class CameraScanActivity : AppCompatActivity() {
                                                             if (dyr == null)
                                                                 "(\\d{2})年(\\d{1,2})月(\\d{1,2})日".toRegex()
                                                                     .find(test)?.groupValues?.let { f ->
-                                                                    val now = Calendar.getInstance()
+                                                                    val now = getHKInstance()
                                                                     now.set(
                                                                         Calendar.YEAR,
                                                                         f[1].toInt()
@@ -484,32 +482,32 @@ class CameraScanActivity : AppCompatActivity() {
                                             .appendLine(ticket.numbersString)
                                             .appendLine()
                                             .appendLine("$${ticket.drawTotal} = $${ticket.drawUnit} * ${valid.sum()}${if (drawcount > 1) " * $drawcount" else ""}")
-                                        with(getSharedPreferences(OCR_TICKETS, MODE_PRIVATE)) {
-                                            try {
-                                                if (all.isEmpty()||!all.entries.parallelStream().anyMatch { (k,v)->
-                                                        val r = gson.fromJson(
-                                                            v as String,
-                                                            Ticket::class.java
-                                                        )
-                                                        (r.drawID == ticket.drawID && r.drawItemNumbers == ticket.drawItemNumbers&&r.draws==ticket.draws).also{
-                                                            if(it){outputString.appendLine("(已有紀錄:${
-                                                                Date(
-                                                                    k.toLong()
-                                                                )
-                                                            })")}
-                                                        }
-                                                    }) {
-                                                    edit {
-                                                        putString(
-                                                            getCurrentTimeInTimezone(),
-                                                            gson.toJson(ticket)
-                                                        )
-                                                    }
-                                                }
-                                            } catch (e: Exception) {
-                                                Log.d(TAG, "ticket exception ${e.message?:e.stackTraceToString()}")
-                                            }
-                                        }
+//                                        with(getSharedPreferences(OCR_TICKETS, MODE_PRIVATE)) {
+//                                            try {
+//                                                if (all.isEmpty()||!all.entries.parallelStream().anyMatch { (k,v)->
+//                                                        val r = gson.fromJson(
+//                                                            v as String,
+//                                                            Ticket::class.java
+//                                                        )
+//                                                        (r.drawID == ticket.drawID && r.drawItemNumbers == ticket.drawItemNumbers&&r.draws==ticket.draws).also{
+//                                                            if(it){outputString.appendLine("(已有紀錄:${
+//                                                                Date(
+//                                                                    k.toLong()
+//                                                                )
+//                                                            })")}
+//                                                        }
+//                                                    }) {
+//                                                    edit {
+//                                                        putString(
+//                                                            getCurrentTimeInTimezone(),
+//                                                            gson.toJson(ticket)
+//                                                        )
+//                                                    }
+//                                                }
+//                                            } catch (e: Exception) {
+//                                                Log.d(TAG, "ticket exception ${e.message?:e.stackTraceToString()}")
+//                                            }
+//                                        }
                                         with(dlgConfirm) {
                                             if (isShowing) dismiss()
                                             setTitle("掃瞄結果")

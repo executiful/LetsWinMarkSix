@@ -104,11 +104,12 @@ object CommonObject {
     fun getCurrentTimestamp(): Long {
         return System.currentTimeMillis()
     }
-
-    fun dateInTimezone(timeString:String, timezone: String,
-                       pattern: String = DISPLAY_FORMAT): Calendar?{
+    fun getHKInstance(): Calendar {
+        return Calendar.getInstance(TimeZone.getTimeZone(HONG_KONG_TIMEZONE))
+    }
+    fun dateInTimezone(timeString: String, pattern: String = DISPLAY_FORMAT): Calendar?{
         return try{
-            val tz = TimeZone.getTimeZone(timezone)
+//            val tz = TimeZone.getTimeZone(timezone)
             val formatter = SimpleDateFormat(pattern, Locale.getDefault())
             val dateOf = formatter.parse(timeString)
             if(dateOf==null) null

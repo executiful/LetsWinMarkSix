@@ -7,6 +7,7 @@ import android.view.View
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.widget.FrameLayout
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import com.cmlee.executiful.letswinmarksix.R
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResultRepository
@@ -30,6 +31,7 @@ abstract class BannerAppCompatActivity : AppCompatActivity() {
         repository = DrawResultRepository(M6Db.getDatabase(this).DrawResultDao())
 
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
     }
     override fun onPostCreate(savedInstanceState: Bundle?) {
 //        repository = DrawResultRepository(M6Db.getDatabase(this).DrawResultDao())
@@ -96,12 +98,12 @@ abstract class BannerAppCompatActivity : AppCompatActivity() {
             }
         }*/
     }
-    val adUnitId get() = getString(adUnitStringId)
+//    val adUnitId get() = getString(adUnitStringId)
     protected abstract val adUnitStringId:Int
     private fun loadBanner() {
         // Create an ad request.
         adView = AdView(this).apply {
-            adUnitId = if(DEBUG) getString(R.string.banner_ad_unit_id) else adUnitId
+            adUnitId = if(DEBUG) getString(R.string.banner_ad_unit_id) else getString(adUnitStringId)
             adContainerView.removeAllViews()
             adContainerView.addView(this)
             val adSize :AdSize = this@BannerAppCompatActivity  . adSize
