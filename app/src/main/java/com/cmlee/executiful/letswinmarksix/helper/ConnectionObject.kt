@@ -475,4 +475,12 @@ object ConnectionObject {
 //        } else
 //         exec("db not open??")
     }
+    suspend fun refreshDrawResult(repo: DrawResultRepository, updateScreen:(List<DrawResult>)->Unit):DrawResult{
+            val latests =  getLatestResult(repo)
+            if(latests.isNotEmpty()){
+                repo.insertOrReplace(*latests.toTypedArray())
+                updateScreen(latests)
+            }
+        return repo.getLatest()
+    }
 }

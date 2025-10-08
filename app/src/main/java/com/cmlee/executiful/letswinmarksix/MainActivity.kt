@@ -7,6 +7,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Color.RED
 import android.graphics.Typeface
@@ -53,6 +54,7 @@ import com.cmlee.executiful.letswinmarksix.databinding.BallBinding
 import com.cmlee.executiful.letswinmarksix.databinding.ColumnOfNumberBinding
 import com.cmlee.executiful.letswinmarksix.databinding.NumberTextviewBinding
 import com.cmlee.executiful.letswinmarksix.databinding.RefreshDialogBinding
+import com.cmlee.executiful.letswinmarksix.databinding.WebLayoutBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.ListView
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
@@ -101,10 +103,6 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     private lateinit var m6bViews: List<BallBinding>
     private lateinit var pauseDlg : AlertDialog
     private var alertDialog:AlertDialog? = null
-//     var ballColors = mutableListOf<Int>()
-//    private val dislikeNumbers = mutableListOf<Int>()
-//    private val likeNumbers = mutableListOf<Int>()
-//    private val groupNumberMappings = mutableMapOf<String,MutableList<Int>>()
     private val ht = HandlerThread("m6thread")
     private lateinit var hr :Handler
 
@@ -339,6 +337,26 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 true
             }*/
 
+/*            KeyEvent.KEYCODE_5-> {
+                val dlg = AlertDialog.Builder(this).setMessage("wait...").create()
+                dlg.setOnShowListener {
+                    repositoryWeb.getNextDrawData(callback = object :
+                        WebDataRepository.WebDataCallback {
+                        override fun onSuccess(data: String) {
+                            dlg.setTitle("next draw data")
+                            dlg.setMessage(data)
+                        }
+
+                        override fun onError(error: String) {
+                            dlg.setTitle("error")
+                            dlg.setMessage(error)
+                        }
+
+                    })
+                }
+                dlg.show()
+                true
+            }*/
             KeyEvent.KEYCODE_6->{
                 alertDialog?.let {
                     if(it.isShowing) return false
@@ -1245,7 +1263,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     }
                 }
             }
-            runOnUiThread { wv.loadUrl("https://bet.hkjc.com/ch/marksix") }
+            runOnUiThread { wv.loadUrl(url_marksix) }
         } catch (e: Exception) {
             Log.d("WebView", "${e.message} webview")
         }
@@ -1491,6 +1509,15 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         const val m6_49StartDate = "2002/07/04"
         const val m6_sep_num = "+"
         const val m6_sep_banker = ">"
+        const val url_marksix = "https://bet.hkjc.com/ch/marksix/home"
+        const val jsc_marksix =
+            """
+            (function() {
+                const element = document.querySelectorAll('.next-draw-table-header .next-draw-table-item, .jackpot-row, .estdiv-row');  
+                return '...'+element.length+Array.from(element).map(ele => ele.innerText).join('#');
+            })()
+                """
+//            """(function() {  var element = document.querySelectorAll('.next-draw-table-header .next-draw-table-item, .jackpot-row, .estdiv-row');  return [].slice.call(element).map(function(e){return e.innerText;}).join('#');})();"""
         val ballcolor = mutableListOf<Int>()
 
         val bankers get() = originalballs.filter { it.status == NumStat.NUMSTATUS.BANKER }.map { it.num }.toSet()
@@ -1567,5 +1594,63 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             return item
         } else
             return updateball(index, reset)
+    }
+
+    suspend fun WebView2(){
+        try{
+            val layout =WebLayoutBinding.inflate(layoutInflater)
+            val webLayout = layout.idWeb//WebView(this)//
+            var targetfound = ""
+            with(webLayout.settings){
+                javaScriptEnabled=true
+                domStorageEnabled=true
+                loadsImagesAutomatically = false
+            }
+            webLayout.webViewClient = object: WebViewClient(){
+                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                    Log.d("WebView", "$url start")
+                    super.onPageStarted(view, url, favicon)
+                }
+
+                override fun onPageFinished(view: WebView?, url: String?) {
+                    Log.d("WebView", "$url finished")
+                    val jsCode = "(function() {" +
+                            "  var element = document.querySelectorAll('.next-draw-table-header .next-draw-table-item, .jackpot-row, .estdiv-row');" +
+                            "  return [].slice.call(element).map(function(e){return e.innerText;}).join('#');" +
+                            "})();"
+                    view?.evaluateJavascript(jsCode) { value ->
+                        Log.d("WebView", "value=($value)")
+                        if (targetfound == "" && value != "\"\"") {
+                            val nextref = getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
+                            targetfound = value
+                            Log.d("WebView", "Extracted data: $value")
+                            //                                nextref.edit {
+                            //                                    putString(
+                            //                                        KEY_NEXT_UPDATE,
+                            //                                        getCurrentTimeInTimezone()
+                            //                                    )
+                            //                                    val items = "\\\\[tn]".toRegex().replace(targetfound.trim('"'), indexTD)
+                            //
+                            //                                    putString(KEY_NEXT, items)
+                            //                                }
+                            //                                lifecycleScope.launch { exec(repository.getLatest(), false) }
+                        }
+                        view.destroy()
+                    }
+                    super.onPageFinished(view, url)
+
+                }
+            }
+//                    lifecycleScope.launch {
+//                        refreshDrawResult(repository){rs->
+//                            lifecycleScope.launch{
+            webLayout.loadUrl("https://bet.hkjc.com/ch/marksix")
+//                            }
+//                        }
+
+//                    }
+        }catch(e:Exception){
+            Log.d("WebView", e.message?:"${e.stackTrace}")
+        }
     }
 }

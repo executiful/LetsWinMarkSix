@@ -29,7 +29,6 @@ import com.cmlee.executiful.letswinmarksix.databinding.DrawnListItemBinding
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
 import com.cmlee.executiful.letswinmarksix.roomdb.DrawResult
-import com.cmlee.executiful.letswinmarksix.roomdb.M6Db
 import kotlinx.coroutines.launch
 
 

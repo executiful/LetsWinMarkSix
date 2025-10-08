@@ -361,7 +361,7 @@ class CameraScanActivity : AppCompatActivity() {
                                         { b -> b.boundingBox?.left })
                                 ).forEach { firstline ->
                                     if (!firstline.text.contains(anyJockey)) {
-                                        Log.d(TAG, ">${firstline.text}<${firstline.boundingBox}")
+                                        Log.d(TAG2, ">${firstline.text}<${firstline.boundingBox}")
                                         firstline.lines.sortedWith(
                                             compareBy(
                                                 { b -> b.boundingBox?.top },
@@ -369,6 +369,7 @@ class CameraScanActivity : AppCompatActivity() {
                                         )//.filterNot { it.boundingBox==null }.map{ it.text to it.boundingBox!!}
                                             .forEach { line ->
                                                 if (line.boundingBox != null) {
+//                                                    Log.d(TAG2, "/${line.text}/")
                                                     val test = line.text
                                                     when {
                                                         test.contains(m6_sep_num) || N49.contains(
@@ -418,16 +419,15 @@ class CameraScanActivity : AppCompatActivity() {
                                                                 }
                                                         }
 
-                                                        dno == null && test.contains(anyDrawNo) &&test.contains("^5|10|20|30".toRegex()).not() -> {
+                                                        dno == null && test.contains(anyDrawNo) &&test.contains(anyDrawCount).not() -> {
                                                             regexDrawNo.find(test)?.groupValues?.let { f ->
                                                                 dno = f[1]
                                                                 info.add(f[1])
                                                             }
                                                         }
 
-                                                        dc == null && test.contains("期|Draw[s]?".toRegex())&&test.contains("^5|10|20|30".toRegex()) -> {
-                                                            "^(5|10|20|30)".toRegex()
-                                                                .find(test)?.groupValues?.let { f ->
+                                                        dc == null && test.contains("期|Draw[s]?".toRegex())&&test.contains(anyDrawCount) -> {
+                                                            anyDrawCount.find(test)?.groupValues?.let { f ->
                                                                     dc = f[1]
                                                                     info.add(f[1])
                                                                 }
@@ -459,7 +459,7 @@ class CameraScanActivity : AppCompatActivity() {
                                 runOnUiThread {
                                     viewBinding.temp.text = info.joinToString("\n")
                                 }
-                                Log.d(TAG, "year:$dyr, id: $dno, total: ${dollars.joinToString()}'")
+                                Log.d(TAG, "year:$dyr, id: $dno, total: ${dollars.joinToString()}, count$dc")
                                 if (!dyr.isNullOrBlank() && !dno.isNullOrBlank() &&dollars.any{a->a>=10}) {
                                     dc?.toIntOrNull()?.let { d -> drawcount = d }
                                     uni = dollars[0]
@@ -709,6 +709,7 @@ class CameraScanActivity : AppCompatActivity() {
         val anyUnitPrice = "注|Unit|bet".toRegex(RegexOption.IGNORE_CASE)
         val anyTotalPrice = "[總額]|Total".toRegex(RegexOption.IGNORE_CASE)
         val anyDrawDate = "[年月日]".toRegex(RegexOption.IGNORE_CASE)
+        val anyDrawCount = "^([5123][0]{0,1})[^0-9]".toRegex()
         val anyJockey = "JOCKEY|CLUB|HONG|KONG".toRegex(RegexOption.IGNORE_CASE)
         val barcode = "[A-F0-9]{7}\\s[A-F0-9]{17}"
 
@@ -744,5 +745,6 @@ class CameraScanActivity : AppCompatActivity() {
         }
 
         private const val TAG = "CameraXApp"
+        private const val TAG2 = "CameraXKApp"
     }
 }
