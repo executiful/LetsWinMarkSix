@@ -81,6 +81,7 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTD
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTR
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.isEarlyBy
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.sqlDate
+import com.cmlee.executiful.letswinmarksix.helper.WebDataRepository
 import com.cmlee.executiful.letswinmarksix.model.DrawStatus
 import com.cmlee.executiful.letswinmarksix.model.NumStat
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
@@ -98,6 +99,7 @@ import kotlin.random.Random
 class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelection {
     private lateinit var binding: ActivityMainBinding
 //    private lateinit var repository : DrawResultRepository
+    private lateinit var repositoryWeb: WebDataRepository
     private lateinit var legViews: List<NumberTextviewBinding>
     private lateinit var bankerViews: List<NumberTextviewBinding>
     private lateinit var m6bViews: List<BallBinding>
@@ -150,6 +152,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             }
         )
         tmpColorArray.recycle()
+        repositoryWeb = WebDataRepository(this)
         if (BuildConfig.DEBUG) {
             hr.post {
                 cacheDir.listFiles()?.filter { it.length() == 0L }?.parallelStream()
@@ -337,7 +340,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 true
             }*/
 
-/*            KeyEvent.KEYCODE_5-> {
+            KeyEvent.KEYCODE_5-> {
                 val dlg = AlertDialog.Builder(this).setMessage("wait...").create()
                 dlg.setOnShowListener {
                     repositoryWeb.getNextDrawData(callback = object :
@@ -356,23 +359,23 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                 }
                 dlg.show()
                 true
-            }*/
+            }
             KeyEvent.KEYCODE_6->{
-                alertDialog?.let {
-                    if(it.isShowing) return false
-                }
-                AlertDialog.Builder(this, R.style.Theme_Wait_Dialog).create().apply{
-                    alertDialog = this@apply
-                    setOnShowListener {
+//                alertDialog?.let {
+//                    if(it.isShowing) return false
+//                }
+//                AlertDialog.Builder(this, R.style.Theme_Wait_Dialog).create().apply{
+//                    alertDialog = this@apply
+//                    setOnShowListener {
                             startActivity(Intent(this@MainActivity, ScanResults::class.java))
-                        }
-                    lifecycleScope.launch {
-                        kotlinx.coroutines.delay(1000)
-                        runOnUiThread {
-                            this@apply.dismiss()
-                        }
-                    }
-                }.show()
+//                        }
+//                    lifecycleScope.launch {
+//                        kotlinx.coroutines.delay(1000)
+//                        runOnUiThread {
+//                            this@apply.dismiss()
+//                        }
+//                    }
+//                }.show()
                 true
             }
             KeyEvent.KEYCODE_0 -> {
@@ -1509,12 +1512,12 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         const val m6_49StartDate = "2002/07/04"
         const val m6_sep_num = "+"
         const val m6_sep_banker = ">"
-        const val url_marksix = "https://bet.hkjc.com/ch/marksix/home"
+        const val url_marksix = "https://bet.hkjc.com/ch/marksix"
         const val jsc_marksix =
             """
             (function() {
-                const element = document.querySelectorAll('.next-draw-table-header .next-draw-table-item, .jackpot-row, .estdiv-row');  
-                return '...'+element.length+Array.from(element).map(ele => ele.innerText).join('#');
+                const element = document.querySelector('.next-draw-table-header');
+                return element ? element.textContent.trim() : 'Element not found';
             })()
                 """
 //            """(function() {  var element = document.querySelectorAll('.next-draw-table-header .next-draw-table-item, .jackpot-row, .estdiv-row');  return [].slice.call(element).map(function(e){return e.innerText;}).join('#');})();"""

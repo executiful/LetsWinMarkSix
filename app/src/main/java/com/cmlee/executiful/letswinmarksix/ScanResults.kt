@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -74,12 +75,16 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastForEachIndexed
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.hairsp
 import com.cmlee.executiful.letswinmarksix.MainActivity.Companion.m6_sep_banker
@@ -122,7 +127,8 @@ class ScanResults : ComponentActivity() {
         setContent {
             CompositionLocalProvider(LocalDrawResultViewModel provides drawResultViewMode) {
                 LetsWinMarkSixTheme {
-                    PreferencesScreen() { finish() }
+                    HideSystemBottomBar()
+                    PreferencesScreen { finish() }
 /*                Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
                         AppBarSelectionActions(
@@ -147,6 +153,14 @@ class ScanResults : ComponentActivity() {
     }
 }
 
+@Composable
+fun HideSystemBottomBar(){
+    val view = LocalView.current
+    val window = (view.context as ComponentActivity).window
+    val insetsController = WindowCompat.getInsetsController(window, view)
+    // Hide the navigation bar
+    insetsController.hide(WindowInsetsCompat.Type.navigationBars())
+}
 // Main Top Bar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -574,6 +588,66 @@ fun AdjustableRowText(texts:List<Pair<Float,String>>){
     }
 }
 @Preview()
+@Composable
+fun MainScreenDemo() {
+    Row(
+        modifier = Modifier
+            .background(Color.White)
+            .width(IntrinsicSize.Max)
+    ) {
+        Column(modifier = Modifier.width(IntrinsicSize.Max)) {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.banker_text).uppercase(),
+                minLines = 3,
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center
+            )
+            BankerOrLeg(true, modifier = Modifier.wrapContentWidth())
+        }
+        Column {
+            Text(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.leg_text).uppercase(),
+                minLines = 3,
+                style = MaterialTheme.typography.bodySmall,
+                textAlign = TextAlign.Center
+            )
+            BankerOrLeg(false, modifier = Modifier.wrapContentWidth())
+        }
+    }
+}
+@Composable
+fun BankerOrLeg(banker: Boolean, modifier: Modifier){
+    var number = 1
+    Row(modifier = modifier){
+        repeat(6){
+            Column {
+                repeat(9) {
+                    SingleNumber(number++)
+                }
+            }
+        }
+    }
+}
+@Composable
+fun SingleNumber(number: Int){
+    if(number<50) {
+        Box{
+            Image(
+                modifier = Modifier.padding(3.dp),
+                painter = painterResource(R.drawable.ticket_number),
+                contentDescription = "hello",
+                contentScale = ContentScale.FillWidth
+            )
+            Text(
+                text = "$number", textAlign = TextAlign.Center, modifier=Modifier.align(
+                    Alignment.Center)
+            )
+        }
+    }
+}
+
 @Composable
 fun TebleBalls(results:List<List<String>> = listOf(
     listOf("ID", "Name", "Description"),

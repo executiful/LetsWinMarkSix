@@ -230,7 +230,7 @@ class LatestDrawnActivity : BannerAppCompatActivity() {
                 if (rs.sbcode != null) {
                     ssp.append(thinsp)
                     temp = ssp.length
-                    ssp.append("${rs.sbcode}")
+                    ssp.append(rs.sbcode)
                     ssp.setSpan(
                         BackgroundColorSpan(ContextCompat.getColor(context, R.color.gold)),
                         temp,

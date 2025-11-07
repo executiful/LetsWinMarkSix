@@ -171,7 +171,7 @@ class CameraScanActivity : AppCompatActivity() {
                 kotlinx.coroutines.delay(1000)
                 untilTime -= 1000
                 runOnUiThread {
-                    viewBinding.temp.text = indicate.substring(0, (untilTime / 1000).toInt())
+                    viewBinding.temp.text = indicate.take((untilTime / 1000).toInt())
                 }
             }
             viewBinding.idMyAppImage.isVisible = false
@@ -375,13 +375,13 @@ class CameraScanActivity : AppCompatActivity() {
                                                         test.contains(m6_sep_num) || N49.contains(
                                                             test
                                                         ) -> {
-                                                            if (!test.startsWith("/"))
-                                                                sb.append("&")
+//                                                            if ("^1[1-9]".toRegex().containsMatchIn(test))
+//                                                                sb.append("&")
                                                             sb.append(
-                                                                test.replace(
+                                                                "test".toRegex().replace(test.replace(
                                                                     "\\s".toRegex(),
                                                                     ""
-                                                                )
+                                                                )){ m->"&${m.value}"}
                                                             )
                                                         }
 
@@ -476,11 +476,11 @@ class CameraScanActivity : AppCompatActivity() {
                                         val img = bitmapToBase64(Bitmap.createBitmap(imageString, 0,0, imageString.width, imageString.height, mtx, true))
                                         val ticket = Ticket(drawYear = dyr, buyDate = dym?:"", drawNo = dno, drawTotal = ttl, drawUnit = uni,
                                             drawItemNumbers = nums, ocr = img, draws = drawcount)
-                                        outputString.clear().appendLine("期數:")
+                                        outputString.clear().appendLine("期數：")
                                             .appendLine("${ticket.drawID} ${if (ticket.draws > 1) "(${ticket.draws}期)" else ""} $dym")
-                                            .appendLine("注項:")
+                                            .appendLine("注項：")
                                             .appendLine(ticket.numbersString)
-                                            .appendLine()
+                                            .appendLine("總額：")
                                             .appendLine("$${ticket.drawTotal} = $${ticket.drawUnit} * ${valid.sum()}${if (drawcount > 1) " * $drawcount" else ""}")
 //                                        with(getSharedPreferences(OCR_TICKETS, MODE_PRIVATE)) {
 //                                            try {
@@ -509,7 +509,8 @@ class CameraScanActivity : AppCompatActivity() {
 //                                            }
 //                                        }
                                         with(dlgConfirm) {
-                                            if (isShowing) dismiss()
+//                                            if (isShowing)
+                                                dismiss()
                                             setTitle("掃瞄結果")
                                             setOnShowListener(showListener(true))
 
@@ -522,7 +523,8 @@ class CameraScanActivity : AppCompatActivity() {
 
                                     if (timeLeft > 0) {
                                         with(dlgConfirm) {
-                                            if (isShowing) dismiss()
+//                                            if (isShowing)
+                                                dismiss()
                                             setTitle("掃瞄逾時")
                                             setOnShowListener(showListener(false))
                                             setMessage("找不到彩票")
@@ -709,7 +711,7 @@ class CameraScanActivity : AppCompatActivity() {
         val anyUnitPrice = "注|Unit|bet".toRegex(RegexOption.IGNORE_CASE)
         val anyTotalPrice = "[總額]|Total".toRegex(RegexOption.IGNORE_CASE)
         val anyDrawDate = "[年月日]".toRegex(RegexOption.IGNORE_CASE)
-        val anyDrawCount = "^([5123][0]{0,1})[^0-9]".toRegex()
+        val anyDrawCount = "^([5123]0?)[^0-9]".toRegex()
         val anyJockey = "JOCKEY|CLUB|HONG|KONG".toRegex(RegexOption.IGNORE_CASE)
         val barcode = "[A-F0-9]{7}\\s[A-F0-9]{17}"
 
@@ -735,7 +737,7 @@ class CameraScanActivity : AppCompatActivity() {
                 //1+2|/2+3|+3+4+|5+6+7|8
                 //1+2&12+3&+3+4+&5+6+7&8
                 .replace("\\s".toRegex(), "")
-                .replace("&[+]|[+]&".toRegex(), "")
+                .replace("+&1", "+1")
                 .replace("&1", "/").replace("[^0-9>+/]".toRegex(), "").split('/')
                 .map {//"banker>leg"
                     //or "leg"

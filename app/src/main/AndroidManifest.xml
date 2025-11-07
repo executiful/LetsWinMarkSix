@@ -23,14 +23,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LetsWinMarkSix"
         tools:targetApi="31">
-        <activity
-            android:name=".ScanResults"
-            android:exported="false"
-            android:label="@string/title_activity_scan_results"
-            android:theme="@style/Theme.LetsWinMarkSix" />
+<!--        <activity-->
+<!--            android:name=".ScanResults"-->
+<!--            android:exported="false"-->
+<!--            android:label="@string/title_activity_scan_results"-->
+<!--            android:theme="@style/Theme.LetsWinMarkSix" />-->
         <activity
             android:name=".CameraScanActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="landscape"
+            tools:ignore="LockedOrientationActivity"/>
 <!--        <activity-->
         <!--
              You can find your app ID in the AdMob UI. For android:value,
@@ -44,10 +46,11 @@
             android:name="com.google.mlkit.vision.DEPENDENCIES"
             android:value="ocr_chinese" />
 
-        <activity
-            android:name=".ReadTicket"
-            android:exported="false"
-            android:label="@string/title_activity_read_ticket" /> <!-- Include the AdActivity configChanges and theme. -->
+<!--        <activity-->
+<!--            android:name=".ReadTicket"-->
+<!--            android:exported="false"-->
+<!--            android:label="@string/title_activity_read_ticket" />-->
+        <!-- Include the AdActivity configChanges and theme. -->
         <!-- <activity -->
         <!-- android:name="com.google.android.gms.ads.AdActivity" -->
         <!-- android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" -->
