@@ -3,10 +3,10 @@ package com.cmlee.executiful.letswinmarksix.roomdb
 import android.content.Context
 import com.google.android.datatransport.runtime.dagger.Module
 import com.google.android.datatransport.runtime.dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+//import dagger.hilt.InstallIn
+//import dagger.hilt.android.qualifiers.ApplicationContext
+//import dagger.hilt.components.SingletonComponent
+//import javax.inject.Singleton
 
 //@Module
 //@InstallIn(SingletonComponent::class)

@@ -54,7 +54,6 @@ import com.cmlee.executiful.letswinmarksix.databinding.BallBinding
 import com.cmlee.executiful.letswinmarksix.databinding.ColumnOfNumberBinding
 import com.cmlee.executiful.letswinmarksix.databinding.NumberTextviewBinding
 import com.cmlee.executiful.letswinmarksix.databinding.RefreshDialogBinding
-import com.cmlee.executiful.letswinmarksix.databinding.WebLayoutBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.ListView
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
@@ -1599,7 +1598,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             return updateball(index, reset)
     }
 
-    suspend fun WebView2(){
+/*    suspend fun WebView2(){
         try{
             val layout =WebLayoutBinding.inflate(layoutInflater)
             val webLayout = layout.idWeb//WebView(this)//
@@ -1655,5 +1654,5 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }catch(e:Exception){
             Log.d("WebView", e.message?:"${e.stackTrace}")
         }
-    }
+    }*/
 }
