@@ -366,7 +366,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
 //                AlertDialog.Builder(this, R.style.Theme_Wait_Dialog).create().apply{
 //                    alertDialog = this@apply
 //                    setOnShowListener {
-                            startActivity(Intent(this@MainActivity, ScanResults::class.java))
+                            startActivity(Intent(this, ScanResults::class.java))
 //                        }
 //                    lifecycleScope.launch {
 //                        kotlinx.coroutines.delay(1000)

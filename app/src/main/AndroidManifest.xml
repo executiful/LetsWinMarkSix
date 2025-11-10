@@ -23,11 +23,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LetsWinMarkSix"
         tools:targetApi="31">
-<!--        <activity-->
-<!--            android:name=".ScanResults"-->
-<!--            android:exported="false"-->
-<!--            android:label="@string/title_activity_scan_results"-->
-<!--            android:theme="@style/Theme.LetsWinMarkSix" />-->
+        <activity
+            android:name=".ScanResults"
+            android:exported="false"
+            android:label="@string/title_activity_scan_results"
+            android:theme="@style/Theme.LetsWinMarkSix" />
         <activity
             android:name=".CameraScanActivity"
             android:exported="false"
