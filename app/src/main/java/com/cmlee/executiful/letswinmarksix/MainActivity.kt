@@ -33,6 +33,7 @@ import android.text.style.UnderlineSpan
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.webkit.ValueCallback
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.ArrayAdapter
@@ -48,12 +49,18 @@ import androidx.core.view.children
 import androidx.core.view.indices
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.cmlee.executiful.letswinmarksix.BallDialogFragment.Companion.TAG_BALL_DIALOG
 import com.cmlee.executiful.letswinmarksix.databinding.ActivityMainBinding
 import com.cmlee.executiful.letswinmarksix.databinding.BallBinding
 import com.cmlee.executiful.letswinmarksix.databinding.ColumnOfNumberBinding
 import com.cmlee.executiful.letswinmarksix.databinding.NumberTextviewBinding
 import com.cmlee.executiful.letswinmarksix.databinding.RefreshDialogBinding
+import com.cmlee.executiful.letswinmarksix.databinding.WebLayoutBinding
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.ListView
 import com.cmlee.executiful.letswinmarksix.helper.AlertDialogHelper.PositiveButton
 import com.cmlee.executiful.letswinmarksix.helper.BannerAppCompatActivity
@@ -81,6 +88,7 @@ import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.indexTR
 import com.cmlee.executiful.letswinmarksix.helper.ConnectionObject.isEarlyBy
 import com.cmlee.executiful.letswinmarksix.helper.DayYearConverter.Companion.sqlDate
 import com.cmlee.executiful.letswinmarksix.helper.WebDataRepository
+import com.cmlee.executiful.letswinmarksix.helper.WebViewWorker
 import com.cmlee.executiful.letswinmarksix.model.DrawStatus
 import com.cmlee.executiful.letswinmarksix.model.NumStat
 import com.cmlee.executiful.letswinmarksix.model.NumStat.Companion.BallColor
@@ -317,6 +325,87 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         }
     }
 
+    private fun scheduleWebViewWorker(){
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val webViewWorkRequest = OneTimeWorkRequestBuilder<WebViewWorker>()
+            .setInputData(
+                workDataOf(
+                    "url" to "https://bet.hkjc.com/ch/home"
+                )
+            )
+            .setConstraints(constraints)
+            .build()
+
+        val wm = WorkManager.getInstance(this)
+        wm.enqueue(webViewWorkRequest)
+    }
+    private fun getWebViewData(exec: (message: DrawResult, firstTime:Boolean) -> Unit) {
+        val TAG23 = "web dialog"
+        val classNextDraw = "blockNextDrawBody"
+        val idN = "subTypeMobileN"
+        val jsClick = """
+            javascript:(function(){
+                var button = document.querySelector('#$idN');
+                if(button){
+                    button.click();
+                    return document.querySelector('.$classNextDraw').className
+                } else {
+                    console.log('$idN not found');
+                    return "--"
+                }
+                    return document.readyState;
+            })();
+            """.trimIndent()
+        val jsData = """
+            javascript:(function() {
+                var resultElement = document.querySelector('.$classNextDraw') 
+                return (resultElement ? resultElement.innerText || resultElement.innerHTML : "No data")+document.readyState;
+            })();
+            """.trimIndent()
+        val webpart = WebLayoutBinding.inflate(layoutInflater)
+        with (webpart.idWeb.settings){
+            domStorageEnabled=true
+            loadsImagesAutomatically = false
+            javaScriptEnabled = true
+        }
+//        val webdialog = android.app.AlertDialog.Builder(this).setTitle(TAG23).create()
+        var isFinished=false
+        webpart.idWeb.webViewClient = object : WebViewClient() {
+            var count = 5
+            val aa1:(Boolean)->Unit = {str->
+                Thread.sleep(100)
+                 if(str) {
+                     webpart.idWeb.evaluateJavascript(jsData, cb2)
+                 } else if(count>0){
+                     count--
+                     webpart.idWeb.evaluateJavascript(jsClick, cb1)
+                }
+            }
+            val cb2 = ValueCallback<String> { str->
+                Log.d(TAG23, "$str:Result")
+                webpart.idWeb.destroy()
+            }
+            val cb1 = ValueCallback<String> { str->
+                if(true){ Log.d(TAG23, "click done $str") }
+                aa1(str.contains(classNextDraw))
+            }
+            override fun onPageFinished(view: WebView, url: String?) {
+                super.onPageFinished(view, url)
+
+                Log.d(TAG23, "onPageFinished1 $url")
+                if(!isFinished){
+                    isFinished = true
+                    aa1(false )
+                }
+            }
+        }
+
+        webpart.idWeb.loadUrl("https://bet.hkjc.com/ch/home")
+//        webdialog.show()
+    }
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
         return when (keyCode) {
             KeyEvent.KEYCODE_8 -> {
@@ -340,23 +429,77 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             }*/
 
             KeyEvent.KEYCODE_5-> {
-                val dlg = AlertDialog.Builder(this).setMessage("wait...").create()
-                dlg.setOnShowListener {
-                    repositoryWeb.getNextDrawData(callback = object :
-                        WebDataRepository.WebDataCallback {
-                        override fun onSuccess(data: String) {
-                            dlg.setTitle("next draw data")
-                            dlg.setMessage(data)
-                        }
+                scheduleWebViewWorker()
+//                getWebViewData()
+/*
+                val jsClick = """
+        var button = document.querySelector('#subTypeMobileN');
+        if(button){
+            button.click();
+        } else {
+            console.log('subTypeMobileN not found');
+        }
+    """.trimIndent()
+                val jsData = """
+        javascript:(function() {
+                // Wait for the result to appear (e.g. a div with id="result")
+//                setTimeout(function() {
+                    var resultElement = document.querySelector('.blockNextDrawBody') 
 
-                        override fun onError(error: String) {
-                            dlg.setTitle("error")
-                            dlg.setMessage(error)
-                        }
+                    return resultElement ? resultElement.innerText || resultElement.innerHTML : "No data";
 
-                    })
+                    // Send data back to Android
+//                    window.Android.onDataReceived(data);
+//                }, 2000); // adjust timeout based on server response time
+            })();
+    """.trimIndent()
+val TAG23 = "web dialog"
+                val webpart = WebLayoutBinding.inflate(layoutInflater)
+                with (webpart.idWeb.settings){
+                    domStorageEnabled=true
+//                    loadsImagesAutomatically = false
+                    javaScriptEnabled = true
                 }
-                dlg.show()
+                val webdialog = android.app.AlertDialog.Builder(this).setTitle(TAG23).create()
+                webpart.idWeb.webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView, url: String?) {
+                        super.onPageFinished(view, url)
+
+                            view.postDelayed({
+                                view.evaluateJavascript(jsClick, {Log.d(TAG23, "click done")})
+                                Log.d(TAG23, "onPageFinished $url")
+                                view.postDelayed({
+                                    view.evaluateJavascript(jsData, { res->
+                                        Log.d(TAG23, "result:$res")
+                                        runOnUiThread{ webdialog.setMessage(res) }
+//                                        latch.countDown()
+                                    })
+                                }, 1500)
+                            }, 1500)
+                    }
+                }
+
+                webpart.idWeb.loadUrl("https://bet.hkjc.com/ch/home")
+
+
+                webdialog.show() */
+//                val dlg = AlertDialog.Builder(this).setMessage("wait...").create()
+//                dlg.setOnShowListener {
+//                    repositoryWeb.getNextDrawData(callback = object :
+//                        WebDataRepository.WebDataCallback {
+//                        override fun onSuccess(data: String) {
+//                            dlg.setTitle("next draw data")
+//                            dlg.setMessage(data)
+//                        }
+//
+//                        override fun onError(error: String) {
+//                            dlg.setTitle("error")
+//                            dlg.setMessage(error)
+//                        }
+//
+//                    })
+//                }
+//                dlg.show()
                 true
             }
             KeyEvent.KEYCODE_6->{
@@ -662,31 +805,38 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
                     val ssb = SpannableString(getString(R.string.action_previous_next_draw))
                     ssb.setSpan(AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
                     ssb.setSpan(BackgroundColorSpan(Color.LTGRAY), 0, ssb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                    AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog)//.setTitle(ssb)
+                    val nextDlg = AlertDialog.Builder(this, R.style.Theme_Monthly_Dialog)//.setTitle(ssb)
                         .setMessage("更新中...")
-                        .show().also { dlg ->
-                            alertDialog = dlg
-                            lifecycleScope.launch{
-                                WebViewGetNextDraw() {dr,ft->
-                                    dlg.setMessage(getDrawString(dr,ft))
-                                }
-                            }
-                            hr.post ({
+                        .create()
+                        lifecycleScope.launch{
+                            nextDlg.setMessage(getDrawString(repository.getLatest()))
+                        }
+                            nextDlg.setOnShowListener {
                                 lifecycleScope.launch{
-                                    UpdateLatestDraw(repository) { str, dr ->
-                                        runOnUiThread {
-                                            if (str == "OK") {
-                                                genBall()
-                                                initball()
-                                            }
-                                            if (dlg.isShowing)
-                                                dlg.setMessage(getDrawString(dr))
-                                        }
+                                    WebViewGetNextDraw() {dr,ft->
+                                        nextDlg.setMessage(getDrawString(dr,ft))
                                     }
                                 }
-                            })
+                                hr.post ({
+                                    lifecycleScope.launch{
+                                        UpdateLatestDraw(repository) { str, dr ->
+                                            runOnUiThread {
+                                                if (str == "OK") {
+                                                    genBall()
+                                                    initball()
+                                                }
+                                                if (nextDlg.isShowing)
+                                                    nextDlg.setMessage(getDrawString(dr))
+                                            }
+                                        }
+                                    }
+                                })
                         }
-                    alertDialog!=null
+                            nextDlg.show()
+
+//                    alertDialog!=null
+                    true
+
                 }
 //                R.id.action_save ->{
 //                    saveEntry()
@@ -914,7 +1064,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     fun getDrawString(pre: DrawResult, firstTime: Boolean=false) : SpannableStringBuilder {
 //        val pre = M6Db.getDatabase(this).DrawResultDao().getLatest()
         val sf = getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
-
+    Log.d("WebView", "$firstTime ${pre.id}")
         val ssb = SpannableStringBuilder()
         var start: Int
 
@@ -997,7 +1147,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             ssb.length,
             Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
         )
-
+        Log.d("WebView", "$ssb")
         return ssb
     }
     private fun show_draw_schedule(): Boolean {
@@ -1191,9 +1341,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
     }
 
     private suspend fun WebViewGetNextDraw(exec: (message: DrawResult, firstTime:Boolean) -> Unit) {
-        val nextref = getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
         val latest = repository.getLatest()
+        val nextref = getSharedPreferences(TAG_INDEX, MODE_PRIVATE)
         val now = getHKInstance()
+        Log.d("WebView", "$now")
         exec(latest,true)
 
         val updateAt = nextref.getString(KEY_NEXT_UPDATE, null)?.let { hkTimeString ->
@@ -1211,63 +1362,66 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             )
         }
 
-        if (updateAt ?: true)
+        if (updateAt ?: true) {
             try {
-            val wv = WebView(this)
-            with(wv.settings) {
-                javaScriptEnabled = true
-                domStorageEnabled = true
-                loadsImagesAutomatically = false
-            }
-            var targetfound = ""
-            var isstart = false
-            val cntr = object : CountDownTimer(800 * 5, 800) {
-                val jsCode = "(function() {" +
-                        "  var element = document.querySelectorAll('.next-draw-table-header .next-draw-table-item, .jackpot-row, .estdiv-row');" +
-                        "  return [].slice.call(element).map(function(e){return e.innerText;}).join('#');" +
-                        "})();"
+                val wv = WebView(this)
+                with(wv.settings) {
+                    javaScriptEnabled = true
+                    domStorageEnabled = true
+                    loadsImagesAutomatically = false
+                }
+                var targetfound = ""
+                var isstart = false
+                val cntr = object : CountDownTimer(800 * 5, 800) {
+                    val jsCode = "(function() {" +
+                            "  var element = document.querySelectorAll('.next-draw-table-header .next-draw-table-item, .jackpot-row, .estdiv-row');" +
+                            "  return [].slice.call(element).map(function(e){return e.innerText;}).join('#');" +
+                            "})();"
 
-                override fun onTick(millisUntilFinished: Long) {
-                    wv.evaluateJavascript(jsCode) { value ->
-                        if (targetfound == "" && value != "\"\"") {
-                            targetfound = value
-                            Log.d("WebView", "Extracted data: $value")
-                            nextref.edit {
-//                                    putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
-                                putString(
-                                    KEY_NEXT_UPDATE,
-                                    getCurrentTimeInTimezone()
-                                )
-                                val items = "\\\\[tn]".toRegex().replace(targetfound.trim('"'), indexTD)
+                    override fun onTick(millisUntilFinished: Long) {
+                        wv.evaluateJavascript(jsCode) { value ->
+                            if (targetfound == "" && value != "\"\"") {
+                                targetfound = value
+                                Log.d("WebView", "Extracted data: $value")
+                                nextref.edit {
+        //                                    putDateTimeISO(KEY_NEXT_UPDATE, Calendar.getInstance())
+                                    putString(
+                                        KEY_NEXT_UPDATE,
+                                        getCurrentTimeInTimezone()
+                                    )
+                                    val items = "\\\\[tn]".toRegex().replace(targetfound.trim('"'), indexTD)
 
-                                putString(KEY_NEXT, items)
+                                    putString(KEY_NEXT, items)
+                                }
+                                lifecycleScope.launch { exec(repository.getLatest(), false) }
                             }
+                        }
+                    }
+
+                    override fun onFinish() {
+                        Log.d("WebView", "Finished")
+                        if(targetfound==""||targetfound=="\"\"")
                             lifecycleScope.launch { exec(repository.getLatest(), false) }
+
+                        wv.destroy()
+                    }
+                }
+                wv.webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+                        if (!isstart) {  //handling start once, because onPageFinished will be called twice.
+                            Log.d("WebView", "start $url")
+                            isstart = true
+                            cntr.start()
                         }
                     }
                 }
-
-                override fun onFinish() {
-                    Log.d("WebView", "Finished")
-                    if(targetfound==""||targetfound=="\"\"")
-                        lifecycleScope.launch { exec(repository.getLatest(), false) }
-
-                    wv.destroy()
-                }
+                runOnUiThread { wv.loadUrl(url_marksix) }
+            } catch (e: Exception) {
+                Log.d("WebView", "${e.message} webview")
             }
-            wv.webViewClient = object : WebViewClient() {
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    super.onPageFinished(view, url)
-                    if (!isstart) {  //handling start once, because onPageFinished will be called twice.
-                        Log.d("WebView", "start $url")
-                        isstart = true
-                        cntr.start()
-                    }
-                }
-            }
-            runOnUiThread { wv.loadUrl(url_marksix) }
-        } catch (e: Exception) {
-            Log.d("WebView", "${e.message} webview")
+        } else {
+            exec(repository.getLatest(),false)
         }
     }
 
@@ -1279,29 +1433,29 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             setCancelable(false)
             setOnShowListener {
                 if (isNetworkAvailable(this@MainActivity)) {
-                        lifecycleScope.launch {
-                            WebViewGetNextDraw{_,_->}
-                            val dr = repository.getLatestNotNull()
-                            Thread {
-                                getLatestDrawResult(dr) { results ->
-                                    runOnUiThread {
-                                        binding.toolbar.menu.findItem(R.id.action_view_all).run {
-                                            isVisible = blind
-                                        }
-                                        if (results.isNotEmpty()) {
-                                            lifecycleScope.launch {
-                                                repository.insertOrReplace(*results.toTypedArray())
-                                                genBall()
-                                                updateStatus()
-                                            }
-                                        }
-                                        dismiss()
-                                        binding.root.setWillNotDraw(true)
-                                        initball()
-                                        binding.root.setWillNotDraw(false)
+                    lifecycleScope.launch {
+                        WebViewGetNextDraw{_,_->}
+                        val dr = repository.getLatestNotNull()
+                        Thread {
+                            getLatestDrawResult(dr) { results ->
+                                runOnUiThread {
+                                    binding.toolbar.menu.findItem(R.id.action_view_all).run {
+                                        isVisible = blind
                                     }
+                                    if (results.isNotEmpty()) {
+                                        lifecycleScope.launch {
+                                            repository.insertOrReplace(*results.toTypedArray())
+                                            genBall()
+                                            updateStatus()
+                                        }
+                                    }
+                                    dismiss()
+                                    binding.root.setWillNotDraw(true)
+                                    initball()
+                                    binding.root.setWillNotDraw(false)
                                 }
-                            }.start()
+                            }
+                        }.start()
                     }
                 } else {
                     genBall()
@@ -1431,7 +1585,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             originalballs.parallelStream().forEach { i ->
                 val f = temp.filter { it.second.contains(i.num) }
                 i.times = f.count()
-                Log.d("nextdraw", "$i ${i.times}")
+//                Log.d("nextdraw", "$i ${i.times}")
                 if (i.times > 0)
                     i.since = f.first().first
                 else
@@ -1516,7 +1670,7 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
             """
             (function() {
                 const element = document.querySelector('.next-draw-table-header');
-                return element ? element.textContent.trim() : 'Element not found';
+                return element ? element.innerText : 'Element not found';
             })()
                 """
 //            """(function() {  var element = document.querySelectorAll('.next-draw-table-header .next-draw-table-item, .jackpot-row, .estdiv-row');  return [].slice.call(element).map(function(e){return e.innerText;}).join('#');})();"""
