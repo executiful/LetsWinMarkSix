@@ -135,10 +135,10 @@ class MainActivity : BannerAppCompatActivity(), BallDialogFragment.IUpdateSelect
         alertDialog = dlg.show()
     }
 
-    override fun onPause() {
-        super.onPause()
-        M6Db.dismiss()
-    }
+//    override fun onPause() {
+//        super.onPause()
+//        M6Db.dismiss()
+//    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
